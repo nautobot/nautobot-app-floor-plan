@@ -13,7 +13,8 @@ ENV NAUTOBOT_ROOT ${NAUTOBOT_ROOT}
 WORKDIR $NAUTOBOT_ROOT
 
 # Configure poetry
-RUN poetry config virtualenvs.create false \
+RUN poetry self update \
+    && poetry config virtualenvs.create false \
     && poetry config installer.parallel false
 
 # -------------------------------------------------------------------------------------
