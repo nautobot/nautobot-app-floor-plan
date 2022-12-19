@@ -16,7 +16,7 @@ from nautobot.core.models.generics import PrimaryModel
 
 # If you want to choose a specific model to overload in your class declaration, please reference the following documentation:
 # how to chose a database model: https://nautobot.readthedocs.io/en/stable/plugins/development/#database-models
-class FloorPlan(PrimaryModel):
+class FloorPlan(PrimaryModel):  # pylint: disable=too-many-ancestors
     """Base model for Nautobot Floor Plan plugin."""
 
     name = models.CharField(max_length=100, unique=True)

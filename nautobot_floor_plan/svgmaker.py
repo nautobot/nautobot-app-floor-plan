@@ -3,7 +3,7 @@
 import svgwrite
 
 
-class FloorPlanSVG:
+class FloorPlanSVG:  # pylint: disable=too-few-public-methods
     """
     Use this class to render a data center SVG image.
 
