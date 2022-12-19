@@ -1,5 +1,7 @@
 """Forms for nautobot_floor_plan."""
 from django import forms
+
+from nautobot.extras.forms import CustomFieldModelCSVForm
 from nautobot.utilities.forms import (
     BootstrapMixin,
     BulkEditForm,
@@ -23,6 +25,16 @@ class FloorPlanForm(BootstrapMixin, forms.ModelForm):
             "slug",
             "description",
         ]
+
+
+class FloorPlanCSVForm(CustomFieldModelCSVForm):
+    """FloorPlan CSV export form."""
+
+    class Meta:
+        """Meta attributes."""
+
+        model = models.FloorPlan
+        fields = models.FloorPlan.csv_headers
 
 
 class FloorPlanBulkEditForm(BootstrapMixin, BulkEditForm):

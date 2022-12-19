@@ -5,7 +5,7 @@ from nautobot.core.api.serializers import ValidatedModelSerializer
 
 from nautobot_floor_plan import models
 
-from . import nested_serializers  # noqa: F401, pylint: disable=unused-import
+from .nested_serializers import NestedFloorPlanSerializer  # noqa: F401, pylint: disable=unused-import
 
 
 class FloorPlanSerializer(ValidatedModelSerializer):

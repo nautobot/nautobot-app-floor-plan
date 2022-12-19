@@ -16,6 +16,12 @@ class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
         "slug": "test-1",
         "description": "Initial model",
     }
+    csv_data = (
+        "name,slug",
+        "Test 2,test-2",
+        "Test 3,test-3",
+        "Test 4,test-4",
+    )
 
     @classmethod
     def setUpTestData(cls):

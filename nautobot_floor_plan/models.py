@@ -21,8 +21,14 @@ class FloorPlan(PrimaryModel):  # pylint: disable=too-many-ancestors
 
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True)
+
     description = models.CharField(max_length=200, blank=True)
-    # additional model fields
+
+    csv_headers = [
+        "name",
+        "slug",
+        "description",
+    ]
 
     class Meta:
         """Meta class."""
@@ -42,3 +48,11 @@ class FloorPlan(PrimaryModel):  # pylint: disable=too-many-ancestors
     def __str__(self):
         """Stringify instance."""
         return self.name
+
+    def to_csv(self):
+        """Convert instance to a tuple for CSV export."""
+        return (
+            self.name,
+            self.slug,
+            self.description,
+        )

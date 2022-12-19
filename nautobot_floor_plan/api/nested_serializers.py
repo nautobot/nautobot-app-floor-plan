@@ -6,7 +6,7 @@ from nautobot.core.api import WritableNestedSerializer
 from nautobot_floor_plan import models
 
 
-class FloorPlanNestedSerializer(WritableNestedSerializer):
+class NestedFloorPlanSerializer(WritableNestedSerializer):
     """FloorPlan Nested Serializer."""
 
     url = serializers.HyperlinkedIdentityField(view_name="plugins-api:nautobot_floor_plan-api:floorplan-detail")
@@ -15,4 +15,4 @@ class FloorPlanNestedSerializer(WritableNestedSerializer):
         """Meta attributes."""
 
         model = models.FloorPlan
-        fields = "__all__"
+        fields = ["id", "url", "name", "slug"]
