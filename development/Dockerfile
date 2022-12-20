@@ -12,9 +12,14 @@ ENV NAUTOBOT_ROOT ${NAUTOBOT_ROOT}
 
 WORKDIR $NAUTOBOT_ROOT
 
+# Ensure poetry 1.3 even on older base images
+RUN --mount=type=cache,target="/root/.cache/pip" \
+    curl -sSL https://install.python-poetry.org -o /tmp/install-poetry.py && \
+    python /tmp/install-poetry.py --version 1.3.1 && \
+    rm -f /tmp/install-poetry.py
+
 # Configure poetry
-RUN poetry self update \
-    && poetry config virtualenvs.create false \
+RUN poetry config virtualenvs.create false \
     && poetry config installer.parallel false
 
 # -------------------------------------------------------------------------------------
