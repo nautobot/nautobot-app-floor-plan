@@ -1,6 +1,4 @@
 """Unit tests for nautobot_floor_plan."""
-import unittest
-
 from nautobot.utilities.testing import APIViewTestCases
 
 from nautobot_floor_plan import models
@@ -32,7 +30,3 @@ class FloorPlanAPIViewTest(APIViewTestCases.APIViewTestCase):
     @classmethod
     def setUpTestData(cls):
         fixtures.create_floorplan()
-
-    @unittest.skip("TODO")
-    def test_notes_url_on_object(self):
-        """Not yet implemented."""

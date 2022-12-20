@@ -26,12 +26,3 @@ class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
     @classmethod
     def setUpTestData(cls):
         fixtures.create_floorplan()
-
-    def test_bulk_import_objects_with_constrained_permission(self):
-        pass
-
-    def test_bulk_import_objects_with_permission(self):
-        pass
-
-    def test_bulk_import_objects_without_permission(self):
-        pass
