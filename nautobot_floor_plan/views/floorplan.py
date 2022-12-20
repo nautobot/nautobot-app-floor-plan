@@ -1,12 +1,14 @@
 """Views for FloorPlan."""
 
-from nautobot.apps import views
+# TODO: when minimum Nautobot version becomes 1.5.2 or later, we can use:
+# from nautobot.apps import views
+from nautobot.core.views.viewsets import NautobotUIViewSet
 
 from nautobot_floor_plan import filters, forms, models, tables
 from nautobot_floor_plan.api import serializers
 
 
-class FloorPlanUIViewSet(views.NautobotUIViewSet):
+class FloorPlanUIViewSet(NautobotUIViewSet):
     """TODO."""
 
     bulk_create_form_class = forms.FloorPlanCSVForm
