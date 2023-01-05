@@ -1,34 +1,38 @@
 """Forms for nautobot_floor_plan."""
 from django import forms
 
-from nautobot.extras.forms import CustomFieldModelCSVForm
+from nautobot.dcim.models import Location
+from nautobot.extras.forms import CustomFieldModelCSVForm, NautobotBulkEditForm, NautobotFilterForm, NautobotModelForm
 from nautobot.utilities.forms import (
-    BootstrapMixin,
-    BulkEditForm,
-    SlugField,
+    CSVModelChoiceField,
+    DynamicModelChoiceField,
+    DynamicModelMultipleChoiceField,
+    TagFilterField,
 )
 
 from nautobot_floor_plan import models
 
 
-class FloorPlanForm(BootstrapMixin, forms.ModelForm):
+class FloorPlanForm(NautobotModelForm):
     """FloorPlan creation/edit form."""
 
-    slug = SlugField()
+    location = DynamicModelChoiceField(queryset=Location.objects.all())
 
     class Meta:
         """Meta attributes."""
 
         model = models.FloorPlan
         fields = [
-            "name",
-            "slug",
-            "description",
+            "location",
+            "x_size",
+            "y_size",
         ]
 
 
 class FloorPlanCSVForm(CustomFieldModelCSVForm):
     """FloorPlan CSV export form."""
+
+    location = CSVModelChoiceField(queryset=Location.objects.all(), to_field_name="name")
 
     class Meta:
         """Meta attributes."""
@@ -37,39 +41,19 @@ class FloorPlanCSVForm(CustomFieldModelCSVForm):
         fields = models.FloorPlan.csv_headers
 
 
-class FloorPlanBulkEditForm(BootstrapMixin, BulkEditForm):
+class FloorPlanBulkEditForm(NautobotBulkEditForm):
     """FloorPlan bulk edit form."""
 
     pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)
-    description = forms.CharField(required=False)
-
-    class Meta:
-        """Meta attributes."""
-
-        nullable_fields = [
-            "description",
-        ]
+    location = DynamicModelChoiceField(queryset=Location.objects.all(), required=False)
 
 
-class FloorPlanFilterForm(BootstrapMixin, forms.ModelForm):
+class FloorPlanFilterForm(NautobotFilterForm):
     """Filter form to filter searches."""
 
-    q = forms.CharField(
-        required=False,
-        label="Search",
-        help_text="Search within Name or Slug.",
-    )
-    name = forms.CharField(required=False, label="Name")
-    slug = forms.CharField(required=False, label="Slug")
+    model = models.FloorPlan
+    field_order = ["q", "location", "x_size", "y_size"]
 
-    class Meta:
-        """Meta attributes."""
-
-        model = models.FloorPlan
-        # Define the fields above for ordering and widget purposes
-        fields = [
-            "q",
-            "name",
-            "slug",
-            "description",
-        ]
+    q = forms.CharField(required=False, label="Search")
+    location = DynamicModelMultipleChoiceField(queryset=Location.objects.all(), to_field_name="slug", required=False)
+    tag = TagFilterField(model)

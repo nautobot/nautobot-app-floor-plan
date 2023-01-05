@@ -1,11 +1,11 @@
 """Filtering for nautobot_floor_plan."""
 
-from nautobot.utilities.filters import BaseFilterSet, NameSlugSearchFilterSet
+from nautobot.extras.filters import NautobotFilterSet
 
 from nautobot_floor_plan import models
 
 
-class FloorPlanFilterSet(BaseFilterSet, NameSlugSearchFilterSet):
+class FloorPlanFilterSet(NautobotFilterSet):
     """Filter for FloorPlan."""
 
     class Meta:
@@ -14,4 +14,4 @@ class FloorPlanFilterSet(BaseFilterSet, NameSlugSearchFilterSet):
         model = models.FloorPlan
 
         # add any fields from the model that you would like to filter your searches by using those
-        fields = ["id", "name", "slug", "description"]
+        fields = ["location", "x_size", "y_size"]

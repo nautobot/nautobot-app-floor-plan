@@ -1880,14 +1880,14 @@ files = [
 
 [[package]]
 name = "nautobot"
-version = "1.5.4"
+version = "1.5.7"
 description = "Source of truth and network automation platform."
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "nautobot-1.5.4-py3-none-any.whl", hash = "sha256:4be5d0627363174b9ba27b07c1e73f9b1c88bcb7d1b31432cd0985520be86343"},
-    {file = "nautobot-1.5.4.tar.gz", hash = "sha256:c1f019c5beb2250b86f54c7d791a06101fca6b07e7abf67265d52cf3f65bab4a"},
+    {file = "nautobot-1.5.7-py3-none-any.whl", hash = "sha256:d99d2be6d2576017ad4a1ee61c8adcde52f6c055552ac62f384d84e21807643a"},
+    {file = "nautobot-1.5.7.tar.gz", hash = "sha256:5bb0f545b02caeab2a7875b218648f0461734003c894c946423d6f8c4c831389"},
 ]
 
 [package.dependencies]
@@ -3386,4 +3386,4 @@ nautobot = ["nautobot"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "b4adba0f1cece1ac843518926943c4b44e9e400b4f6ad04f09ef2415495da639"
+content-hash = "23e3de84160a13cbb84d18a1a3bba2c84c4df622fe49e83783b247d24e796bbf"
