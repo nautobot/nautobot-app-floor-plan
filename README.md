@@ -23,7 +23,7 @@ To avoid extra work and temporary links, make sure that publishing docs (or merg
 
 ## Overview
 
-> Developer Note: Add a long (2-3 paragraphs) description of what the App does, what problems it solves, what functionality it adds to Nautobot, what external systems it works with etc.
+This App aids in data center management by providing the ability to create a gridded representation of the floor plan of a Nautobot Location and indicate the relative location of each Nautobot Rack within that floor plan.
 
 ### Screenshots
 

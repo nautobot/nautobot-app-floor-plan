@@ -12,16 +12,16 @@ from nautobot.extras.plugins import PluginConfig
 
 
 class FloorPlanConfig(PluginConfig):
-    """Plugin configuration for the nautobot_floor_plan plugin."""
+    """Configuration for the nautobot_floor_plan app."""
 
     name = "nautobot_floor_plan"
-    verbose_name = "Nautobot Floor Plan"
+    verbose_name = "Floor Plans"
     version = __version__
     author = "Network to Code, LLC"
-    description = "Nautobot Floor Plan."
+    description = "Nautobot App for representing rack position on a floor plan."
     base_url = "floor-plan"
     required_settings = []
-    min_version = "1.5.0"
+    min_version = "1.4.0"
     max_version = "1.9999"
     default_settings = {}
     caching_config = {}
