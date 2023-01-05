@@ -8,7 +8,7 @@ from nautobot_floor_plan import models
 from nautobot_floor_plan.tests import fixtures
 
 
-class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):  # pylint: disable=too-many-ancestors
+class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
     """Test the FloorPlan views."""
 
     model = models.FloorPlan

@@ -9,7 +9,7 @@ from nautobot_floor_plan import models
 from .nested_serializers import NestedFloorPlanSerializer  # noqa: F401, pylint: disable=unused-import
 
 
-class FloorPlanSerializer(NautobotModelSerializer, TaggedObjectSerializer):  # pylint: disable=too-many-ancestors
+class FloorPlanSerializer(NautobotModelSerializer, TaggedObjectSerializer):
     """FloorPlan Serializer."""
 
     url = serializers.HyperlinkedIdentityField(view_name="plugins-api:nautobot_floor_plan-api:floorplan-detail")

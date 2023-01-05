@@ -5,7 +5,7 @@ from nautobot_floor_plan import models
 from nautobot_floor_plan.tests import fixtures
 
 
-class FloorPlanAPIViewTest(APIViewTestCases.APIViewTestCase):  # pylint: disable=too-many-ancestors
+class FloorPlanAPIViewTest(APIViewTestCases.APIViewTestCase):
     """Test the API viewsets for FloorPlan."""
 
     model = models.FloorPlan

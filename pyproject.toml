@@ -84,12 +84,16 @@ ignore=".venv"
 [tool.pylint.basic]
 # No docstrings required for private methods (Pylint default), or for test_ functions, or for inner Meta classes.
 no-docstring-rgx="^(_|test_|Meta$)"
+# Allow "x" and "y" as variable names as well as pylint defaults
+good-names = """_,i,j,k,x,y"""
 
 [tool.pylint.messages_control]
 # Line length is enforced by Black, so pylint doesn't need to check it.
 # Pylint and Black disagree about how to format multi-line arrays; Black wins.
+# too-many-ancestors happens all over the place in Django/Nautobot code, so it's pretty much just noise
 disable = """,
-    line-too-long
+    line-too-long,
+    too-many-ancestors
     """
 
 [tool.pylint.miscellaneous]

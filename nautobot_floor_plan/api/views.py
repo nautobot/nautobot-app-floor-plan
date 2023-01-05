@@ -7,7 +7,7 @@ from nautobot_floor_plan import filters, models
 from nautobot_floor_plan.api import serializers
 
 
-class FloorPlanViewSet(NautobotModelViewSet):  # pylint: disable=too-many-ancestors
+class FloorPlanViewSet(NautobotModelViewSet):
     """FloorPlan viewset."""
 
     queryset = models.FloorPlan.objects.all()

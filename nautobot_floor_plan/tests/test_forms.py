@@ -43,5 +43,5 @@ class TestFloorPlanForm(TestCase):
         form = forms.FloorPlanForm(data={})
         self.assertFalse(form.is_valid())
         self.assertEqual(["location", "x_size", "y_size"], sorted(form.errors.keys()))
-        for key in form.errors.keys():
-            self.assertIn("This field is required.", form.errors[key])
+        for message in form.errors.values():
+            self.assertIn("This field is required.", message)

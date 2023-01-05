@@ -21,7 +21,7 @@ from nautobot.extras.utils import extras_features
     "relationships",
     "webhooks",
 )
-class FloorPlan(PrimaryModel):  # pylint: disable=too-many-ancestors
+class FloorPlan(PrimaryModel):
     """
     Model representing the floor plan of a given Location.
 
@@ -82,7 +82,7 @@ class FloorPlan(PrimaryModel):  # pylint: disable=too-many-ancestors
     "statuses",
     "webhooks",
 )
-class FloorPlanTile(PrimaryModel, StatusModel):  # pylint: disable=too-many-ancestors
+class FloorPlanTile(PrimaryModel, StatusModel):
     """Model representing a single (x, y) "tile" within a FloorPlan, its status, and any Rack that it contains."""
 
     floor_plan = models.ForeignKey(to=FloorPlan, on_delete=models.CASCADE, related_name="tiles")
@@ -120,7 +120,7 @@ class FloorPlanTile(PrimaryModel, StatusModel):  # pylint: disable=too-many-ance
     def to_csv(self):
         """Convert instance to a tuple for CSV export."""
         return (
-            self.location.name,
+            self.floor_plan.location.name,
             self.x,
             self.y,
             self.get_status_display(),

@@ -9,6 +9,7 @@ from nautobot_floor_plan.models import FloorPlan, FloorPlanTile
 
 
 def create_prerequisites(floor_count=3):
+    """Fixture to create the various prerequisite objects needed before a FloorPlan can be created."""
     parent_location_type = LocationType.objects.create(name="Building")
     location_type = LocationType.objects.create(name="Floor", parent=parent_location_type)
 
