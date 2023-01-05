@@ -1,4 +1,7 @@
 """Unit tests for views."""
+
+import unittest
+
 from nautobot.utilities.testing import ViewTestCases
 
 from nautobot_floor_plan import models
@@ -26,3 +29,7 @@ class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):  # pylint: dis
             "x_size": 1,
             "y_size": 2,
         }
+
+    @unittest.skip("See https://github.com/nautobot/nautobot/issues/3083")
+    def test_get_object_with_permission(self):
+        """Skipped temporarily due to https://github.com/nautobot/nautobot/issues/3083."""
