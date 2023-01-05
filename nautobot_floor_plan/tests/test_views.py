@@ -5,24 +5,24 @@ from nautobot_floor_plan import models
 from nautobot_floor_plan.tests import fixtures
 
 
-class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
-    # pylint: disable=too-many-ancestors
+class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):  # pylint: disable=too-many-ancestors
     """Test the FloorPlan views."""
 
     model = models.FloorPlan
-    bulk_edit_data = {"description": "Bulk edit views"}
-    form_data = {
-        "name": "Test 1",
-        "slug": "test-1",
-        "description": "Initial model",
-    }
+    bulk_edit_data = {"x_size": 10, "y_size": 10}
     csv_data = (
-        "name,slug",
-        "Test 2,test-2",
-        "Test 3,test-3",
-        "Test 4,test-4",
+        "location.name,x_size,y_size",
+        "Floor 4,1,2",
+        "Floor 5,2,4",
+        "Floor 6,3,6",
     )
 
     @classmethod
     def setUpTestData(cls):
-        fixtures.create_floorplan()
+        data = fixtures.create_prerequisites(floor_count=6)
+        fixtures.create_floor_plans(data["floors"][:3])
+        cls.form_data = {
+            "location": data["floors"][3].pk,
+            "x_size": 1,
+            "y_size": 2,
+        }

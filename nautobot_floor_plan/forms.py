@@ -2,7 +2,13 @@
 from django import forms
 
 from nautobot.dcim.models import Location
-from nautobot.extras.forms import CustomFieldModelCSVForm, NautobotBulkEditForm, NautobotFilterForm, NautobotModelForm
+from nautobot.extras.forms import (
+    CustomFieldModelCSVForm,
+    NautobotBulkEditForm,
+    NautobotFilterForm,
+    NautobotModelForm,
+    TagsBulkEditFormMixin,
+)
 from nautobot.utilities.forms import (
     CSVModelChoiceField,
     DynamicModelChoiceField,
@@ -26,6 +32,7 @@ class FloorPlanForm(NautobotModelForm):
             "location",
             "x_size",
             "y_size",
+            "tags",
         ]
 
 
@@ -41,11 +48,17 @@ class FloorPlanCSVForm(CustomFieldModelCSVForm):
         fields = models.FloorPlan.csv_headers
 
 
-class FloorPlanBulkEditForm(NautobotBulkEditForm):
+class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
     """FloorPlan bulk edit form."""
 
     pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)
-    location = DynamicModelChoiceField(queryset=Location.objects.all(), required=False)
+    x_size = forms.IntegerField(min_value=1)
+    y_size = forms.IntegerField(min_value=1)
+
+    class Meta:
+        """Meta attributes."""
+
+        fields = ["pk", "x_size", "y_size", "tags"]
 
 
 class FloorPlanFilterForm(NautobotFilterForm):

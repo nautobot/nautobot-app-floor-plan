@@ -15,4 +15,4 @@ class NestedFloorPlanSerializer(WritableNestedSerializer):
         """Meta attributes."""
 
         model = models.FloorPlan
-        fields = ["id", "url", "name", "slug"]
+        fields = ["id", "url", "x_size", "y_size"]
