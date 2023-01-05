@@ -95,6 +95,7 @@ class FloorPlanTile(PrimaryModel, StatusModel):
     # status field is automatically provided by StatusModel
 
     class Meta:
+        """Metaclass attributes."""
         ordering = ["floor_plan", "y", "x"]
         unique_together = ["floor_plan", "x", "y"]
 
