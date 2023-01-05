@@ -96,6 +96,7 @@ class FloorPlanTile(PrimaryModel, StatusModel):
 
     class Meta:
         """Metaclass attributes."""
+
         ordering = ["floor_plan", "y", "x"]
         unique_together = ["floor_plan", "x", "y"]
 
