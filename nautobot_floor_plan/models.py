@@ -1,7 +1,7 @@
 """Models for Nautobot Floor Plan."""
 
 # Django imports
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
@@ -107,6 +107,15 @@ class FloorPlanTile(PrimaryModel, StatusModel):
         "status",
         "rack",
     ]
+
+    def clean(self):
+        """Ensure that the x, y coordinates of this FloorPlanTile lie within the parent FloorPlan's bounds."""
+        # x <= 0, y <= 0 are covered by the base field definitions
+        super().clean()
+        if self.x > self.floor_plan.x_size:
+            raise ValidationError({"x": f"Too large for {self.floor_plan}"})
+        if self.y > self.floor_plan.y_size:
+            raise ValidationError({"y": f"Too large for {self.floor_plan}"})
 
     def get_absolute_url(self):
         """No detail view exists for a FloorPlanTile."""

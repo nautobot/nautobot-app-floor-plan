@@ -29,19 +29,23 @@ class TestFloorPlan(TestCase):
             models.FloorPlan(x_size=1, y_size=1).validated_save()
 
     def test_create_floor_plan_invalid_x_size(self):
+        """A FloorPlan must have an x_size greater than zero."""
         with self.assertRaises(ValidationError):
             models.FloorPlan(location=self.floors[0], x_size=0, y_size=1).validated_save()
 
     def test_create_floor_plan_invalid_y_size(self):
+        """A FloorPlan must have a y_size greater than zero."""
         with self.assertRaises(ValidationError):
             models.FloorPlan(location=self.floors[0], x_size=1, y_size=0).validated_save()
 
     def test_create_floor_plan_invalid_duplicate_location(self):
+        """Only one FloorPlan per Location can be created."""
         models.FloorPlan(location=self.floors[0], x_size=1, y_size=1).validated_save()
         with self.assertRaises(ValidationError):
             models.FloorPlan(location=self.floors[0], x_size=2, y_size=2).validated_save()
 
-    def test_floor_plan_tiles_empty(self):
+    def test_floor_plan_get_tiles_empty(self):
+        """The get_tiles() API works even when no FloorPlanTiles have been created."""
         floor_plan_minimal = models.FloorPlan(location=self.floors[0], x_size=1, y_size=1)
         self.assertEqual(floor_plan_minimal.get_tiles(), [[None]])
 
@@ -59,6 +63,7 @@ class TestFloorPlanTile(TestCase):
         self.floor_plans = fixtures.create_floor_plans(data["floors"])
 
     def test_create_floor_plan_tile_valid(self):
+        """A FloorPlanTile can be created for each legal position in a FloorPlan."""
         tile_1_1_1 = models.FloorPlanTile(floor_plan=self.floor_plans[0], x=1, y=1, status=self.active_status)
         tile_1_1_1.validated_save()
         self.assertEqual(self.floor_plans[0].get_tiles(), [[tile_1_1_1]])
@@ -74,6 +79,22 @@ class TestFloorPlanTile(TestCase):
         self.assertEqual(self.floor_plans[1].get_tiles(), [[tile_2_1_1, tile_2_2_1], [tile_2_1_2, tile_2_2_2]])
 
     def test_create_floor_plan_tile_invalid_duplicate_position(self):
+        """Two FloorPlanTiles cannot occupy the same position in the same FloorPlan."""
         models.FloorPlanTile(floor_plan=self.floor_plans[0], x=1, y=1, status=self.active_status).validated_save()
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(floor_plan=self.floor_plans[0], x=1, y=1, status=self.active_status).validated_save()
+
+    def test_create_floor_plan_tile_invalid_illegal_position(self):
+        """A FloorPlanTile cannot be created outside the bounds of its FloorPlan."""
+        with self.assertRaises(ValidationError):
+            models.FloorPlanTile(floor_plan=self.floor_plans[0], status=self.active_status, x=0, y=1).validated_save()
+        with self.assertRaises(ValidationError):
+            models.FloorPlanTile(
+                floor_plan=self.floor_plans[0], status=self.active_status, x=self.floor_plans[0].x_size + 1, y=1
+            ).validated_save()
+        with self.assertRaises(ValidationError):
+            models.FloorPlanTile(floor_plan=self.floor_plans[0], status=self.active_status, x=1, y=0).validated_save()
+        with self.assertRaises(ValidationError):
+            models.FloorPlanTile(
+                floor_plan=self.floor_plans[0], status=self.active_status, x=1, y=self.floor_plans[0].y_size + 1
+            ).validated_save()
