@@ -14,5 +14,10 @@ class FloorPlanViewSet(NautobotModelViewSet):
     serializer_class = serializers.FloorPlanSerializer
     filterset_class = filters.FloorPlanFilterSet
 
-    # Option for modifying the default HTTP methods:
-    # http_method_names = ["get", "post", "put", "patch", "delete", "head", "options", "trace"]
+
+class FloorPlanTileViewSet(NautobotModelViewSet):
+    """FloorPlanTile viewset."""
+
+    queryset = models.FloorPlanTile.objects.all()
+    serializer_class = serializers.FloorPlanTileSerializer
+    filterset_class = filters.FloorPlanTileFilterSet

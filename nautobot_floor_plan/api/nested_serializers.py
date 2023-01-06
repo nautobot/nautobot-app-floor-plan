@@ -16,3 +16,15 @@ class NestedFloorPlanSerializer(WritableNestedSerializer):
 
         model = models.FloorPlan
         fields = ["id", "url", "x_size", "y_size"]
+
+
+class NestedFloorPlanTileSerializer(WritableNestedSerializer):
+    """FloorPlanTile Nested Serializer."""
+
+    url = serializers.HyperlinkedIdentityField(view_name="plugins-api:nautobot_floor_plan-api:floorplantile-detail")
+
+    class Meta:
+        """Meta attributes."""
+
+        model = models.FloorPlanTile
+        fields = ["id", "url", "x", "y"]
