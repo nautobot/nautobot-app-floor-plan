@@ -1,0 +1,27 @@
+{% extends "dcim/location.html" %}
+{% load helpers %}
+
+{% block content %}
+    {% if object.floor_plan %}
+        <table class="table">
+            {% for row in object.floor_plan.get_tiles %}
+                <tr>
+                    {% for tile in row %}
+                    <td>
+                        {% if tile %}
+                            {{ tile|hyperlinked_object }}
+                        {% else %}
+                            Click here to add a tile.
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        {% comment %}
+        The UI should normally not even show the option to reach this tab, but someone could enter it manually.
+        {% endcomment %}
+        {{ object }} has no floor plan defined. Use the "Add Floor Plan" button above to create one if desired.
+    {% endif %}
+{% endblock content %}

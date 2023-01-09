@@ -26,5 +26,6 @@ urlpatterns = [
         name="floorplan_notes",
         kwargs={"model": models.FloorPlan},
     ),
+    path("locations/<uuid:pk>/floor_plan/", views.LocationFloorPlanTab.as_view(), name="location_floor_plan_tab"),
 ]
 urlpatterns += router.urls
