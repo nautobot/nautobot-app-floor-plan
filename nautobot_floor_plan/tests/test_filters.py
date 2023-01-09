@@ -1,6 +1,7 @@
 """Test FloorPlan Filter."""
 from django.test import TestCase
 
+from nautobot.dcim.models import Rack
 from nautobot.extras.models import Tag
 
 from nautobot_floor_plan import filters
@@ -82,7 +83,18 @@ class TestFloorPlanTileFilterSet(TestCase):
         for floor_plan in cls.floor_plans:
             for y in range(1, floor_plan.y_size + 1):
                 for x in range(1, floor_plan.x_size + 1):
-                    floor_plan_tile = models.FloorPlanTile(floor_plan=floor_plan, status=cls.active_status, x=x, y=y)
+                    if (x + y) % 2 == 0:
+                        rack = Rack.objects.create(
+                            name=f"Rack ({x}, {y}) for floor {floor_plan.location}",
+                            status=cls.active_status,
+                            site=data["site"],
+                            location=floor_plan.location,
+                        )
+                    else:
+                        rack = None
+                    floor_plan_tile = models.FloorPlanTile(
+                        floor_plan=floor_plan, status=cls.active_status, x=x, y=y, rack=rack
+                    )
                     floor_plan_tile.validated_save()
 
     def test_q_search_location_name(self):
@@ -111,7 +123,8 @@ class TestFloorPlanTileFilterSet(TestCase):
 
     def test_rack(self):
         """Test filtering by Rack."""
-        # TODO
+        params = {"rack": list(Rack.objects.all()[:3])}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 3)
 
     def test_tag(self):
         """Test filtering by Tag."""

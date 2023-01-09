@@ -109,13 +109,24 @@ class FloorPlanTile(PrimaryModel, StatusModel):
     ]
 
     def clean(self):
-        """Ensure that the x, y coordinates of this FloorPlanTile lie within the parent FloorPlan's bounds."""
+        """
+        Validate parameters above and beyond what the database can provide.
+
+        - Ensure that the x, y coordinates of this FloorPlanTile lie within the parent FloorPlan's bounds.
+        - Ensure that the Rack if any belongs to the correct Location
+        """
         # x <= 0, y <= 0 are covered by the base field definitions
         super().clean()
         if self.x > self.floor_plan.x_size:
             raise ValidationError({"x": f"Too large for {self.floor_plan}"})
         if self.y > self.floor_plan.y_size:
             raise ValidationError({"y": f"Too large for {self.floor_plan}"})
+
+        if self.rack is not None:
+            if self.rack.location != self.floor_plan.location:
+                raise ValidationError(
+                    {"rack": f"Must belong to Location {self.floor_plan.location}, not Location {self.rack.location}"}
+                )
 
     def get_absolute_url(self):
         """No detail view exists for a FloorPlanTile."""

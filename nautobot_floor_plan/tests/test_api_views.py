@@ -2,6 +2,7 @@
 
 from django.contrib.contenttypes.models import ContentType
 
+from nautobot.dcim.models import Rack
 from nautobot.extras.models import Tag
 from nautobot.utilities.testing import APIViewTestCases
 
@@ -51,16 +52,20 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
     def setUpTestData(cls):
         data = fixtures.create_prerequisites()
         floor_plans = fixtures.create_floor_plans(data["floors"])
+        cls.rack_2_2_2 = Rack(name="Rack 1", site=data["site"], status=data["status"], location=data["floors"][1])
+        cls.rack_2_2_2.validated_save()
         cls.model.objects.create(floor_plan=floor_plans[0], status=data["status"], x=1, y=1)
-        cls.model.objects.create(floor_plan=floor_plans[1], status=data["status"], x=2, y=2)
+        cls.model.objects.create(floor_plan=floor_plans[1], status=data["status"], x=2, y=2, rack=cls.rack_2_2_2)
         cls.model.objects.create(floor_plan=floor_plans[2], status=data["status"], x=3, y=3)
-        # TODO: add some racks as an optional field
+        cls.rack_3_1_1 = Rack(name="Rack 2", site=data["site"], status=data["status"], location=data["floors"][2])
+        cls.rack_3_1_1.validated_save()
         cls.create_data = [
             {
                 "floor_plan": floor_plans[2].pk,
                 "x": 1,
                 "y": 1,
                 "status": data["status"].slug,
+                "rack": cls.rack_3_1_1.pk,
             },
             {
                 "floor_plan": floor_plans[2].pk,

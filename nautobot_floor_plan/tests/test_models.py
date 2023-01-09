@@ -2,6 +2,7 @@
 
 from django.core.exceptions import ValidationError
 
+from nautobot.dcim.models import Rack
 from nautobot.utilities.testing import TestCase
 
 from nautobot_floor_plan import models
@@ -60,7 +61,12 @@ class TestFloorPlanTile(TestCase):
         """Create LocationType, Status, Location, and FloorPlan records."""
         data = fixtures.create_prerequisites()
         self.active_status = data["status"]
-        self.floor_plans = fixtures.create_floor_plans(data["floors"])
+        self.floors = data["floors"]
+        self.site = data["site"]
+        self.floor_plans = fixtures.create_floor_plans(self.floors)
+        self.rack = Rack.objects.create(
+            name="Rack 1", status=self.active_status, site=self.site, location=self.floors[-1]
+        )
 
     def test_create_floor_plan_tile_valid(self):
         """A FloorPlanTile can be created for each legal position in a FloorPlan."""
@@ -77,12 +83,29 @@ class TestFloorPlanTile(TestCase):
         tile_2_2_2 = models.FloorPlanTile(floor_plan=self.floor_plans[1], x=2, y=2, status=self.active_status)
         tile_2_2_2.validated_save()
         self.assertEqual(self.floor_plans[1].get_tiles(), [[tile_2_1_1, tile_2_2_1], [tile_2_1_2, tile_2_2_2]])
+        tile_3_2_2 = models.FloorPlanTile(
+            floor_plan=self.floor_plans[2], x=2, y=2, status=self.active_status, rack=self.rack
+        )
+        tile_3_2_2.validated_save()
+        self.assertEqual(
+            self.floor_plans[2].get_tiles(), [[None, None, None], [None, tile_3_2_2, None], [None, None, None]]
+        )
 
     def test_create_floor_plan_tile_invalid_duplicate_position(self):
         """Two FloorPlanTiles cannot occupy the same position in the same FloorPlan."""
         models.FloorPlanTile(floor_plan=self.floor_plans[0], x=1, y=1, status=self.active_status).validated_save()
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(floor_plan=self.floor_plans[0], x=1, y=1, status=self.active_status).validated_save()
+
+    def test_create_floor_plan_tile_invalid_duplicate_rack(self):
+        """Each Rack can only associate to at most one FloorPlanTile."""
+        models.FloorPlanTile(
+            floor_plan=self.floor_plans[-1], x=1, y=1, status=self.active_status, rack=self.rack
+        ).validated_save()
+        with self.assertRaises(ValidationError):
+            models.FloorPlanTile(
+                floor_plan=self.floor_plans[-1], x=2, y=2, status=self.active_status, rack=self.rack
+            ).validated_save()
 
     def test_create_floor_plan_tile_invalid_illegal_position(self):
         """A FloorPlanTile cannot be created outside the bounds of its FloorPlan."""
@@ -97,4 +120,18 @@ class TestFloorPlanTile(TestCase):
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[0], status=self.active_status, x=1, y=self.floor_plans[0].y_size + 1
+            ).validated_save()
+
+    def test_create_floor_plan_tile_invalid_rack_location_mismatch(self):
+        """The Rack, if any, attached to a FloorPlanTile must belong to the same location as the FloorPlan."""
+        # self.rack is attached to self.floors[-1], not self.floors[0]
+        with self.assertRaises(ValidationError):
+            models.FloorPlanTile(
+                floor_plan=self.floor_plans[0], status=self.active_status, x=1, y=1, rack=self.rack
+            ).validated_save()
+        # How about a rack with no Location at all?
+        non_located_rack = Rack.objects.create(name="Rack 2", status=self.active_status, site=self.site)
+        with self.assertRaises(ValidationError):
+            models.FloorPlanTile(
+                floor_plan=self.floor_plans[0], status=self.active_status, x=1, y=1, rack=non_located_rack
             ).validated_save()
