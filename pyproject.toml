@@ -90,9 +90,11 @@ good-names = """_,i,j,k,x,y"""
 [tool.pylint.messages_control]
 # Line length is enforced by Black, so pylint doesn't need to check it.
 # Pylint and Black disagree about how to format multi-line arrays; Black wins.
+# too-few-public-methods is just noise
 # too-many-ancestors happens all over the place in Django/Nautobot code, so it's pretty much just noise
 disable = """,
     line-too-long,
+    too-few-public-methods,
     too-many-ancestors
     """
 

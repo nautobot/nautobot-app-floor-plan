@@ -3,21 +3,7 @@
 
 {% block content %}
     {% if object.floor_plan %}
-        <table class="table">
-            {% for row in object.floor_plan.get_tiles %}
-                <tr>
-                    {% for tile in row %}
-                    <td>
-                        {% if tile %}
-                            {{ tile|hyperlinked_object }}
-                        {% else %}
-                            Click here to add a tile.
-                        {% endif %}
-                    </td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </table>
+        <object data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.floor_plan.pk %}"></object>
     {% else %}
         {% comment %}
         The UI should normally not even show the option to reach this tab, but someone could enter it manually.

@@ -12,7 +12,8 @@ from nautobot_floor_plan import models, views
 
 app_name = "floor_plan"
 router = NautobotUIViewSetRouter()
-router.register("models", views.FloorPlanUIViewSet)
+router.register("floor-plans", views.FloorPlanUIViewSet)
+router.register("floor-plan-tiles", views.FloorPlanTileUIViewSet)
 urlpatterns = [
     path(
         "models/<uuid:pk>/changelog/",

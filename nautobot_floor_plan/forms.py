@@ -1,7 +1,7 @@
 """Forms for nautobot_floor_plan."""
 from django import forms
 
-from nautobot.dcim.models import Location
+from nautobot.dcim.models import Location, Rack
 from nautobot.extras.forms import (
     CustomFieldModelCSVForm,
     NautobotBulkEditForm,
@@ -70,3 +70,26 @@ class FloorPlanFilterForm(NautobotFilterForm):
     q = forms.CharField(required=False, label="Search")
     location = DynamicModelMultipleChoiceField(queryset=Location.objects.all(), to_field_name="slug", required=False)
     tag = TagFilterField(model)
+
+
+class FloorPlanTileForm(NautobotModelForm):
+    """FloorPlanTile creation/edit form."""
+
+    floor_plan = DynamicModelChoiceField(queryset=models.FloorPlan.objects.all())
+    # TODO: query_params probably doesn't work as written here
+    rack = DynamicModelChoiceField(
+        queryset=Rack.objects.all(), required=False, query_params={"location": "$floor_plan.location"}
+    )
+
+    class Meta:
+        """Meta attributes."""
+
+        model = models.FloorPlanTile
+        fields = [
+            "floor_plan",
+            "x",
+            "y",
+            "status",
+            "rack",
+            "tags",
+        ]

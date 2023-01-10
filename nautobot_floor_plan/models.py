@@ -1,15 +1,15 @@
 """Models for Nautobot Floor Plan."""
 
-# Django imports
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 
-# Nautobot imports
 from nautobot.core.models.generics import PrimaryModel
 from nautobot.extras.models import StatusModel
 from nautobot.extras.utils import extras_features
+
+from nautobot_floor_plan.svg import FloorPlanSVG
 
 
 @extras_features(
@@ -70,6 +70,10 @@ class FloorPlan(PrimaryModel):
                     row.append(None)
             result.append(row)
         return result
+
+    def get_svg(self, *, user, base_url):
+        """Get SVG representation of this FloorPlan."""
+        return FloorPlanSVG(floor_plan=self, user=user, base_url=base_url).render()
 
 
 @extras_features(
