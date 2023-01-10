@@ -30,9 +30,7 @@ class FloorPlanSVG:
         self.base_url = base_url.rstrip("/")
         self.add_url = self.base_url + reverse("plugins:nautobot_floor_plan:floorplantile_add")
         self.return_url = (
-            reverse(
-                "plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": self.floor_plan.location.pk}
-            )
+            reverse("plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": self.floor_plan.location.pk})
             + "?tab=nautobot_floor_plan:1"
         )
 
@@ -129,7 +127,6 @@ class FloorPlanSVG:
             link_text = tile.rack.display
         else:
             link_text = tile.status.name
-
 
         link.add(
             drawing.text(
