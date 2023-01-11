@@ -3,7 +3,7 @@
 
 {% block content %}
     {% if object.floor_plan %}
-        <object data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.floor_plan.pk %}"></object>
+        <object type="image/svg+xml" data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.floor_plan.pk %}" role="img"></object>
     {% else %}
         {% comment %}
         The UI should normally not even show the option to reach this tab, but someone could enter it manually.
