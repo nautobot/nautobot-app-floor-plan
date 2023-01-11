@@ -1,0 +1,42 @@
+{% extends "generic/object_retrieve.html" %}
+{% load helpers %}
+
+{% block breadcrumbs %}
+    <li><a href="{% url 'dcim:location_list' %}">Locations</a></li>
+    <li>{{ object.floor_plan.location | hyperlinked_object }}</li>
+    <li>{{ object.floor_plan | hyperlinked_object }}</li>
+    <li><a href="{% url 'plugins:nautobot_floor_plan:floorplantile_list' %}?floor_plan={{ object.floor_plan.pk }}">Floor Plan Tiles</a></li>
+    <li>{{ object|hyperlinked_object }}</li>
+{% endblock breadcrumbs %}
+
+{% block content_left_page %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>Floor Plan Tile</strong>
+        </div>
+        <table class="table table-hover panel-body attr-table">
+            <tr>
+                <td>Location</td>
+                <td>
+                    {{ object.floor_plan.location | hyperlinked_object }}
+                    (<a href="{{ object.floor_plan.get_absolute_url }}">floor plan</a>)
+                </td>
+            <tr>
+                <td>Coordinates</td>
+                <td>({{ object.x }}, {{ object.y }})</td>
+            </tr>
+            <tr>
+                <td>Status</td>
+                <td>
+                    <span class="label" style="color: {{ object.status.color|fgcolor }}; background-color: #{{ object.status.color }}">
+                        {{ object.get_status_display }}
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td>Rack</td>
+                <td>{{ object.rack | hyperlinked_object }}</td>
+            </tr>
+        </table>
+    </div>
+{% endblock content_left_page %}

@@ -133,15 +133,12 @@ class FloorPlanTile(PrimaryModel, StatusModel):
                 )
 
     def get_absolute_url(self):
-        """No detail view exists for a FloorPlanTile."""
-        return self.floor_plan.get_absolute_url()
+        """Return detail view for FloorPlanTile."""
+        return reverse("plugins:nautobot_floor_plan:floorplantile", args=[self.pk])
 
     def __str__(self):
         """Stringify instance."""
-        representation = f'({self.x}, {self.y}) in {self.floor_plan} has Status "{self.status}"'
-        if self.rack is not None:
-            representation += f' and contains Rack "{self.rack}"'
-        return representation
+        return f"Tile ({self.x}, {self.y}) in {self.floor_plan}"
 
     def to_csv(self):
         """Convert instance to a tuple for CSV export."""

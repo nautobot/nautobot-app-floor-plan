@@ -82,8 +82,8 @@ class FloorPlanSVG:
         )
         add_url = f"{self.add_url}?{query_params}"
 
-        link = drawing.add(drawing.a(href=add_url, target="_top"))
-        link.add(
+        add_link = drawing.add(drawing.a(href=add_url, target="_top"))
+        add_link.add(
             drawing.rect(
                 (origin[0] + 2 * self.TILE_INSET, origin[1] + 2 * self.TILE_INSET),
                 (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
@@ -91,7 +91,7 @@ class FloorPlanSVG:
                 rx=self.CORNER_RADIUS,
             )
         )
-        link.add(
+        add_link.add(
             drawing.text(
                 "+",
                 insert=(
@@ -99,6 +99,16 @@ class FloorPlanSVG:
                     origin[1] + 2 * self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
                 ),
                 class_="button-text",
+            )
+        )
+
+        add_link.add(
+            drawing.text(
+                f"({coordinates[0]}, {coordinates[1]})",
+                insert=(
+                    origin[0] + self.GRID_SIZE / 2,
+                    origin[1] + self.GRID_SIZE - self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
+                ),
             )
         )
 
@@ -174,6 +184,20 @@ class FloorPlanSVG:
                 insert=(
                     origin[0] + self.GRID_SIZE / 2,
                     origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
+                ),
+                fill="white",
+                style="text-shadow: 1px 1px 3px black;",
+            )
+        )
+
+        detail_url = self.base_url + reverse("plugins:nautobot_floor_plan:floorplantile", kwargs={"pk": tile.pk})
+        detail_link = drawing.add(drawing.a(href=detail_url + "?tab=main", target="_top"))
+        detail_link.add(
+            drawing.text(
+                f"({tile.x}, {tile.y})",
+                insert=(
+                    origin[0] + self.GRID_SIZE / 2,
+                    origin[1] + self.GRID_SIZE - self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
                 ),
                 fill="white",
                 style="text-shadow: 1px 1px 3px black;",

@@ -1,0 +1,34 @@
+{% extends "generic/object_retrieve.html" %}
+{% load helpers %}
+
+{% block breadcrumbs %}
+    <li><a href="{% url 'dcim:location_list' %}">Locations</a></li>
+    <li>{{ object.location | hyperlinked_object }}</li>
+    <li>{{ object | hyperlinked_object }}</li>
+{% endblock breadcrumbs %}
+
+{% block content_left_page %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>Floor Plan</strong>
+        </div>
+        <table class="table table-hover panel-body attr-table">
+            <tr>
+                <td>Location</td>
+                <td>{{ object.location | hyperlinked_object }}</td>
+            </tr>
+            <tr>
+                <td>X Size</td>
+                <td>{{ object.x_size }}</td>
+            </tr>
+            <tr>
+                <td>Y Size</td>
+                <td>{{ object.y_size }}</td>
+            </tr>
+        </table>
+    </div>
+{% endblock content_left_page %}
+
+{% block content_full_width_page %}
+    <object type="image/svg+xml" data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" role="img"></object>
+{% endblock content_full_width_page %}
