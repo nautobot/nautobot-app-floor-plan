@@ -38,15 +38,5 @@
 {% endblock content_left_page %}
 
 {% block content_full_width_page %}
-    {% comment %}
-    Scale the SVG by default to match the page width, preserving its aspect-ratio.
-    See https://css-tricks.com/scale-svg/ for more details.
-    {% endcomment %}
-    <div class="scaling-svg-container"
-         style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * {{ object.tile_depth }} / {{ object.tile_width }});">
-        <object type="image/svg+xml" data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}"
-                class="floor-plan" role="img"
-                style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
-        </object>
-    </div>
+    {% include 'nautobot_floor_plan/inc/floorplan_svg.html' with floor_plan=object %}
 {% endblock content_full_width_page %}
