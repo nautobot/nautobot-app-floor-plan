@@ -122,7 +122,6 @@ class FloorPlan(PrimaryModel):
             row = []
             y += 1
             x = 1
-        result.append(row)
 
         logger.debug("Grid assembled!")
         return result
