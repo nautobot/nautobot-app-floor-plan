@@ -93,6 +93,7 @@ good-names = """_,i,j,k,x,y"""
 # too-few-public-methods is just noise
 # too-many-ancestors happens all over the place in Django/Nautobot code, so it's pretty much just noise
 disable = """,
+    duplicate-code,
     line-too-long,
     too-few-public-methods,
     too-many-ancestors

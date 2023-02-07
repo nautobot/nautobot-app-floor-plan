@@ -18,17 +18,35 @@
                 <td>{{ object.location | hyperlinked_object }}</td>
             </tr>
             <tr>
-                <td>X Size</td>
+                <td>X Size (Tiles)</td>
                 <td>{{ object.x_size }}</td>
             </tr>
             <tr>
-                <td>Y Size</td>
+                <td>Y Size (Tiles)</td>
                 <td>{{ object.y_size }}</td>
+            </tr>
+            <tr>
+                <td>Tile Width (Relative Units)</td>
+                <td>{{ object.tile_width }}</td>
+            </tr>
+            <tr>
+                <td>Tile Depth (Relative Units)</td>
+                <td>{{ object.tile_depth }}</td>
             </tr>
         </table>
     </div>
 {% endblock content_left_page %}
 
 {% block content_full_width_page %}
-    <object type="image/svg+xml" data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" role="img"></object>
+    {% comment %}
+    Scale the SVG by default to match the page width, preserving its aspect-ratio.
+    See https://css-tricks.com/scale-svg/ for more details.
+    {% endcomment %}
+    <div class="scaling-svg-container"
+         style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * {{ object.tile_depth }} / {{ object.tile_width }});">
+        <object type="image/svg+xml" data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}"
+                class="floor-plan" role="img"
+                style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
+        </object>
+    </div>
 {% endblock content_full_width_page %}

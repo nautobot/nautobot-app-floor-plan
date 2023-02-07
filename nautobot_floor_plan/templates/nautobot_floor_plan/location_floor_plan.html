@@ -3,7 +3,17 @@
 
 {% block content %}
     {% if object.floor_plan %}
-        <object type="image/svg+xml" data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.floor_plan.pk %}" role="img"></object>
+        {% comment %}
+        Scale the SVG by default to match the page width, preserving its aspect-ratio.
+        See https://css-tricks.com/scale-svg/ for more details.
+        {% endcomment %}
+        <div class="scaling-svg-container"
+             style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * {{ object.floor_plan.tile_depth }} / {{ object.floor_plan.tile_width }});">
+            <object type="image/svg+xml" data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.floor_plan.pk %}"
+                    class="floor-plan" role="img"
+                    style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
+            </object>
+        </div>
     {% else %}
         {% comment %}
         The UI should normally not even show the option to reach this tab, but someone could enter it manually.

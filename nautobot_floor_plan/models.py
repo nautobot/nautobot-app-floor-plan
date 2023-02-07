@@ -1,5 +1,7 @@
 """Models for Nautobot Floor Plan."""
 
+import logging
+
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -10,6 +12,9 @@ from nautobot.extras.models import StatusModel
 from nautobot.extras.utils import extras_features
 
 from nautobot_floor_plan.svg import FloorPlanSVG
+
+
+logger = logging.getLogger(__name__)
 
 
 @extras_features(
@@ -31,13 +36,31 @@ class FloorPlan(PrimaryModel):
     location = models.OneToOneField(to="dcim.Location", on_delete=models.CASCADE, related_name="floor_plan")
 
     # Since a FloorPlan maps one-to-one to a Location, it doesn't need a separate name/slug/description of its own
-    x_size = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
-    y_size = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+    x_size = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)],
+        help_text='Absolute width of the floor plan, in "tiles"',
+    )
+    y_size = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)],
+        help_text='Absolute depth of the floor plan, in "tiles"',
+    )
+    tile_width = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)],
+        default=100,
+        help_text='Relative width of each "tile" in the floor plan (cm, inches, etc.)',
+    )
+    tile_depth = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)],
+        default=100,
+        help_text='Relative depth of each "tile" in the floor plan (cm, inches, etc.)',
+    )
 
     csv_headers = [
         "location",
         "x_size",
         "y_size",
+        "tile_width",
+        "tile_depth",
     ]
 
     def get_absolute_url(self):
@@ -54,11 +77,15 @@ class FloorPlan(PrimaryModel):
             self.location.name,
             self.x_size,
             self.y_size,
+            self.tile_width,
+            self.tile_depth,
         )
 
     def get_tiles(self):
         """Return a two-dimensional array (`[y][x]`) of FloorPlanTiles (which may contain null entries)."""
-        tiles_queryset = self.tiles.order_by("y", "x")
+        logger.debug("Getting tiles...")
+        tiles_queryset = self.tiles.order_by("y", "x").select_related("rack", "floor_plan")
+        logger.debug("Constructing grid...")
         # TODO: the below is fairly inefficient, we should be able to iterate over tiles_queryset directly in some way.
         result = []
         for y in range(1, self.y_size + 1):
@@ -69,6 +96,7 @@ class FloorPlan(PrimaryModel):
                 except ObjectDoesNotExist:
                     row.append(None)
             result.append(row)
+        logger.debug("Grid assembled!")
         return result
 
     def get_svg(self, *, user, base_url):

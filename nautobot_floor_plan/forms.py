@@ -32,6 +32,8 @@ class FloorPlanForm(NautobotModelForm):
             "location",
             "x_size",
             "y_size",
+            "tile_width",
+            "tile_depth",
             "tags",
         ]
 
@@ -54,11 +56,13 @@ class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
     pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)
     x_size = forms.IntegerField(min_value=1)
     y_size = forms.IntegerField(min_value=1)
+    tile_width = forms.IntegerField(min_value=1)
+    tile_depth = forms.IntegerField(min_value=1)
 
     class Meta:
         """Meta attributes."""
 
-        fields = ["pk", "x_size", "y_size", "tags"]
+        fields = ["pk", "x_size", "y_size", "tile_width", "tile_depth", "tags"]
 
 
 class FloorPlanFilterForm(NautobotFilterForm):

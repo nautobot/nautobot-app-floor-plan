@@ -1,22 +1,24 @@
 """Render a FloorPlan as an SVG image."""
+import logging
 import os
 import svgwrite
 
 from django.urls import reverse
+from django.utils.functional import cached_property
 from django.utils.http import urlencode
+
+
+logger = logging.getLogger(__name__)
 
 
 class FloorPlanSVG:
     """Use this class to render a FloorPlan as an SVG image."""
 
     BORDER_WIDTH = 10
-    GRID_SIZE = 150
     CORNER_RADIUS = 4  # matching Nautobot/Bootstrap 3
     TILE_INSET = 2
-    TILE_DIMENSIONS = (GRID_SIZE - 2 * TILE_INSET, GRID_SIZE - 2 * TILE_INSET)
     TEXT_LINE_HEIGHT = 16
     RACK_INSETS = (2 * TILE_INSET, 2 * TILE_INSET + TEXT_LINE_HEIGHT)
-    RACK_DIMENSIONS = (GRID_SIZE - 2 * RACK_INSETS[0], GRID_SIZE - 2 * RACK_INSETS[1])
 
     def __init__(self, *, floor_plan, user, base_url):
         """
@@ -36,10 +38,41 @@ class FloorPlanSVG:
             + "?tab=nautobot_floor_plan:1"
         )
 
+    @cached_property
+    def GRID_SIZE_X(self):  # pylint: disable=invalid-name
+        """Grid spacing in the X (width) dimension."""
+        return max(150, (150 * self.floor_plan.tile_width) // self.floor_plan.tile_depth)
+
+    @cached_property
+    def GRID_SIZE_Y(self):  # pylint: disable=invalid-name
+        """Grid spacing in the Y (depth) dimension."""
+        return max(150, (150 * self.floor_plan.tile_depth) // self.floor_plan.tile_width)
+
+    @cached_property
+    def TILE_WIDTH(self):  # pylint: disable=invalid-name
+        """Width of a rendered tile within the SVG."""
+        return self.GRID_SIZE_X - 2 * self.TILE_INSET
+
+    @cached_property
+    def TILE_DEPTH(self):  # pylint: disable=invalid-name
+        """Depth of a rendered tile within the SVG."""
+        return self.GRID_SIZE_Y - 2 * self.TILE_INSET
+
+    @cached_property
+    def RACK_WIDTH(self):  # pylint: disable=invalid-name
+        """Width of a rendered rack within the SVG."""
+        return self.GRID_SIZE_X - 2 * self.RACK_INSETS[0]
+
+    @cached_property
+    def RACK_DEPTH(self):  # pylint: disable=invalid-name
+        """Depth of a rendered rack within the SVG."""
+        return self.GRID_SIZE_Y - 2 * self.RACK_INSETS[1]
+
     @staticmethod
-    def _setup_drawing(width, height):
+    def _setup_drawing(width, depth):
         """Initialize an appropriate svgwrite.Drawing instance."""
-        drawing = svgwrite.Drawing(size=(width, height))
+        drawing = svgwrite.Drawing(size=(width, depth), debug=False)
+        drawing.viewbox(0, 0, width=width, height=depth)
 
         # Add our custom stylesheet
         with open(
@@ -57,7 +90,7 @@ class FloorPlanSVG:
         drawing.add(
             drawing.rect(
                 (origin[0] + self.TILE_INSET, origin[1] + self.TILE_INSET),
-                self.TILE_DIMENSIONS,
+                (self.TILE_WIDTH, self.TILE_DEPTH),
                 rx=self.CORNER_RADIUS,
                 class_="tile",
             )
@@ -106,8 +139,8 @@ class FloorPlanSVG:
             drawing.text(
                 f"({coordinates[0]}, {coordinates[1]})",
                 insert=(
-                    origin[0] + self.GRID_SIZE / 2,
-                    origin[1] + self.GRID_SIZE - self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
+                    origin[0] + self.GRID_SIZE_X / 2,
+                    origin[1] + self.GRID_SIZE_Y - self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
                 ),
             )
         )
@@ -119,7 +152,7 @@ class FloorPlanSVG:
         drawing.add(
             drawing.rect(
                 (origin[0] + self.TILE_INSET, origin[1] + self.TILE_INSET),
-                self.TILE_DIMENSIONS,
+                (self.TILE_WIDTH, self.TILE_DEPTH),
                 rx=self.CORNER_RADIUS,
                 style=f"fill: #{color}",
                 class_="tile-status",
@@ -158,7 +191,7 @@ class FloorPlanSVG:
         link.add(
             drawing.rect(
                 (
-                    origin[0] + self.GRID_SIZE - 2 * self.TILE_INSET - self.TEXT_LINE_HEIGHT,
+                    origin[0] + self.GRID_SIZE_X - 2 * self.TILE_INSET - self.TEXT_LINE_HEIGHT,
                     origin[1] + 2 * self.TILE_INSET,
                 ),
                 (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
@@ -170,7 +203,7 @@ class FloorPlanSVG:
             drawing.text(
                 "X",
                 insert=(
-                    origin[0] + self.GRID_SIZE - 2 * self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
+                    origin[0] + self.GRID_SIZE_X - 2 * self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
                     origin[1] + 2 * self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
                 ),
                 class_="button-text",
@@ -182,7 +215,7 @@ class FloorPlanSVG:
             drawing.text(
                 tile.status.name,
                 insert=(
-                    origin[0] + self.GRID_SIZE / 2,
+                    origin[0] + self.GRID_SIZE_X / 2,
                     origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
                 ),
                 fill="white",
@@ -196,8 +229,8 @@ class FloorPlanSVG:
             drawing.text(
                 f"({tile.x}, {tile.y})",
                 insert=(
-                    origin[0] + self.GRID_SIZE / 2,
-                    origin[1] + self.GRID_SIZE - self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
+                    origin[0] + self.GRID_SIZE_X / 2,
+                    origin[1] + self.GRID_SIZE_Y - self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
                 ),
                 fill="white",
                 style="text-shadow: 1px 1px 3px black;",
@@ -215,7 +248,7 @@ class FloorPlanSVG:
         link.add(
             drawing.rect(
                 (origin[0] + self.RACK_INSETS[0], origin[1] + self.RACK_INSETS[1]),
-                self.RACK_DIMENSIONS,
+                (self.RACK_WIDTH, self.RACK_DEPTH),
                 rx=self.CORNER_RADIUS,
                 class_="rack",
                 style=f"fill: #{tile.rack.status.color}",
@@ -225,8 +258,8 @@ class FloorPlanSVG:
             drawing.text(
                 tile.rack.name,
                 insert=(
-                    origin[0] + self.GRID_SIZE / 2,
-                    origin[1] + self.GRID_SIZE / 2 - self.TEXT_LINE_HEIGHT / 2,
+                    origin[0] + self.GRID_SIZE_X / 2,
+                    origin[1] + self.GRID_SIZE_Y / 2 - self.TEXT_LINE_HEIGHT / 2,
                 ),
                 fill="white",
                 style="text-shadow: 1px 1px 3px black;",
@@ -237,8 +270,8 @@ class FloorPlanSVG:
             drawing.text(
                 f"{ru_used} / {ru_total} RU",
                 insert=(
-                    origin[0] + self.GRID_SIZE / 2,
-                    origin[1] + self.GRID_SIZE / 2 + self.TEXT_LINE_HEIGHT / 2,
+                    origin[0] + self.GRID_SIZE_X / 2,
+                    origin[1] + self.GRID_SIZE_Y / 2 + self.TEXT_LINE_HEIGHT / 2,
                 ),
                 fill="white",
                 style="text-shadow: 1px 1px 3px black;",
@@ -247,30 +280,35 @@ class FloorPlanSVG:
 
     def render(self):
         """Generate an SVG document representing a FloorPlan."""
+        logger.debug("Setting up drawing...")
         drawing = self._setup_drawing(
-            width=self.floor_plan.x_size * self.GRID_SIZE + self.BORDER_WIDTH * 2,
-            height=self.floor_plan.y_size * self.GRID_SIZE + self.BORDER_WIDTH * 2,
+            width=self.floor_plan.x_size * self.GRID_SIZE_X + self.BORDER_WIDTH * 2,
+            depth=self.floor_plan.y_size * self.GRID_SIZE_Y + self.BORDER_WIDTH * 2,
         )
 
         # Render tiles
+        logger.debug("Loading tiles...")
         tiles = self.floor_plan.get_tiles()
+        logger.debug("Rendering tiles...")
         for y in range(0, self.floor_plan.y_size):
-            y_offset = y * self.GRID_SIZE + self.BORDER_WIDTH
+            y_offset = y * self.GRID_SIZE_Y + self.BORDER_WIDTH
             for x in range(0, self.floor_plan.x_size):
-                x_offset = x * self.GRID_SIZE + self.BORDER_WIDTH
+                x_offset = x * self.GRID_SIZE_X + self.BORDER_WIDTH
                 tile = tiles[y][x]
                 self._draw_tile(drawing, tile, (x + 1, y + 1), (x_offset, y_offset))
 
         # Wrap drawing with a border
+        logger.debug("Adding border...")
         border_offset = self.BORDER_WIDTH / 2
         frame = drawing.rect(
             insert=(border_offset, border_offset),
             size=(
-                self.floor_plan.x_size * self.GRID_SIZE + self.BORDER_WIDTH,
-                self.floor_plan.y_size * self.GRID_SIZE + self.BORDER_WIDTH,
+                self.floor_plan.x_size * self.GRID_SIZE_X + self.BORDER_WIDTH,
+                self.floor_plan.y_size * self.GRID_SIZE_Y + self.BORDER_WIDTH,
             ),
             class_="frame",
         )
         drawing.add(frame)
 
+        logger.debug("Drawing rendered!")
         return drawing

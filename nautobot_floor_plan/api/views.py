@@ -26,7 +26,7 @@ class FloorPlanViewSet(NautobotModelViewSet):
         """SVG representation of a FloorPlan."""
         floor_plan = get_object_or_404(self.queryset, pk=pk)
         drawing = floor_plan.get_svg(user=request.user, base_url=request.build_absolute_uri("/"))
-        return HttpResponse(drawing.tostring(), content_type="image/svg+xml")
+        return HttpResponse(drawing.tostring(), content_type="image/svg+xml; charset=utf-8")
 
 
 class FloorPlanTileViewSet(NautobotModelViewSet):
