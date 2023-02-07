@@ -86,16 +86,44 @@ class FloorPlan(PrimaryModel):
         logger.debug("Getting tiles...")
         tiles_queryset = self.tiles.order_by("y", "x").select_related("rack", "floor_plan")
         logger.debug("Constructing grid...")
-        # TODO: the below is fairly inefficient, we should be able to iterate over tiles_queryset directly in some way.
         result = []
-        for y in range(1, self.y_size + 1):
-            row = []
-            for x in range(1, self.x_size + 1):
-                try:
-                    row.append(tiles_queryset.get(x=x, y=y))
-                except ObjectDoesNotExist:
+        row = []
+        x = 1
+        y = 1
+        for tile in tiles_queryset.all():
+            # Fill in null entries up to the current tile, if needed
+            while y < tile.y:
+                while x < self.x_size + 1:
                     row.append(None)
+                    x += 1
+                result.append(row)
+                row = []
+                y += 1
+                x = 1
+            while x < tile.x:
+                row.append(None)
+                x += 1
+
+            # Fill in the current tile
+            row.append(tile)
+            x += 1
+            if x > self.x_size:
+                result.append(row)
+                row = []
+                y += 1
+                x = 1
+
+        # Fill in null entries after the last tile, if needed
+        while y < self.y_size + 1:
+            while x < self.x_size + 1:
+                row.append(None)
+                x += 1
             result.append(row)
+            row = []
+            y += 1
+            x = 1
+        result.append(row)
+
         logger.debug("Grid assembled!")
         return result
 
