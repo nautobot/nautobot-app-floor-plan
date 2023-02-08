@@ -54,10 +54,10 @@ class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
     """FloorPlan bulk edit form."""
 
     pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)
-    x_size = forms.IntegerField(min_value=1)
-    y_size = forms.IntegerField(min_value=1)
-    tile_width = forms.IntegerField(min_value=1)
-    tile_depth = forms.IntegerField(min_value=1)
+    x_size = forms.IntegerField(min_value=1, required=False)
+    y_size = forms.IntegerField(min_value=1, required=False)
+    tile_width = forms.IntegerField(min_value=1, required=False)
+    tile_depth = forms.IntegerField(min_value=1, required=False)
 
     class Meta:
         """Meta attributes."""

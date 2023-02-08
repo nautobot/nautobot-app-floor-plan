@@ -28,7 +28,7 @@ class FloorPlanFilterSet(NautobotFilterSet):
         """Meta attributes for filter."""
 
         model = models.FloorPlan
-        fields = ["x_size", "y_size"]
+        fields = ["x_size", "y_size", "tile_width", "tile_depth"]
 
 
 class FloorPlanTileFilterSet(NautobotFilterSet):

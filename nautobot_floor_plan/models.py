@@ -55,6 +55,11 @@ class FloorPlan(PrimaryModel):
         help_text='Relative depth of each "tile" in the floor plan (cm, inches, etc.)',
     )
 
+    class Meta:
+        """Metaclass attributes."""
+
+        ordering = ["location___name"]
+
     csv_headers = [
         "location",
         "x_size",

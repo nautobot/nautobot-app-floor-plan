@@ -18,7 +18,7 @@ class FloorPlanConfig(PluginConfig):
     verbose_name = "Floor Plans"
     version = __version__
     author = "Network to Code, LLC"
-    description = "Nautobot App for representing rack position on a floor plan."
+    description = "Nautobot App for representing rack positions on per-location floor plan grids."
     base_url = "floor-plan"
     required_settings = []
     min_version = "1.4.0"
