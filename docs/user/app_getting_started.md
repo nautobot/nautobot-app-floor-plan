@@ -8,10 +8,32 @@ To install the App, please follow the instructions detailed in the [Installation
 
 ## First steps with the App
 
-!!! warning "Developer Note - Remove Me!"
-    What (with screenshots preferably) does it look like to perform the simplest workflow within the App once installed?
+As a first step you will want to define which Status(es) can be applied to individual tiles in a floor plan. This can be done by navigating to "Organization > Statuses" in the Nautobot UI, and creating or updating the desired Status records to include `nautobot_floor_plan | floor plan tile` as one of the Status's "Content Types".
+
+![Status definition](../images/status-definition.png)
 
 ## What are the next steps?
 
-!!! warning "Developer Note - Remove Me!"
-    After taking the first steps, what else could the users look at doing.
+For any [Location](https://docs.nautobot.com/projects/core/en/stable/core-functionality/sites-and-racks/#locations) defined within your Nautobot instance, you can navigate to the "detail" view for that Location and a new "Add Floor Plan" button will be present.
+
+![Add Floor Plan button](../images/add-floor-plan-button.png)
+
+Clicking this button will bring you to a standard Nautobot create/edit form, in this case for defining parameters of the Floor Plan for this Location.
+
+![Add Floor Plan form](../images/add-floor-plan-form.png)
+
+The "X size" and "Y size" parameters define the number of Tiles in the Floor Plan, and the "Tile width" and "Tile depth" parameters define the relative proportions of each Tile when rendered in the Nautobot UI. You can leave the tile parameters as defaults for a square grid, or set them as desired for a off-square rectangular grid.
+
+After clicking "Create", you will be presented with a new floor plan render:
+
+![Empty floor plan](../images/floor-plan-empty.png)
+
+(This view will be accessible again in the future by navigating to the Location's "detail" view again and clicking the "Floor Plan" tab.)
+
+You can click the "+" icon in the corner of any rectangle in the grid to define information about this Tile in the Floor Plan. (If you've defined a large floor plan, or have a small display, you may find it useful to use your mouse wheel to zoom in first. You can also click and drag when zoomed in to pan around the grid.) This will bring you to a simple create/edit form for describing the Tile. You can assign a Status to each tile, and optionally assign a Rack as well:
+
+![Add Tile form](../images/add-tile-form.png)
+
+By repeating this process as many times as desired, you can populate the Floor Plan in detail to indicate the Status of each Tile as well as the position, Status, and space usage of your Racks:
+
+![Populated floor plan](../images/floor-plan-populated.png)

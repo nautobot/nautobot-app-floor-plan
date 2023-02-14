@@ -1,15 +1,5 @@
 # Nautobot Floor Plan
 
-<!--
-Developer Note - Remove Me!
-
-The README will have certain links/images broken until the PR is merged into `develop`. Update the GitHub links with whichever branch you're using (main etc.) if different.
-
-The logo of the project is a placeholder (docs/images/icon-nautobot-floor-plan.png) - please replace it with your app icon, making sure it's at least 200x200px and has a transparent background!
-
-To avoid extra work and temporary links, make sure that publishing docs (or merging a PR) is done at the same time as setting up the docs site on RTD, then test everything.
--->
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/nautobot/nautobot-plugin-floor-plan/develop/docs/images/icon-nautobot-floor-plan.png" class="logo" height="200px">
   <br>
@@ -27,21 +17,15 @@ This App aids in data center management by providing the ability to create a gri
 
 ### Screenshots
 
-> Developer Note: Add any representative screenshots of the App in action. These images should also be added to the `docs/user/app_use_cases.md` section.
+![A sample floor plan](https://raw.githubusercontent.com/nautobot/nautobot-plugin-floor-plan/develop/docs/images/floor-plan-populated.png)
 
-> Developer Note: Place the files in the `docs/images/` folder and link them using only full URLs from GitHub, for example: `![Overview](https://raw.githubusercontent.com/nautobot/nautobot-plugin-floor-plan/develop/docs/images/plugin-overview.png)`. This absolute static linking is required to ensure the README renders properly in GitHub, the docs site, and any other external sites like PyPI.
+![Button to add a new floor plan](https://raw.githubusercontent.com/nautobot/nautobot-plugin-floor-plan/develop/docs/images/add-floor-plan-button.png)
 
-More screenshots can be found in the [Using the App](https://docs.nautobot.com/projects/nautobot-floor-plan/en/latest/user/app_use_cases/) page in the documentation. Here's a quick overview of some of the plugin's added functionality:
+![Form to define a new floor plan](https://raw.githubusercontent.com/nautobot/nautobot-plugin-floor-plan/develop/docs/images/add-floor-plan-form.png)
 
-![](https://raw.githubusercontent.com/nautobot/nautobot-plugin-floor-plan/develop/docs/images/placeholder.png)
+![A new blank floor plan](https://raw.githubusercontent.com/nautobot/nautobot-plugin-floor-plan/develop/docs/images/floor-plan-empty.png)
 
-## Try it out!
-
-> Developer Note: Only keep this section if appropriate. Update link to correct sandbox.
-
-This App is installed in the Nautobot Community Sandbox found over at [demo.nautobot.com](https://demo.nautobot.com/)!
-
-> For a full list of all the available always-on sandbox environments, head over to the main page on [networktocode.com](https://www.networktocode.com/nautobot/sandbox-environments/).
+More screenshots can be found in the [Using the App](https://docs.nautobot.com/projects/nautobot-floor-plan/en/latest/user/app_use_cases/) page in the documentation.
 
 ## Documentation
 

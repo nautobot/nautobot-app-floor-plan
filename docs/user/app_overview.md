@@ -7,21 +7,25 @@ This document provides an overview of the App including critical information and
 
 ## Description
 
+This App is designed to extend Nautobot's built-in Location data model to allow you to define a Floor Plan for each relevant Location, consisting of a grid of Tiles, each of which has coordinates, an optional Status, and an optional association to a Rack belonging to that Location in order to show the Rack's position within the Floor Plan. The Floor Plan will be displayed in the Nautobot UI as a rendered SVG with built in pan/zoom capabilities using your mouse.
 
 ## Audience (User Personas) - Who should use this App?
 
-!!! warning "Developer Note - Remove Me!"
-    Who is this meant for/ who is the common user of this app?
+The primary user of this App would be anyone involved in the ongoing allocation and usage of data center space or similar, who needs to track the availability of space within a given Location and/or identify the position of Racks within that Location.
 
 ## Authors and Maintainers
 
+This App is primarily developed and maintained by Network to Code, LLC.
+
 ## Nautobot Features Used
 
-!!! warning "Developer Note - Remove Me!"
-    What is shown today in the Installed Plugins page in Nautobot. What parts of Nautobot does it interact with, what does it add etc. ?
+This App:
+
+- Adds a "Location Floor Plans" menu item to Nautobot's "Organization" menu.
+- Adds two new database models, "Floor Plan" and "Floor Plan Tile".
+- Adds UI and REST API endpoints for performing standard create/retrieve/update/delete (CRUD) operations on these models.
+- Extends the detail view of Nautobot Locations to include an "Add/Remove Floor Plan" button and (when a Floor Plan is defined) a "Floor Plan" tab to display and interact with the rendered floor plan.
 
 ### Extras
 
-!!! warning "Developer Note - Remove Me!"
-    Custom Fields - things like which CFs are created by this app?
-    Jobs - are jobs, if so, which ones, installed by this app?
+This App does not presently auto-define any Nautobot extras/extensibility features. To use this App fully, you will need to create or update one or more Status records that permit usage with the Floor Plan Tile model.
