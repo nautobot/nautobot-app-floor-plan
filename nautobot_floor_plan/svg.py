@@ -80,7 +80,6 @@ class FloorPlanSVG:
 
     def _draw_grid(self, drawing):
         """Render the grid underlying all tiles."""
-
         # Vertical lines
         for x in range(0, self.floor_plan.x_size + 1):
             drawing.add(
