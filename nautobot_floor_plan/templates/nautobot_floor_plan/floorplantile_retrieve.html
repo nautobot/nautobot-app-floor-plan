@@ -41,6 +41,10 @@
                 <td>Rack</td>
                 <td>{{ object.rack | hyperlinked_object }}</td>
             </tr>
+            <tr>
+                <td>Rack Orientation</td>
+                <td>{{ object.get_rack_orientation_display }}</td>
+            </tr>
         </table>
     </div>
 {% endblock content_left_page %}

@@ -31,6 +31,10 @@ text {
 .label-text {
     fill: white;
 }
+.label-text-primary {
+    fill: white;
+    font-weight: bold;
+}
 
 .add-tile-button {
     fill: #5cb85c;

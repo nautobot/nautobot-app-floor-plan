@@ -97,5 +97,6 @@ class FloorPlanTileForm(NautobotModelForm):
             "y_size",
             "status",
             "rack",
+            "rack_orientation",
             "tags",
         ]

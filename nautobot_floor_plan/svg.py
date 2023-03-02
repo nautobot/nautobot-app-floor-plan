@@ -9,6 +9,8 @@ from django.utils.http import urlencode
 
 from nautobot.utilities.templatetags.helpers import fgcolor
 
+from nautobot_floor_plan.choices import RackOrientationChoices
+
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,7 @@ class FloorPlanSVG:
     TEXT_LINE_HEIGHT = 16
     GRID_OFFSET = 30
     RACK_INSETS = (3 * TILE_INSET, 3 * TILE_INSET + TEXT_LINE_HEIGHT)
+    RACK_FRONT_DEPTH = 15
 
     def __init__(self, *, floor_plan, user, base_url):
         """
@@ -267,7 +270,9 @@ class FloorPlanSVG:
         rack_url = reverse("dcim:rack", kwargs={"pk": tile.rack.pk})
         rack_url = f"{self.base_url}{rack_url}"
 
+        # Add link to the detail view of the rack
         link = drawing.add(drawing.a(href=rack_url, target="_top"))
+        # Draw rectangle within the tile, representing the rack
         link.add(
             drawing.rect(
                 (origin[0] + self.RACK_INSETS[0], origin[1] + self.RACK_INSETS[1]),
@@ -280,24 +285,98 @@ class FloorPlanSVG:
                 style=f"fill: #{tile.rack.status.color}; stroke: {fgcolor(tile.status.color)}",
             )
         )
+        # Indicate the front of the rack, if defined
+        if tile.rack_orientation == RackOrientationChoices.UP:
+            link.add(
+                drawing.rect(
+                    (origin[0] + self.RACK_INSETS[0], origin[1] + self.RACK_INSETS[1]),
+                    (
+                        tile.x_size * self.GRID_SIZE_X - 2 * self.RACK_INSETS[0],
+                        self.RACK_FRONT_DEPTH,
+                    ),
+                    rx=self.CORNER_RADIUS,
+                    class_="rack",
+                    style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
+                )
+            )
+        elif tile.rack_orientation == RackOrientationChoices.DOWN:
+            link.add(
+                drawing.rect(
+                    (
+                        origin[0] + self.RACK_INSETS[0],
+                        origin[1] + tile.y_size * self.GRID_SIZE_Y - 3 * self.TILE_INSET - self.RACK_FRONT_DEPTH,
+                    ),
+                    (
+                        tile.x_size * self.GRID_SIZE_X - 2 * self.RACK_INSETS[0],
+                        self.RACK_FRONT_DEPTH,
+                    ),
+                    rx=self.CORNER_RADIUS,
+                    class_="rack",
+                    style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
+                )
+            )
+        elif tile.rack_orientation == RackOrientationChoices.LEFT:
+            link.add(
+                drawing.rect(
+                    (origin[0] + self.RACK_INSETS[0], origin[1] + self.RACK_INSETS[1]),
+                    (
+                        self.RACK_FRONT_DEPTH,
+                        tile.y_size * self.GRID_SIZE_Y - self.RACK_INSETS[1] - 3 * self.TILE_INSET,
+                    ),
+                    rx=self.CORNER_RADIUS,
+                    class_="rack",
+                    style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
+                )
+            )
+        elif tile.rack_orientation == RackOrientationChoices.RIGHT:
+            link.add(
+                drawing.rect(
+                    (
+                        origin[0] + tile.x_size * self.GRID_SIZE_X - self.RACK_INSETS[0] - self.RACK_FRONT_DEPTH,
+                        origin[1] + self.RACK_INSETS[1],
+                    ),
+                    (
+                        self.RACK_FRONT_DEPTH,
+                        tile.y_size * self.GRID_SIZE_Y - self.RACK_INSETS[1] - 3 * self.TILE_INSET,
+                    ),
+                    rx=self.CORNER_RADIUS,
+                    class_="rack",
+                    style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
+                )
+            )
+
+        # Add the rack name as text
         link.add(
             drawing.text(
                 tile.rack.name,
                 insert=(
                     origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 - self.TEXT_LINE_HEIGHT / 2,
+                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 - self.TEXT_LINE_HEIGHT,
+                ),
+                class_="label-text-primary",
+                style=f"fill: {fgcolor(tile.rack.status.color)}",
+            )
+        )
+        # Add the rack status as text
+        link.add(
+            drawing.text(
+                tile.rack.status.name,
+                insert=(
+                    origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
+                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2,
                 ),
                 class_="label-text",
                 style=f"fill: {fgcolor(tile.rack.status.color)}",
             )
         )
+        # Add the rack utilization as text
         ru_used, ru_total = tile.rack.get_utilization()
         link.add(
             drawing.text(
                 f"{ru_used} / {ru_total} RU",
                 insert=(
                     origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 + self.TEXT_LINE_HEIGHT / 2,
+                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 + self.TEXT_LINE_HEIGHT,
                 ),
                 class_="label-text",
                 style=f"fill: {fgcolor(tile.rack.status.color)}",

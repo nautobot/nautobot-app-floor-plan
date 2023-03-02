@@ -11,6 +11,7 @@ from nautobot.core.models.generics import PrimaryModel
 from nautobot.extras.models import StatusModel
 from nautobot.extras.utils import extras_features
 
+from nautobot_floor_plan.choices import RackOrientationChoices
 from nautobot_floor_plan.svg import FloorPlanSVG
 
 
@@ -123,6 +124,12 @@ class FloorPlanTile(PrimaryModel, StatusModel):
     rack = models.OneToOneField(
         to="dcim.Rack", on_delete=models.CASCADE, blank=True, null=True, related_name="floor_plan_tile"
     )
+    rack_orientation = models.CharField(
+        max_length=10,
+        choices=RackOrientationChoices,
+        blank=True,
+        help_text="Direction the rack's front is facing on the floor plan",
+    )
     # status field is automatically provided by StatusModel
 
     class Meta:
@@ -139,6 +146,7 @@ class FloorPlanTile(PrimaryModel, StatusModel):
         "y_size",
         "status",
         "rack",
+        "rack_orientation",
     ]
 
     @property
@@ -204,4 +212,5 @@ class FloorPlanTile(PrimaryModel, StatusModel):
             self.y_size,
             self.status.name,
             self.rack.name if self.rack is not None else None,
+            self.rack_orientation,
         )

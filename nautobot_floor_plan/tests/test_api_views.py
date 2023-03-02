@@ -6,7 +6,7 @@ from nautobot.dcim.models import Rack
 from nautobot.extras.models import Tag
 from nautobot.utilities.testing import APIViewTestCases
 
-from nautobot_floor_plan import models
+from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.tests import fixtures
 
 
@@ -45,7 +45,8 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
 
     model = models.FloorPlanTile
     brief_fields = ["display", "id", "url", "x_origin", "x_size", "y_origin", "y_size"]
-    # TODO choices_fields = ["status"]
+    choices_fields = ["rack_orientation"]
+    # TODO choices_fields = ["rack_orientation", "status"]
     validation_excluded_fields = ["status"]
 
     @classmethod
@@ -68,6 +69,7 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
                 "y_origin": 1,
                 "status": data["status"].slug,
                 "rack": cls.rack_3_1_1.pk,
+                "rack_orientation": choices.RackOrientationChoices.RIGHT,
             },
             {
                 "floor_plan": floor_plans[2].pk,
