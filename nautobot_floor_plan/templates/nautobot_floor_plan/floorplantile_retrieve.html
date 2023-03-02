@@ -22,8 +22,12 @@
                     (<a href="{{ object.floor_plan.get_absolute_url }}">floor plan</a>)
                 </td>
             <tr>
-                <td>Coordinates</td>
-                <td>({{ object.x }}, {{ object.y }})</td>
+                <td>Origin</td>
+                <td>({{ object.x_origin }}, {{ object.y_origin }})</td>
+            </tr>
+            <tr>
+                <td>Size (in Tiles Covered)</td>
+                <td>({{ object.x_size }}, {{ object.y_size }})</td>
             </tr>
             <tr>
                 <td>Status</td>

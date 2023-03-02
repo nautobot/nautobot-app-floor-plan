@@ -25,14 +25,14 @@ class TestFloorPlanFilterSet(TestCase):
     def test_q_search_location_name(self):
         """Test using Q search with name of Location."""
         params = {"q": "Floor"}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 3)
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 4)
         params = {"q": "Floor 1"}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
 
     def test_q_search_location_slug(self):
         """Test using Q search with slug of Location."""
         params = {"q": "building-1"}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 3)
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 4)
         params = {"q": "building-1-floor-1"}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
 
@@ -93,21 +93,21 @@ class TestFloorPlanTileFilterSet(TestCase):
                     else:
                         rack = None
                     floor_plan_tile = models.FloorPlanTile(
-                        floor_plan=floor_plan, status=cls.active_status, x=x, y=y, rack=rack
+                        floor_plan=floor_plan, status=cls.active_status, x_origin=x, y_origin=y, rack=rack
                     )
                     floor_plan_tile.validated_save()
 
     def test_q_search_location_name(self):
         """Test using Q search with name of Location."""
         params = {"q": "Floor"}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 14)
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 30)
         params = {"q": "Floor 1"}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
 
     def test_q_search_location_slug(self):
         """Test using Q search with slug of Location."""
         params = {"q": "building-1"}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 14)
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 30)
         params = {"q": "building-1-floor-1"}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
 
@@ -137,12 +137,12 @@ class TestFloorPlanTileFilterSet(TestCase):
         params = {"floor_plan": [self.floor_plans[1].pk]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 4)
 
-    def test_x(self):
-        """Test filtering by x position."""
-        params = {"x": [1]}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 6)
+    def test_x_origin(self):
+        """Test filtering by x_origin position."""
+        params = {"x_origin": [1]}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 10)
 
-    def test_y(self):
-        """Test filtering by y position."""
-        params = {"y": [1]}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 6)
+    def test_y_origin(self):
+        """Test filtering by y_origin position."""
+        params = {"y_origin": [1]}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 10)

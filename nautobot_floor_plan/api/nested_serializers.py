@@ -27,4 +27,4 @@ class NestedFloorPlanTileSerializer(WritableNestedSerializer):
         """Meta attributes."""
 
         model = models.FloorPlanTile
-        fields = ["id", "url", "x", "y"]
+        fields = ["id", "url", "x_origin", "y_origin", "x_size", "y_size"]

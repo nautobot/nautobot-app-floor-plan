@@ -14,20 +14,22 @@ text {
     stroke-width: 2px;
 }
 
-.tile {
-    fill: #f7f7f7;
+.grid {
     stroke: #a0a0a0;
-}
-.tile:hover {
-    fill: #fff;
+    stroke-width: 1px;
 }
 
 .tile-status {
-    stroke: none;
+    stroke: black;
+    fill: #f7f7f7;
 }
 
 .button-text {
-    fill: #fff;
+    fill: white;
+}
+
+.label-text {
+    fill: white;
 }
 
 .add-tile-button {
@@ -58,4 +60,5 @@ text {
 
 .rack {
     stroke: black;
+    stroke-width: 2px;
 }

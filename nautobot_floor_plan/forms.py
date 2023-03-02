@@ -91,8 +91,10 @@ class FloorPlanTileForm(NautobotModelForm):
         model = models.FloorPlanTile
         fields = [
             "floor_plan",
-            "x",
-            "y",
+            "x_origin",
+            "y_origin",
+            "x_size",
+            "y_size",
             "status",
             "rack",
             "tags",

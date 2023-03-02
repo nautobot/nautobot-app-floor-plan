@@ -7,6 +7,8 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.http import urlencode
 
+from nautobot.utilities.templatetags.helpers import fgcolor
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,10 +17,11 @@ class FloorPlanSVG:
     """Use this class to render a FloorPlan as an SVG image."""
 
     BORDER_WIDTH = 10
-    CORNER_RADIUS = 4  # matching Nautobot/Bootstrap 3
+    CORNER_RADIUS = 6
     TILE_INSET = 2
     TEXT_LINE_HEIGHT = 16
-    RACK_INSETS = (2 * TILE_INSET, 2 * TILE_INSET + TEXT_LINE_HEIGHT)
+    GRID_OFFSET = 30
+    RACK_INSETS = (3 * TILE_INSET, 3 * TILE_INSET + TEXT_LINE_HEIGHT)
 
     def __init__(self, *, floor_plan, user, base_url):
         """
@@ -48,28 +51,7 @@ class FloorPlanSVG:
         """Grid spacing in the Y (depth) dimension."""
         return max(150, (150 * self.floor_plan.tile_depth) // self.floor_plan.tile_width)
 
-    @cached_property
-    def TILE_WIDTH(self):  # pylint: disable=invalid-name
-        """Width of a rendered tile within the SVG."""
-        return self.GRID_SIZE_X - 2 * self.TILE_INSET
-
-    @cached_property
-    def TILE_DEPTH(self):  # pylint: disable=invalid-name
-        """Depth of a rendered tile within the SVG."""
-        return self.GRID_SIZE_Y - 2 * self.TILE_INSET
-
-    @cached_property
-    def RACK_WIDTH(self):  # pylint: disable=invalid-name
-        """Width of a rendered rack within the SVG."""
-        return self.GRID_SIZE_X - 2 * self.RACK_INSETS[0]
-
-    @cached_property
-    def RACK_DEPTH(self):  # pylint: disable=invalid-name
-        """Depth of a rendered rack within the SVG."""
-        return self.GRID_SIZE_Y - 2 * self.RACK_INSETS[1]
-
-    @staticmethod
-    def _setup_drawing(width, depth):
+    def _setup_drawing(self, width, depth):
         """Initialize an appropriate svgwrite.Drawing instance."""
         drawing = svgwrite.Drawing(size=(width, depth), debug=False)
         drawing.viewbox(0, 0, width=width, height=depth)
@@ -82,79 +64,131 @@ class FloorPlanSVG:
         ) as css_file:
             drawing.defs.add(drawing.style(css_file.read()))
 
+        border_offset = self.BORDER_WIDTH / 2
+        drawing.add(
+            drawing.rect(
+                insert=(border_offset, border_offset),
+                size=(
+                    self.floor_plan.x_size * self.GRID_SIZE_X + self.GRID_OFFSET + self.BORDER_WIDTH,
+                    self.floor_plan.y_size * self.GRID_SIZE_Y + self.GRID_OFFSET + self.BORDER_WIDTH,
+                ),
+                class_="frame",
+            )
+        )
+
         return drawing
 
-    def _draw_tile(self, drawing, tile, coordinates, origin):
+    def _draw_grid(self, drawing):
+        """Render the grid underlying all tiles."""
+
+        # Vertical lines
+        for x in range(0, self.floor_plan.x_size + 1):
+            drawing.add(
+                drawing.line(
+                    start=(x * self.GRID_SIZE_X + self.GRID_OFFSET, self.GRID_OFFSET),
+                    end=(
+                        x * self.GRID_SIZE_X + self.GRID_OFFSET,
+                        self.floor_plan.y_size * self.GRID_SIZE_Y + self.GRID_OFFSET,
+                    ),
+                    class_="grid",
+                )
+            )
+        # Horizontal lines
+        for y in range(0, self.floor_plan.y_size + 1):
+            drawing.add(
+                drawing.line(
+                    start=(self.GRID_OFFSET, y * self.GRID_SIZE_Y + self.GRID_OFFSET),
+                    end=(
+                        self.floor_plan.x_size * self.GRID_SIZE_X + self.GRID_OFFSET,
+                        y * self.GRID_SIZE_Y + self.GRID_OFFSET,
+                    ),
+                    class_="grid",
+                )
+            )
+        # Axis labels
+        for x in range(1, self.floor_plan.x_size + 1):
+            drawing.add(
+                drawing.text(
+                    str(x),
+                    insert=(
+                        (x - 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
+                        self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
+                    ),
+                    class_="grid-label",
+                )
+            )
+        for y in range(1, self.floor_plan.y_size + 1):
+            drawing.add(
+                drawing.text(
+                    str(y),
+                    insert=(
+                        self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
+                        (y - 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
+                    ),
+                    class_="grid-label",
+                )
+            )
+
+        # Links to populate tiles
+        for y in range(1, self.floor_plan.y_size + 1):
+            for x in range(1, self.floor_plan.x_size + 1):
+                query_params = urlencode(
+                    {
+                        "floor_plan": self.floor_plan.pk,
+                        "x_origin": x,
+                        "y_origin": y,
+                        "return_url": self.return_url,
+                    }
+                )
+                add_url = f"{self.add_url}?{query_params}"
+                add_link = drawing.add(drawing.a(href=add_url, target="_top"))
+                # "add" button
+                add_link.add(
+                    drawing.rect(
+                        (
+                            (x - 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET - (self.TEXT_LINE_HEIGHT / 2),
+                            (y - 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET - (self.TEXT_LINE_HEIGHT / 2),
+                        ),
+                        (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
+                        class_="add-tile-button",
+                        rx=self.CORNER_RADIUS,
+                    )
+                )
+                # "+" inside the add button
+                add_link.add(
+                    drawing.text(
+                        "+",
+                        insert=(
+                            (x - 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
+                            (y - 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
+                        ),
+                        class_="button-text",
+                    )
+                )
+
+    def _draw_tile(self, drawing, tile):
         """Render an individual FloorPlanTile to the drawing."""
         # Draw the square defining the bounds of this tile
-        drawing.add(
-            drawing.rect(
-                (origin[0] + self.TILE_INSET, origin[1] + self.TILE_INSET),
-                (self.TILE_WIDTH, self.TILE_DEPTH),
-                rx=self.CORNER_RADIUS,
-                class_="tile",
-            )
-        )
+        self._draw_defined_tile(drawing, tile)
+        if tile.rack is not None:
+            self._draw_rack_tile(drawing, tile)
 
-        if tile is None:
-            self._draw_undefined_tile(drawing, coordinates, origin)
-        elif tile.rack is None:
-            self._draw_defined_tile(drawing, tile, origin)
-        else:
-            self._draw_rack_tile(drawing, tile, origin)
-
-    def _draw_undefined_tile(self, drawing, coordinates, origin):
-        """Render an empty tile with a "Add" link."""
-        query_params = urlencode(
-            {
-                "floor_plan": self.floor_plan.pk,
-                "x": coordinates[0],
-                "y": coordinates[1],
-                "return_url": self.return_url,
-            }
-        )
-        add_url = f"{self.add_url}?{query_params}"
-
-        add_link = drawing.add(drawing.a(href=add_url, target="_top"))
-        add_link.add(
-            drawing.rect(
-                (origin[0] + 2 * self.TILE_INSET, origin[1] + 2 * self.TILE_INSET),
-                (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
-                class_="add-tile-button",
-                rx=self.CORNER_RADIUS,
-            )
-        )
-        add_link.add(
-            drawing.text(
-                "+",
-                insert=(
-                    origin[0] + 2 * self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
-                    origin[1] + 2 * self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
-                ),
-                class_="button-text",
-            )
-        )
-
-        add_link.add(
-            drawing.text(
-                f"({coordinates[0]}, {coordinates[1]})",
-                insert=(
-                    origin[0] + self.GRID_SIZE_X / 2,
-                    origin[1] + self.GRID_SIZE_Y - self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
-                ),
-            )
-        )
-
-    def _draw_defined_tile(self, drawing, tile, origin):
+    def _draw_defined_tile(self, drawing, tile):
         """Render a tile based on its Status."""
-        # Fill the tile with the status color and add a label
-        color = tile.status.color
+        origin = (
+            (tile.x_origin - 1) * self.GRID_SIZE_X + self.GRID_OFFSET + self.TILE_INSET,
+            (tile.y_origin - 1) * self.GRID_SIZE_Y + self.GRID_OFFSET + self.TILE_INSET,
+        )
+        # Draw the tile and fill it with its status color
         drawing.add(
             drawing.rect(
-                (origin[0] + self.TILE_INSET, origin[1] + self.TILE_INSET),
-                (self.TILE_WIDTH, self.TILE_DEPTH),
+                origin,
+                (
+                    self.GRID_SIZE_X * tile.x_size - 2 * self.TILE_INSET,
+                    self.GRID_SIZE_Y * tile.y_size - 2 * self.TILE_INSET,
+                ),
                 rx=self.CORNER_RADIUS,
-                style=f"fill: #{color}",
+                style=f"fill: #{tile.status.color}",
                 class_="tile-status",
             )
         )
@@ -166,7 +200,7 @@ class FloorPlanSVG:
         link = drawing.add(drawing.a(href=edit_url, target="_top"))
         link.add(
             drawing.rect(
-                (origin[0] + 2 * self.TILE_INSET, origin[1] + 2 * self.TILE_INSET),
+                (origin[0] + self.TILE_INSET, origin[1] + self.TILE_INSET),
                 (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
                 class_="edit-tile-button",
                 rx=self.CORNER_RADIUS,
@@ -176,8 +210,8 @@ class FloorPlanSVG:
             drawing.text(
                 "✎",
                 insert=(
-                    origin[0] + 2 * self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
-                    origin[1] + 2 * self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
+                    origin[0] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
+                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
                 ),
                 class_="button-text",
             )
@@ -191,8 +225,8 @@ class FloorPlanSVG:
         link.add(
             drawing.rect(
                 (
-                    origin[0] + self.GRID_SIZE_X - 2 * self.TILE_INSET - self.TEXT_LINE_HEIGHT,
-                    origin[1] + 2 * self.TILE_INSET,
+                    origin[0] + tile.x_size * self.GRID_SIZE_X - 3 * self.TILE_INSET - self.TEXT_LINE_HEIGHT,
+                    origin[1] + self.TILE_INSET,
                 ),
                 (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
                 class_="delete-tile-button",
@@ -203,44 +237,34 @@ class FloorPlanSVG:
             drawing.text(
                 "X",
                 insert=(
-                    origin[0] + self.GRID_SIZE_X - 2 * self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
-                    origin[1] + 2 * self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
+                    origin[0] + tile.x_size * self.GRID_SIZE_X - 3 * self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
+                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
                 ),
                 class_="button-text",
             )
         )
 
-        # Add text at the top of the tile labeling the Status
-        drawing.add(
-            drawing.text(
-                tile.status.name,
-                insert=(
-                    origin[0] + self.GRID_SIZE_X / 2,
-                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
-                ),
-                fill="white",
-                style="text-shadow: 1px 1px 3px black;",
-            )
-        )
-
+        # Add text at the top of the tile labeling the status
         detail_url = self.base_url + reverse("plugins:nautobot_floor_plan:floorplantile", kwargs={"pk": tile.pk})
         detail_link = drawing.add(drawing.a(href=detail_url + "?tab=main", target="_top"))
         detail_link.add(
             drawing.text(
-                f"({tile.x}, {tile.y})",
+                tile.status.name,
                 insert=(
-                    origin[0] + self.GRID_SIZE_X / 2,
-                    origin[1] + self.GRID_SIZE_Y - self.TILE_INSET - self.TEXT_LINE_HEIGHT / 2,
+                    origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
+                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
                 ),
-                fill="white",
-                style="text-shadow: 1px 1px 3px black;",
+                class_="label-text",
+                style=f"fill: {fgcolor(tile.status.color)}",
             )
         )
 
-    def _draw_rack_tile(self, drawing, tile, origin):
-        """Render a tile based on its Status and assigned Rack."""
-        self._draw_defined_tile(drawing, tile, origin)
-
+    def _draw_rack_tile(self, drawing, tile):
+        """Overlay Rack information onto an already drawn tile."""
+        origin = (
+            (tile.x_origin - 1) * self.GRID_SIZE_X + self.GRID_OFFSET,
+            (tile.y_origin - 1) * self.GRID_SIZE_Y + self.GRID_OFFSET,
+        )
         rack_url = reverse("dcim:rack", kwargs={"pk": tile.rack.pk})
         rack_url = f"{self.base_url}{rack_url}"
 
@@ -248,21 +272,24 @@ class FloorPlanSVG:
         link.add(
             drawing.rect(
                 (origin[0] + self.RACK_INSETS[0], origin[1] + self.RACK_INSETS[1]),
-                (self.RACK_WIDTH, self.RACK_DEPTH),
+                (
+                    tile.x_size * self.GRID_SIZE_X - 2 * self.RACK_INSETS[0],
+                    tile.y_size * self.GRID_SIZE_Y - self.RACK_INSETS[1] - 3 * self.TILE_INSET,
+                ),
                 rx=self.CORNER_RADIUS,
                 class_="rack",
-                style=f"fill: #{tile.rack.status.color}",
+                style=f"fill: #{tile.rack.status.color}; stroke: {fgcolor(tile.status.color)}",
             )
         )
         link.add(
             drawing.text(
                 tile.rack.name,
                 insert=(
-                    origin[0] + self.GRID_SIZE_X / 2,
-                    origin[1] + self.GRID_SIZE_Y / 2 - self.TEXT_LINE_HEIGHT / 2,
+                    origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
+                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 - self.TEXT_LINE_HEIGHT / 2,
                 ),
-                fill="white",
-                style="text-shadow: 1px 1px 3px black;",
+                class_="label-text",
+                style=f"fill: {fgcolor(tile.rack.status.color)}",
             )
         )
         ru_used, ru_total = tile.rack.get_utilization()
@@ -270,11 +297,11 @@ class FloorPlanSVG:
             drawing.text(
                 f"{ru_used} / {ru_total} RU",
                 insert=(
-                    origin[0] + self.GRID_SIZE_X / 2,
-                    origin[1] + self.GRID_SIZE_Y / 2 + self.TEXT_LINE_HEIGHT / 2,
+                    origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
+                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 + self.TEXT_LINE_HEIGHT / 2,
                 ),
-                fill="white",
-                style="text-shadow: 1px 1px 3px black;",
+                class_="label-text",
+                style=f"fill: {fgcolor(tile.rack.status.color)}",
             )
         )
 
@@ -282,33 +309,16 @@ class FloorPlanSVG:
         """Generate an SVG document representing a FloorPlan."""
         logger.debug("Setting up drawing...")
         drawing = self._setup_drawing(
-            width=self.floor_plan.x_size * self.GRID_SIZE_X + self.BORDER_WIDTH * 2,
-            depth=self.floor_plan.y_size * self.GRID_SIZE_Y + self.BORDER_WIDTH * 2,
+            width=self.floor_plan.x_size * self.GRID_SIZE_X + self.GRID_OFFSET + self.BORDER_WIDTH * 2,
+            depth=self.floor_plan.y_size * self.GRID_SIZE_Y + self.GRID_OFFSET + self.BORDER_WIDTH * 2,
         )
 
-        # Render tiles
-        logger.debug("Loading tiles...")
-        tiles = self.floor_plan.get_tiles()
+        logger.debug("Rendering underlying grid...")
+        self._draw_grid(drawing)
+
         logger.debug("Rendering tiles...")
-        for y in range(0, self.floor_plan.y_size):
-            y_offset = y * self.GRID_SIZE_Y + self.BORDER_WIDTH
-            for x in range(0, self.floor_plan.x_size):
-                x_offset = x * self.GRID_SIZE_X + self.BORDER_WIDTH
-                tile = tiles[y][x]
-                self._draw_tile(drawing, tile, (x + 1, y + 1), (x_offset, y_offset))
-
-        # Wrap drawing with a border
-        logger.debug("Adding border...")
-        border_offset = self.BORDER_WIDTH / 2
-        frame = drawing.rect(
-            insert=(border_offset, border_offset),
-            size=(
-                self.floor_plan.x_size * self.GRID_SIZE_X + self.BORDER_WIDTH,
-                self.floor_plan.y_size * self.GRID_SIZE_Y + self.BORDER_WIDTH,
-            ),
-            class_="frame",
-        )
-        drawing.add(frame)
+        for tile in self.floor_plan.tiles.all():
+            self._draw_tile(drawing, tile)
 
         logger.debug("Drawing rendered!")
         return drawing

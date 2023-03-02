@@ -58,4 +58,4 @@ class FloorPlanTileFilterSet(NautobotFilterSet):
         """Meta attributes."""
 
         model = models.FloorPlanTile
-        fields = ["x", "y"]
+        fields = ["x_origin", "y_origin"]
