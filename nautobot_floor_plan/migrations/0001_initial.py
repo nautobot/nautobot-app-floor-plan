@@ -15,8 +15,8 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("extras", "0053_relationship_required_on"),
-        ("dcim", "0019_device_redundancy_group_data_migration"),
+        ("extras", "0047_enforce_custom_field_slug"),
+        ("dcim", "0014_location_status_data_migration"),
     ]
 
     operations = [
