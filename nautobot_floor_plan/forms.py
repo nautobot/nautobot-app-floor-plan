@@ -80,9 +80,8 @@ class FloorPlanTileForm(NautobotModelForm):
     """FloorPlanTile creation/edit form."""
 
     floor_plan = DynamicModelChoiceField(queryset=models.FloorPlan.objects.all())
-    # TODO: query_params probably doesn't work as written here
     rack = DynamicModelChoiceField(
-        queryset=Rack.objects.all(), required=False, query_params={"location": "$floor_plan.location"}
+        queryset=Rack.objects.all(), required=False, query_params={"nautobot_floor_plan_floor_plan": "$floor_plan"}
     )
 
     class Meta:
