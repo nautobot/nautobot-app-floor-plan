@@ -19,7 +19,7 @@ This App is primarily developed and maintained by Network to Code, LLC.
 
 ## App Capabilities
 
-Included is a non-exhaustive list of capabilites outside of standar MVC (model view controller) paradigm.
+Included is a non-exhaustive list of capabilites beyond a standard MVC (model view controller) paradigm.
 
 - Provides visualization of racks on a floor map.
 - Provides easy navigation from floor map to rack and subsequently device from Rack.
@@ -30,7 +30,7 @@ Included is a non-exhaustive list of capabilites outside of standar MVC (model v
 - Provides ability to map status to color for many use cases.
     - Leveraging this you can depict hot / cold aisle.
 - Provides the ability to set the direction of the Rack and show up.
-- Provides the ability to assign a rack to multiple tiles.
+- Provides the ability to span multiple adjacent tiles by a single rack.
 - Provides custom layout size in any rectangular shape using X & Y axis.
 - Generates an SVG, that can easily be saved from the browser via right-click -> save as.
 
