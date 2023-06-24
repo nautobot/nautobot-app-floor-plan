@@ -3,6 +3,11 @@
 {% if floor_plan %}
     <h4>{{ floor_plan }} {% edit_button floor_plan %}</h4>
     Use scroll wheel to zoom in or out. Click and drag to scroll.
+    <div class="text-center text-small">
+        <a href="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=floor_plan.pk %}" class="rack_elevation_save_svg_link" download="floor_plan_{{ floor_plan.location.name }}.svg">
+            <i class="mdi mdi-content-save-outline"></i> Save SVG
+        </a>
+    </div>
     {% comment %}
     Scale the SVG by default to match the page width, preserving its aspect-ratio.
     See https://css-tricks.com/scale-svg/ for more details.
