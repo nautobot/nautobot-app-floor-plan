@@ -32,7 +32,7 @@ Included is a non-exhaustive list of capabilites beyond a standard MVC (model vi
 - Provides the ability to set the direction of the Rack and show up.
 - Provides the ability to span multiple adjacent tiles by a single rack.
 - Provides custom layout size in any rectangular shape using X & Y axis.
-- Generates an SVG, that can easily be saved from the browser via right-click -> save as.
+- Provides the ability to save the generated SVG from a click of a "Save SVG" link.
 
 ## Nautobot Features Used
 
