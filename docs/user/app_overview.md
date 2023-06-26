@@ -17,6 +17,23 @@ The primary user of this App would be anyone involved in the ongoing allocation 
 
 This App is primarily developed and maintained by Network to Code, LLC.
 
+## App Capabilities
+
+Included is a non-exhaustive list of capabilites beyond a standard MVC (model view controller) paradigm.
+
+- Provides visualization of racks on a floor map.
+- Provides easy navigation from floor map to rack and subsequently device from Rack.
+- Provides the ability to assign Racks to coordinates / tiles.
+    - From the Floor Plan UI.
+    - From the Rack Object UI.
+    - From the API.
+- Provides ability to map status to color for many use cases.
+    - Leveraging this you can depict hot / cold aisle.
+- Provides the ability to set the direction of the Rack and show up.
+- Provides the ability to span multiple adjacent tiles by a single rack.
+- Provides custom layout size in any rectangular shape using X & Y axis.
+- Provides the ability to save the generated SVG from a click of a "Save SVG" link.
+
 ## Nautobot Features Used
 
 This App:
