@@ -1,0 +1,68 @@
+
+/* Center text at its specified coordinate */
+text {
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+}
+
+.frame {
+    background-color: #f0f0f0;
+    fill: none;
+    stroke: black;
+    stroke-width: 2px;
+}
+
+.grid {
+    stroke: #a0a0a0;
+    stroke-width: 1px;
+}
+
+.tile-status {
+    stroke: black;
+    fill: #f7f7f7;
+}
+
+.button-text {
+    fill: white;
+}
+
+.label-text {
+    fill: white;
+}
+.label-text-primary {
+    fill: white;
+    font-weight: bold;
+}
+
+.add-tile-button {
+    fill: #5cb85c;
+    stroke: #4cae4c;
+    border-radius: 4px;
+}
+.add-tile-button:hover {
+    fill: #419641;
+}
+
+.edit-tile-button {
+    fill: #f0ad4e;
+    stroke: #eea236;
+    border-radius: 4px;
+}
+.edit-tile-button:hover {
+    fill: #eb9316;
+}
+
+.delete-tile-button {
+    fill: #d9534f;
+    stroke: #d43f3a;
+}
+.delete-tile-button:hover {
+    fill: #c12e2a;
+}
+
+.rack {
+    stroke: black;
+    stroke-width: 2px;
+}

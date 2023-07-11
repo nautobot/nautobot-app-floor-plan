@@ -3,7 +3,7 @@
 import os
 import sys
 
-from nautobot.core.settings import *  # noqa: F403
+from nautobot.core.settings import *  # noqa: F401,F403
 from nautobot.core.settings_funcs import parse_redis_connection
 
 
@@ -94,6 +94,10 @@ if not TESTING:
         "loggers": {
             "django": {"handlers": ["normal_console"], "level": "INFO"},
             "nautobot": {
+                "handlers": ["verbose_console" if DEBUG else "normal_console"],
+                "level": LOG_LEVEL,
+            },
+            "nautobot_floor_plan": {
                 "handlers": ["verbose_console" if DEBUG else "normal_console"],
                 "level": LOG_LEVEL,
             },

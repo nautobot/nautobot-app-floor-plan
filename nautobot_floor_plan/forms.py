@@ -1,63 +1,101 @@
 """Forms for nautobot_floor_plan."""
 from django import forms
+
+from nautobot.dcim.models import Location, Rack
+from nautobot.extras.forms import (
+    CustomFieldModelCSVForm,
+    NautobotBulkEditForm,
+    NautobotFilterForm,
+    NautobotModelForm,
+    TagsBulkEditFormMixin,
+)
 from nautobot.utilities.forms import (
-    BootstrapMixin,
-    BulkEditForm,
-    SlugField,
+    CSVModelChoiceField,
+    DynamicModelChoiceField,
+    DynamicModelMultipleChoiceField,
+    TagFilterField,
 )
 
 from nautobot_floor_plan import models
 
 
-class FloorPlanForm(BootstrapMixin, forms.ModelForm):
+class FloorPlanForm(NautobotModelForm):
     """FloorPlan creation/edit form."""
 
-    slug = SlugField()
+    location = DynamicModelChoiceField(queryset=Location.objects.all())
 
     class Meta:
         """Meta attributes."""
 
         model = models.FloorPlan
         fields = [
-            "name",
-            "slug",
-            "description",
+            "location",
+            "x_size",
+            "y_size",
+            "tile_width",
+            "tile_depth",
+            "tags",
         ]
 
 
-class FloorPlanBulkEditForm(BootstrapMixin, BulkEditForm):
+class FloorPlanCSVForm(CustomFieldModelCSVForm):
+    """FloorPlan CSV export form."""
+
+    location = CSVModelChoiceField(queryset=Location.objects.all(), to_field_name="name")
+
+    class Meta:
+        """Meta attributes."""
+
+        model = models.FloorPlan
+        fields = models.FloorPlan.csv_headers
+
+
+class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
     """FloorPlan bulk edit form."""
 
     pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)
-    description = forms.CharField(required=False)
+    x_size = forms.IntegerField(min_value=1, required=False)
+    y_size = forms.IntegerField(min_value=1, required=False)
+    tile_width = forms.IntegerField(min_value=1, required=False)
+    tile_depth = forms.IntegerField(min_value=1, required=False)
 
     class Meta:
         """Meta attributes."""
 
-        nullable_fields = [
-            "description",
-        ]
+        fields = ["pk", "x_size", "y_size", "tile_width", "tile_depth", "tags"]
 
 
-class FloorPlanFilterForm(BootstrapMixin, forms.ModelForm):
+class FloorPlanFilterForm(NautobotFilterForm):
     """Filter form to filter searches."""
 
-    q = forms.CharField(
-        required=False,
-        label="Search",
-        help_text="Search within Name or Slug.",
+    model = models.FloorPlan
+    field_order = ["q", "location", "x_size", "y_size"]
+
+    q = forms.CharField(required=False, label="Search")
+    location = DynamicModelMultipleChoiceField(queryset=Location.objects.all(), to_field_name="slug", required=False)
+    tag = TagFilterField(model)
+
+
+class FloorPlanTileForm(NautobotModelForm):
+    """FloorPlanTile creation/edit form."""
+
+    floor_plan = DynamicModelChoiceField(queryset=models.FloorPlan.objects.all())
+    rack = DynamicModelChoiceField(
+        queryset=Rack.objects.all(), required=False, query_params={"nautobot_floor_plan_floor_plan": "$floor_plan"}
     )
-    name = forms.CharField(required=False, label="Name")
-    slug = forms.CharField(required=False, label="Slug")
 
     class Meta:
         """Meta attributes."""
 
-        model = models.FloorPlan
-        # Define the fields above for ordering and widget purposes
+        model = models.FloorPlanTile
         fields = [
-            "q",
-            "name",
-            "slug",
-            "description",
+            "floor_plan",
+            "x_origin",
+            "y_origin",
+            "x_size",
+            "y_size",
+            "status",
+            "rack",
+            "rack_orientation",
+            "tags",
         ]

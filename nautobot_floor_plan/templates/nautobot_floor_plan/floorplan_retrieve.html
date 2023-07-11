@@ -1,0 +1,42 @@
+{% extends "generic/object_retrieve.html" %}
+{% load helpers %}
+
+{% block breadcrumbs %}
+    <li><a href="{% url 'dcim:location_list' %}">Locations</a></li>
+    <li>{{ object.location | hyperlinked_object }}</li>
+    <li>{{ object | hyperlinked_object }}</li>
+{% endblock breadcrumbs %}
+
+{% block content_left_page %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>Floor Plan</strong>
+        </div>
+        <table class="table table-hover panel-body attr-table">
+            <tr>
+                <td>Location</td>
+                <td>{{ object.location | hyperlinked_object }}</td>
+            </tr>
+            <tr>
+                <td>X Size (Tiles)</td>
+                <td>{{ object.x_size }}</td>
+            </tr>
+            <tr>
+                <td>Y Size (Tiles)</td>
+                <td>{{ object.y_size }}</td>
+            </tr>
+            <tr>
+                <td>Tile Width (Relative Units)</td>
+                <td>{{ object.tile_width }}</td>
+            </tr>
+            <tr>
+                <td>Tile Depth (Relative Units)</td>
+                <td>{{ object.tile_depth }}</td>
+            </tr>
+        </table>
+    </div>
+{% endblock content_left_page %}
+
+{% block content_full_width_page %}
+    {% include 'nautobot_floor_plan/inc/floorplan_svg.html' with floor_plan=object %}
+{% endblock content_full_width_page %}

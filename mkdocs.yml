@@ -3,7 +3,7 @@ dev_addr: "127.0.0.1:8001"
 edit_uri: "edit/develop/docs"
 site_dir: "nautobot_floor_plan/static/nautobot_floor_plan/docs"
 site_name: "Nautobot Floor Plan Documentation"
-site_url: "https://docs.nautobot.com/projects/nautobot-floor-plan/en/latest/"
+site_url: "https://docs.nautobot.com/projects/floor-plan/en/latest/"
 repo_url: "https://github.com/nautobot/nautobot-plugin-floor-plan"
 copyright: "Copyright &copy; The Authors"
 theme:
@@ -96,10 +96,9 @@ nav:
   - Overview: "index.md"
   - User Guide:
       - App Overview: "user/app_overview.md"
-      - Using the App: "user/app_use_cases.md"
       - Getting Started: "user/app_getting_started.md"
+      - Using the App: "user/app_use_cases.md"
       - Frequently Asked Questions: "user/faq.md"
-      - External Interactions: "user/external_interactions.md"
   - Administrator Guide:
       - Install and Configure: "admin/install.md"
       - Upgrade: "admin/upgrade.md"
@@ -112,9 +111,10 @@ nav:
       - Extending the App: "dev/extending.md"
       - Contributing to the App: "dev/contributing.md"
       - Development Environment: "dev/dev_environment.md"
-      - Architecture Decision Records: "dev/arch_decision.md"
       - Code Reference:
           - "dev/code_reference/index.md"
           - Package: "dev/code_reference/package.md"
-          - API: "dev/code_reference/api.md"
+          - Data Models: "dev/code_reference/models.md"
+          - REST API: "dev/code_reference/api.md"
+          - SVG Renderer: "dev/code_reference/svg.md"
   - Nautobot Docs Home ↗︎: "https://docs.nautobot.com"

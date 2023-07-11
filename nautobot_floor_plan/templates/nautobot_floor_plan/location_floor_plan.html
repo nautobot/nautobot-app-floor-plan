@@ -1,0 +1,6 @@
+{% extends "dcim/location.html" %}
+{% load helpers %}
+
+{% block content %}
+    {% include 'nautobot_floor_plan/inc/floorplan_svg.html' with floor_plan=object.floor_plan %}
+{% endblock content %}

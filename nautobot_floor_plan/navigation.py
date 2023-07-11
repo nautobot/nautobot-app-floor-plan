@@ -1,19 +1,31 @@
 """Menu items."""
 
-from nautobot.extras.plugins import PluginMenuButton, PluginMenuItem
-from nautobot.utilities.choices import ButtonColorChoices
+from nautobot.core.apps import NavMenuGroup, NavMenuItem, NavMenuTab, NavMenuAddButton, NavMenuImportButton
 
 menu_items = (
-    PluginMenuItem(
-        link="plugins:nautobot_floor_plan:floorplan_list",
-        link_text="Nautobot Floor Plan",
-        buttons=(
-            PluginMenuButton(
-                link="plugins:nautobot_floor_plan:floorplan_add",
-                title="Add",
-                icon_class="mdi mdi-plus-thick",
-                color=ButtonColorChoices.GREEN,
-                permissions=["nautobot_floor_plan.add_floorplan"],
+    NavMenuTab(
+        name="Organization",
+        groups=(
+            NavMenuGroup(
+                name="Locations",
+                items=(
+                    NavMenuItem(
+                        name="Location Floor Plans",
+                        link="plugins:nautobot_floor_plan:floorplan_list",
+                        weight=300,
+                        permissions=["nautobot_floor_plan.view_floorplan"],
+                        buttons=(
+                            NavMenuAddButton(
+                                link="plugins:nautobot_floor_plan:floorplan_add",
+                                permissions=["nautobot_floor_plan.add_floorplan"],
+                            ),
+                            NavMenuImportButton(
+                                link="plugins:nautobot_floor_plan:floorplan_import",
+                                permissions=["nautobot_floor_plan.add_floorplan"],
+                            ),
+                        ),
+                    ),
+                ),
             ),
         ),
     ),

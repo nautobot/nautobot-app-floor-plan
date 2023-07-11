@@ -1,8 +1,5 @@
 # Contributing to the App
 
-!!! warning "Developer Note - Remove Me!"
-    Information on how to contribute fixes, functionality, or documentation changes back to the project.
-
 The project is packaged with a light [development environment](dev_environment.md) based on `docker-compose` to help with the local development of the project and to run tests.
 
 The project is following Network to Code software development guidelines and is leveraging the following:
@@ -15,10 +12,8 @@ Documentation is built using [mkdocs](https://www.mkdocs.org/). The [Docker base
 
 ## Branching Policy
 
-!!! warning "Developer Note - Remove Me!"
-    What branching policy is used for this project and where contributions should be made.
+Code contributions should be directed at the `develop` branch. This branch will be merged into `main` when a new release is ready for publication. The latest commit in `main` will always correspond to the latest release of this App.
 
 ## Release Policy
 
-!!! warning "Developer Note - Remove Me!"
-    How new versions are released.
+There is no set release schedule for this App. New releases will be published as appropriate when new features and/or bug fixes are ready.

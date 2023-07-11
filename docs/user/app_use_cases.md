@@ -4,9 +4,12 @@ This document describes common use-cases and scenarios for this App.
 
 ## General Usage
 
-## Use-cases and common workflows
+See [Getting Started with the App](./app_getting_started.md) for the basic workflow involved in using this App.
 
 ## Screenshots
 
-!!! warning "Developer Note - Remove Me!"
-    Ideally captures every view exposed by the App. Should include a relevant dataset.
+![Add Floor Plan form](../images/add-floor-plan-form.png)
+
+![Add Tile form](../images/add-tile-form.png)
+
+![Populated floor plan](../images/floor-plan-populated.png)

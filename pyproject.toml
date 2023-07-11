@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nautobot-floor-plan"
-version = "0.1.0"
+version = "1.0"
 description = "Nautobot Floor Plan"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 license = "Apache-2.0"
@@ -21,7 +21,7 @@ python = "^3.7"
 # Required for Python 3.7 for now. See: https://stackoverflow.com/a/73932581/194311
 importlib-metadata = "4.13.0"
 # Used for local development
-nautobot = { version = "^1.5.0"}
+nautobot = "^1.4.0"
 
 [tool.poetry.dev-dependencies]
 bandit = "*"
@@ -84,12 +84,19 @@ ignore=".venv"
 [tool.pylint.basic]
 # No docstrings required for private methods (Pylint default), or for test_ functions, or for inner Meta classes.
 no-docstring-rgx="^(_|test_|Meta$)"
+# Allow "x" and "y" as variable names as well as pylint defaults
+good-names = """_,i,j,k,x,y"""
 
 [tool.pylint.messages_control]
 # Line length is enforced by Black, so pylint doesn't need to check it.
 # Pylint and Black disagree about how to format multi-line arrays; Black wins.
+# too-few-public-methods is just noise
+# too-many-ancestors happens all over the place in Django/Nautobot code, so it's pretty much just noise
 disable = """,
-    line-too-long
+    duplicate-code,
+    line-too-long,
+    too-few-public-methods,
+    too-many-ancestors
     """
 
 [tool.pylint.miscellaneous]

@@ -1,0 +1,119 @@
+{% load buttons %}
+
+{% if floor_plan %}
+    <h4>{{ floor_plan }} {% edit_button floor_plan %}</h4>
+    Use scroll wheel to zoom in or out. Click and drag to scroll.
+    <div class="text-center text-small">
+        <a href="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=floor_plan.pk %}" class="rack_elevation_save_svg_link" download="floor_plan_{{ floor_plan.location.name }}.svg">
+            <i class="mdi mdi-content-save-outline"></i> Save SVG
+        </a>
+    </div>
+    {% comment %}
+    Scale the SVG by default to match the page width, preserving its aspect-ratio.
+    See https://css-tricks.com/scale-svg/ for more details.
+    {% endcomment %}
+    <div id="floor-plan-svg-container"
+         style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ floor_plan.x_size}} * {{ floor_plan.tile_depth }}) / ({{ floor_plan.y_size }} * {{ floor_plan.tile_width }}) / 2);">
+        <object id="floor-plan-svg" type="image/svg+xml" role="img"
+                data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=floor_plan.pk %}"
+                style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
+        </object>
+    </div>
+    <script>
+        const svgImage = document.getElementById("floor-plan-svg");
+        var isPanning = false;
+        var startPoint = {x: 0, y: 0};
+        var endPoint = {x: 0, y: 0};
+
+        // Because svgImage is an '<object>', we have to wait until it loads before attaching actions to it.
+        svgImage.onload = function(e) {
+            const svgDisplaySize = {
+                w: svgImage.clientWidth,
+                h: svgImage.clientHeight,
+            };
+            const svgActualSize = {
+                w: svgImage.getSVGDocument().querySelector("svg").getAttribute("width"),
+                h: svgImage.getSVGDocument().querySelector("svg").getAttribute("height")
+            };
+            var viewBox = {
+                x: 0,
+                y: 0,
+                w: svgActualSize.w,
+                h: svgActualSize.h,
+            };
+            var scale = svgDisplaySize.w / svgActualSize.w;
+
+            // Helper function for consistent panning and zooming of the SVG.
+            updateViewBox = function(candidateViewBox) {
+                // Don't allow zooming out past the zoom that fits the entire SVG in the window.
+                var newW = Math.min(candidateViewBox.w, svgActualSize.w);
+                var newH = Math.min(candidateViewBox.h, svgActualSize.h);
+                // Don't allow panning beyond the edges of the SVG either.
+                var newViewBox = {
+                    x: Math.min(Math.max(candidateViewBox.x, 0), svgActualSize.w - newW),
+                    y: Math.min(Math.max(candidateViewBox.y, 0), svgActualSize.h - newH),
+                    w: newW,
+                    h: newH,
+                };
+                svgImage
+                    .getSVGDocument()
+                    .querySelector("svg")
+                    .setAttribute('viewBox', `${newViewBox.x} ${newViewBox.y} ${newViewBox.w} ${newViewBox.h}`);
+                return newViewBox;
+            };
+
+            // On scroll wheel in the SVG, zoom in or out
+            svgImage.contentDocument.onwheel = function(e){
+                var w = viewBox.w;
+                var h = viewBox.h;
+                var mx = e.offsetX;
+                var my = e.offsetY;
+                var dw = w * Math.sign(e.deltaY) * -0.05;
+                var dh = h * Math.sign(e.deltaY) * -0.05;
+                var dx = dw * mx / svgDisplaySize.w;
+                var dy = dh * my / svgDisplaySize.h;
+                var scaledViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w - dw, h: viewBox.h - dh};
+                viewBox = updateViewBox(scaledViewBox);
+                scale = svgDisplaySize.w/viewBox.w;
+            };
+
+            // On click in the SVG, record the click location and begin panning.
+            svgImage.contentDocument.onmousedown = function(e){
+                e.preventDefault();
+                isPanning = true;
+                startPoint = {x: e.x, y: e.y};
+            };
+
+            // On dragging the mouse, update the panning location in real time but do not update the viewBox variable.
+            svgImage.contentDocument.onmousemove = function(e){
+                e.preventDefault();
+                if (isPanning) {
+                    endPoint = {x: e.x, y: e.y};
+                    var dx = (startPoint.x - endPoint.x) / scale;
+                    var dy = (startPoint.y - endPoint.y) / scale;
+                    var movedViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w, h: viewBox.h};
+                    updateViewBox(movedViewBox);
+                }
+            };
+
+            // On releasing the mouse button, update the panning location and update the stored viewBox variable.
+            svgImage.contentDocument.onmouseup = function(e){
+                e.preventDefault();
+                if (isPanning) {
+                    endPoint = {x: e.x, y: e.y};
+                    var dx = (startPoint.x - endPoint.x) / scale;
+                    var dy = (startPoint.y - endPoint.y) / scale;
+                    var movedViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w, h: viewBox.h};
+                    viewBox = updateViewBox(movedViewBox);
+                }
+                isPanning = false;
+            };
+        }
+    </script>
+{% else %}
+    {% comment %}
+    The UI should normally not even show the option to reach this view, but someone could enter it manually.
+    {% endcomment %}
+    No floor plan defined. Use the "Add Floor Plan" button above to create one if desired.
+{% endif %}
+

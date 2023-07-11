@@ -1,6 +1,3 @@
 # Extending the App
 
-!!! warning "Developer Note - Remove Me!"
-    Information on how to extend the App functionality.
-
-Extending the application is welcome, however it is best to open an issue first, to ensure that a PR would be accepted and makes sense in terms of features and design.
+Contributions to augment the capabilities of this App are more than welcome. A backlog of planned and/or requested features and fixes is [available on GitHub](https://github.com/nautobot/nautobot-plugin-floor-plan/issues). If you find a new bug, or have a new feature in mind, we recommend opening an issue first for discussion and visibility before you invest significant time into developing new code.
