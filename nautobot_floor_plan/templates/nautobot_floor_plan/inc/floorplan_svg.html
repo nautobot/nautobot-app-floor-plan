@@ -63,7 +63,8 @@
             };
 
             // On scroll wheel in the SVG, zoom in or out
-            svgImage.contentDocument.onwheel = function(e){
+            svgImage.contentDocument.addEventListener("wheel", function(e){
+                e.preventDefault();
                 var w = viewBox.w;
                 var h = viewBox.h;
                 var mx = e.offsetX;
@@ -75,7 +76,7 @@
                 var scaledViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w - dw, h: viewBox.h - dh};
                 viewBox = updateViewBox(scaledViewBox);
                 scale = svgDisplaySize.w/viewBox.w;
-            };
+            }, { passive: false });
 
             // On click in the SVG, record the click location and begin panning.
             svgImage.contentDocument.onmousedown = function(e){
