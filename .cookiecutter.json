@@ -10,7 +10,7 @@
     "project_slug": "nautobot-plugin-floor-plan",
     "repo_url": "https://github.com/nautobot/nautobot-plugin-floor-plan",
     "base_url": "floor-plan",
-    "min_nautobot_version": "1.5.0",
+    "min_nautobot_version": "1.4.0",
     "max_nautobot_version": "1.9999",
     "nautobot_version": "latest",
     "camel_name": "FloorPlan",
@@ -20,6 +20,12 @@
     "open_source_license": "Apache-2.0",
     "docs_base_url": "https://docs.nautobot.com",
     "docs_app_url": "https://docs.nautobot.com/projects/floor-plan/en/latest",
-    "_template": "https://github.com/networktocode-llc/cookiecutter-ntc.git"
+    "_drift_manager": {
+      "template": "https://github.com/networktocode-llc/cookiecutter-ntc.git",
+      "template_dir": "nautobot-plugin",
+      "template_ref": "nautobot-plugin-v1.0",
+      "cookie_dir": "",
+      "branch_prefix": "drift-manager"
+    }
   }
 }
