@@ -8,10 +8,10 @@ except ImportError:
 
 __version__ = metadata.version(__name__)
 
-from nautobot.extras.plugins import PluginConfig
+from nautobot.extras.plugins import NautobotAppConfig
 
 
-class FloorPlanConfig(PluginConfig):
+class FloorPlanConfig(NautobotAppConfig):
     """Plugin configuration for the nautobot_floor_plan plugin."""
 
     name = "nautobot_floor_plan"

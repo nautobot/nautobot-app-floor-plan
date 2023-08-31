@@ -15,6 +15,7 @@ from nautobot.extras.models.change_logging import ChangeLoggedModel
 # Then based on your reading you may decide to put the following decorator before the declaration of your class
 # @extras_features("custom_fields", "custom_validators", "relationships", "graphql")
 
+
 # If you want to choose a specific model to overload in your class declaration, please reference the following documentation:
 # how to chose a database model: https://nautobot.readthedocs.io/en/stable/plugins/development/#database-models
 class FloorPlan(BaseModel, ChangeLoggedModel):
