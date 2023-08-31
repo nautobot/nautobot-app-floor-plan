@@ -1,31 +1,31 @@
 {
-  "cookiecutter": {
-    "codeowner_github_usernames": "\\",
-    "full_name": "Network to Code, LLC",
-    "email": "info@networktocode.com",
-    "github_org": "nautobot",
-    "plugin_name": "nautobot_floor_plan",
-    "verbose_name": "Nautobot Floor Plan",
-    "plugin_slug": "nautobot-floor-plan",
-    "project_slug": "nautobot-plugin-floor-plan",
-    "repo_url": "https://github.com/nautobot/nautobot-plugin-floor-plan",
-    "base_url": "floor-plan",
-    "min_nautobot_version": "1.5.0",
-    "max_nautobot_version": "1.9999",
-    "nautobot_version": "latest",
-    "camel_name": "FloorPlan",
-    "project_short_description": "Nautobot Floor Plan",
-    "version": "0.1.0",
-    "model_class_name": "FloorPlan",
-    "open_source_license": "Apache-2.0",
-    "docs_base_url": "https://docs.nautobot.com",
-    "docs_app_url": "https://docs.nautobot.com/projects/floor-plan/en/latest",
-    "_drift_manager": {
-      "template": "https://github.com/networktocode-llc/cookiecutter-ntc.git",
-      "template_dir": "nautobot-plugin",
-      "template_ref": "nautobot-plugin-v1.0",
-      "cookie_dir": "",
-      "branch_prefix": "drift-manager"
+    "cookiecutter": {
+        "codeowner_github_usernames": "\\",
+        "full_name": "Network to Code, LLC",
+        "email": "info@networktocode.com",
+        "github_org": "nautobot",
+        "plugin_name": "nautobot_floor_plan",
+        "verbose_name": "Nautobot Floor Plan",
+        "plugin_slug": "nautobot-floor-plan",
+        "project_slug": "nautobot-plugin-floor-plan",
+        "repo_url": "https://github.com/nautobot/nautobot-plugin-floor-plan",
+        "base_url": "floor-plan",
+        "min_nautobot_version": "1.5.0",
+        "max_nautobot_version": "1.9999",
+        "nautobot_version": "latest",
+        "camel_name": "FloorPlan",
+        "project_short_description": "Nautobot Floor Plan",
+        "version": "0.1.0",
+        "model_class_name": "FloorPlan",
+        "open_source_license": "Apache-2.0",
+        "docs_base_url": "https://docs.nautobot.com",
+        "docs_app_url": "https://docs.nautobot.com/projects/floor-plan/en/latest",
+        "_drift_manager": {
+            "template": "https://github.com/nautobot/cookiecutter-nautobot-app.git",
+            "template_dir": "nautobot-app",
+            "template_ref": "develop",
+            "cookie_dir": "",
+            "branch_prefix": "drift-manager"
+        }
     }
-  }
 }
