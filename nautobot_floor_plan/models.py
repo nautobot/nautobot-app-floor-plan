@@ -18,11 +18,6 @@ from nautobot_floor_plan.svg import FloorPlanSVG
 logger = logging.getLogger(__name__)
 
 
-# If you want to choose a specific model to overload in your class declaration, please reference the following documentation:
-# how to chose a database model: https://nautobot.readthedocs.io/en/stable/plugins/development/#database-models
-class FloorPlan(BaseModel, ChangeLoggedModel):
-    """Base model for Nautobot Floor Plan plugin."""
-
 @extras_features(
     "custom_fields",
     # "custom_links",  Not really needed since this doesn't have distinct views as compared to a Location.
