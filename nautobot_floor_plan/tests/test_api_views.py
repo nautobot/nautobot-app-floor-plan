@@ -92,7 +92,3 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
         tag = Tag.objects.create(name="Hello")
         tag.content_types.add(ContentType.objects.get_for_model(models.FloorPlanTile))
         cls.bulk_update_data = {"tags": [tag.pk]}
-
-    @unittest.skip("TBD: Test bulk update")
-    def test_bulk_update_objects(self):
-        pass
