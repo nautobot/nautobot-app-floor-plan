@@ -1,6 +1,6 @@
 """ChoiceSet definitions for nautobot_floor_plan."""
 
-from nautobot.utilities.choices import ChoiceSet
+from nautobot.core.choices import ChoiceSet
 
 
 class RackOrientationChoices(ChoiceSet):

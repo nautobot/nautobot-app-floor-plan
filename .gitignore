@@ -308,3 +308,4 @@ docs/CHANGELOG.md
 public
 /compose.yaml
 /dump.sql
+/nautobot_floor_plan/static/

@@ -2,7 +2,7 @@
 
 from django.contrib.contenttypes.models import ContentType
 
-from nautobot.dcim.models import Location, LocationType, Rack, Site
+from nautobot.dcim.models import LocationType, Rack, Location
 from nautobot.extras.models import Status
 
 from nautobot_floor_plan.models import FloorPlan, FloorPlanTile
@@ -10,6 +10,7 @@ from nautobot_floor_plan.models import FloorPlan, FloorPlanTile
 
 def create_prerequisites(floor_count=4):
     """Fixture to create the various prerequisite objects needed before a FloorPlan can be created."""
+    location_type_site = LocationType.objects.create(name="Site")
     parent_location_type = LocationType.objects.create(name="Building")
     location_type = LocationType.objects.create(name="Floor", parent=parent_location_type)
     location_type.content_types.add(ContentType.objects.get_for_model(Rack))
@@ -17,9 +18,9 @@ def create_prerequisites(floor_count=4):
     active_status = Status.objects.get(name="Active")
     active_status.content_types.add(ContentType.objects.get_for_model(FloorPlanTile))
 
-    site = Site.objects.create(name="Site 1", status=active_status)
+    location = Location.objects.create(name="Location 1", status=active_status, location_type=location_type_site)
     building = Location.objects.create(
-        site=site, location_type=parent_location_type, name="Building 1", status=active_status
+        parent=location, location_type=parent_location_type, name="Building 1", status=active_status
     )
     floors = []
     for i in range(1, floor_count + 1):
@@ -32,7 +33,7 @@ def create_prerequisites(floor_count=4):
     return {
         "status": active_status,
         "floors": floors,
-        "site": site,
+        "location": location,
     }
 
 

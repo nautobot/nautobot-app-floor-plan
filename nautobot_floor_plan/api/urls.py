@@ -1,6 +1,6 @@
 """Django API urlpatterns declaration for nautobot_floor_plan plugin."""
 
-from nautobot.core.api import OrderedDefaultRouter
+from nautobot.core.api.routers import OrderedDefaultRouter
 
 from nautobot_floor_plan.api import views
 

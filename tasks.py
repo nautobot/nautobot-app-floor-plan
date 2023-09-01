@@ -45,7 +45,7 @@ namespace = Collection("nautobot_floor_plan")
 namespace.configure(
     {
         "nautobot_floor_plan": {
-            "nautobot_ver": "latest",
+            "nautobot_ver": "2.0.0-rc.2",
             "project_name": "nautobot_floor_plan",
             "python_ver": "3.8",
             "local": False,
@@ -630,7 +630,15 @@ def check_migrations(context):
         "pattern": "Run specific test methods, classes, or modules instead of all tests",
     }
 )
-def unittest(context, keepdb=False, label="nautobot_floor_plan", failfast=False, buffer=True, pattern=""):
+def unittest(
+    context,
+    keepdb=False,
+    label="nautobot_floor_plan",
+    failfast=False,
+    buffer=True,
+    pattern="",
+    verbose=False,
+):
     """Run Nautobot unit tests."""
     command = f"coverage run --module nautobot.core.cli test {label}"
 
@@ -642,6 +650,8 @@ def unittest(context, keepdb=False, label="nautobot_floor_plan", failfast=False,
         command += " --buffer"
     if pattern:
         command += f" -k='{pattern}'"
+    if verbose:
+        command += " --verbosity=3"
     run_command(context, command)
 
 

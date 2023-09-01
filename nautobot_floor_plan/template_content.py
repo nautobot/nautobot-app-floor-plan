@@ -21,7 +21,7 @@ class LocationFloorPlanTab(PluginTemplateExtension):  # pylint: disable=abstract
                 return ""
 
             delete_url = reverse("plugins:nautobot_floor_plan:floorplan_delete", kwargs={"pk": floor_plan.pk})
-            return_url = reverse("dcim:location", kwargs={"slug": location.slug})
+            return_url = reverse("dcim:location", kwargs={"name": location.name})
             return f"""\
 <a href="{ delete_url }?return_url={ return_url }" class="btn btn-danger">
     <span class="mdi mdi-checkerboard-remove" aria-hidden="true"></span>

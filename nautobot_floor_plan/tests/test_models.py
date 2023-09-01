@@ -3,7 +3,7 @@
 from django.core.exceptions import ValidationError
 
 from nautobot.dcim.models import Rack
-from nautobot.utilities.testing import TestCase
+from nautobot.core.testing import TestCase
 
 from nautobot_floor_plan import models
 from nautobot_floor_plan.tests import fixtures
@@ -54,11 +54,9 @@ class TestFloorPlanTile(TestCase):
         data = fixtures.create_prerequisites()
         self.active_status = data["status"]
         self.floors = data["floors"]
-        self.site = data["site"]
+        self.location = data["location"]
         self.floor_plans = fixtures.create_floor_plans(self.floors)
-        self.rack = Rack.objects.create(
-            name="Rack 1", status=self.active_status, site=self.site, location=self.floors[2]
-        )
+        self.rack = Rack.objects.create(name="Rack 1", status=self.active_status, location=self.floors[2])
 
     def test_create_floor_plan_single_tiles_valid(self):
         """A FloorPlanTile can be created for each legal position in a FloorPlan."""
@@ -238,7 +236,7 @@ class TestFloorPlanTile(TestCase):
                 floor_plan=self.floor_plans[0], status=self.active_status, x_origin=1, y_origin=1, rack=self.rack
             ).validated_save()
         # How about a rack with no Location at all?
-        non_located_rack = Rack.objects.create(name="Rack 2", status=self.active_status, site=self.site)
+        non_located_rack = Rack.objects.create(name="Rack 2", status=self.active_status, location=self.location)
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[0], status=self.active_status, x_origin=1, y_origin=1, rack=non_located_rack
