@@ -12,7 +12,7 @@ from nautobot.extras.forms import (
     NautobotModelForm,
     TagsBulkEditFormMixin,
 )
-from nautobot.core.forms import (
+from nautobot.apps.forms import (
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,

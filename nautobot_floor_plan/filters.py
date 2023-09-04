@@ -4,7 +4,8 @@ import django_filters
 
 from nautobot.dcim.models import Location, Rack
 from nautobot.extras.filters import NautobotFilterSet
-from nautobot.core.filters import NaturalKeyOrPKMultipleChoiceFilter, SearchFilter, TagFilter
+from nautobot.apps.filters import NaturalKeyOrPKMultipleChoiceFilter, SearchFilter
+from nautobot.core.filters import TagFilter
 
 from nautobot_floor_plan import models
 
