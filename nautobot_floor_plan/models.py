@@ -5,7 +5,6 @@ import logging
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.urls import reverse
 
 from nautobot.apps.models import extras_features
 from nautobot.apps.models import PrimaryModel
@@ -59,10 +58,6 @@ class FloorPlan(PrimaryModel):
         """Metaclass attributes."""
 
         ordering = ["location___name"]
-
-    def get_absolute_url(self, api=False):
-        """Return detail view for FloorPlan."""
-        return reverse("plugins:nautobot_floor_plan:floorplan", args=[self.pk])
 
     def __str__(self):
         """Stringify instance."""
@@ -170,10 +165,6 @@ class FloorPlanTile(PrimaryModel):
                 continue
             # Else they must overlap
             raise ValidationError("Tile overlaps with another defined tile.")
-
-    def get_absolute_url(self, api=False):
-        """Return detail view for FloorPlanTile."""
-        return reverse("plugins:nautobot_floor_plan:floorplantile", args=[self.pk])
 
     def __str__(self):
         """Stringify instance."""
