@@ -22,6 +22,7 @@ class FloorPlanFilterSet(NautobotFilterSet):
         queryset=Location.objects.all(),
         label="Location (name or ID)",
     )
+    # TBD: Verify it's necessary
     tag = TagFilter()
 
     class Meta:
@@ -51,6 +52,7 @@ class FloorPlanTileFilterSet(NautobotFilterSet):
         to_field_name="name",
         label="Rack (name or ID)",
     )
+    # TBD: Verify it's necessary
     tag = TagFilter()
 
     class Meta:

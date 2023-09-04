@@ -7,9 +7,9 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 
-from nautobot.core.models.generics import PrimaryModel
-from nautobot.extras.utils import extras_features
-from nautobot.extras.models import StatusField
+from nautobot.apps.models import extras_features
+from nautobot.apps.models import PrimaryModel
+from nautobot.apps.models import StatusField
 
 from nautobot_floor_plan.choices import RackOrientationChoices
 from nautobot_floor_plan.svg import FloorPlanSVG

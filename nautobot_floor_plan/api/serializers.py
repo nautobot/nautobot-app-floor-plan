@@ -4,7 +4,7 @@ from nautobot.extras.api.mixins import TaggedModelSerializerMixin
 from nautobot_floor_plan import models
 
 
-class FloorPlanSerializer(NautobotModelSerializer):
+class FloorPlanSerializer(NautobotModelSerializer, TaggedModelSerializerMixin):
     """FloorPlan Serializer."""
 
     class Meta:
