@@ -83,7 +83,7 @@ class FloorPlan(PrimaryModel):
 class FloorPlanTile(PrimaryModel):
     """Model representing a single rectangular "tile" within a FloorPlan, its status, and any Rack that it contains."""
 
-    status = StatusField(null=True)
+    status = StatusField(blank=False, null=False)
     floor_plan = models.ForeignKey(to=FloorPlan, on_delete=models.CASCADE, related_name="tiles")
     # TODO: for efficiency we could consider using something like GeoDjango, rather than inventing geometry from
     # first principles, but since that requires changing settings.DATABASES and installing libraries, avoid it for now.
@@ -113,7 +113,6 @@ class FloorPlanTile(PrimaryModel):
         blank=True,
         help_text="Direction the rack's front is facing on the floor plan",
     )
-    # status field is automatically provided by StatusModel
 
     class Meta:
         """Metaclass attributes."""
