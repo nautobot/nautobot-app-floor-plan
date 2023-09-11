@@ -3,7 +3,7 @@
 from django.contrib.contenttypes.models import ContentType
 
 from nautobot.extras.models import Tag
-from nautobot.utilities.testing import TestCase
+from nautobot.core.testing import TestCase
 
 from nautobot_floor_plan import forms, models
 from nautobot_floor_plan.tests import fixtures

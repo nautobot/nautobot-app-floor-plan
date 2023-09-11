@@ -1,16 +1,18 @@
+# TBD: Remove after releasing pylint-nautobot v0.3.0
+# https://github.com/nautobot/pylint-nautobot/commit/48efc016fffa0b9df02f61bdaa9c4a0933351d29
+# pylint: disable=nb-incorrect-base-class
+
 """Forms for nautobot_floor_plan."""
 from django import forms
 
 from nautobot.dcim.models import Location, Rack
 from nautobot.extras.forms import (
-    CustomFieldModelCSVForm,
     NautobotBulkEditForm,
     NautobotFilterForm,
     NautobotModelForm,
     TagsBulkEditFormMixin,
 )
-from nautobot.utilities.forms import (
-    CSVModelChoiceField,
+from nautobot.apps.forms import (
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -38,18 +40,6 @@ class FloorPlanForm(NautobotModelForm):
         ]
 
 
-class FloorPlanCSVForm(CustomFieldModelCSVForm):
-    """FloorPlan CSV export form."""
-
-    location = CSVModelChoiceField(queryset=Location.objects.all(), to_field_name="name")
-
-    class Meta:
-        """Meta attributes."""
-
-        model = models.FloorPlan
-        fields = models.FloorPlan.csv_headers
-
-
 class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
     """FloorPlan bulk edit form."""
 
@@ -72,7 +62,7 @@ class FloorPlanFilterForm(NautobotFilterForm):
     field_order = ["q", "location", "x_size", "y_size"]
 
     q = forms.CharField(required=False, label="Search")
-    location = DynamicModelMultipleChoiceField(queryset=Location.objects.all(), to_field_name="slug", required=False)
+    location = DynamicModelMultipleChoiceField(queryset=Location.objects.all(), to_field_name="pk", required=False)
     tag = TagFilterField(model)
 
 
