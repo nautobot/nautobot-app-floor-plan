@@ -39,10 +39,10 @@ class TestFloorPlanFilterSet(TestCase):
         params = {"location": [self.floors[0].name, self.floors[1].pk]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
 
-    def test_tag(self):
-        """Test filtering by Tag."""
+    def test_tags(self):
+        """Test filtering by Tags."""
         self.floors[0].floor_plan.tags.add(Tag.objects.create(name="Planned"))
-        params = {"tag": ["Planned"]}
+        params = {"tags": ["Planned"]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
 
     def test_x_size(self):
@@ -111,10 +111,10 @@ class TestFloorPlanTileFilterSet(TestCase):
         params = {"rack": list(Rack.objects.all()[:3])}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 3)
 
-    def test_tag(self):
-        """Test filtering by Tag."""
+    def test_tags(self):
+        """Test filtering by Tags."""
         self.queryset.first().tags.add(Tag.objects.create(name="Relevant"))
-        params = {"tag": ["Relevant"]}
+        params = {"tags": ["Relevant"]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
 
     def test_floor_plan(self):
