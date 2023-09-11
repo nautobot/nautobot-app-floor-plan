@@ -62,7 +62,7 @@ class FloorPlanFilterForm(NautobotFilterForm):
     field_order = ["q", "location", "x_size", "y_size"]
 
     q = forms.CharField(required=False, label="Search")
-    location = DynamicModelMultipleChoiceField(queryset=Location.objects.all(), to_field_name="name", required=False)
+    location = DynamicModelMultipleChoiceField(queryset=Location.objects.all(), to_field_name="pk", required=False)
     tag = TagFilterField(model)
 
 
