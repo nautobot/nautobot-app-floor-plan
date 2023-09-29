@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.http import urlencode
 
-from nautobot.utilities.templatetags.helpers import fgcolor
+from nautobot.core.templatetags.helpers import fgcolor
 
 from nautobot_floor_plan.choices import RackOrientationChoices
 
