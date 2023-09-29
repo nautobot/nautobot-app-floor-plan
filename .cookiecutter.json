@@ -20,6 +20,12 @@
     "open_source_license": "Apache-2.0",
     "docs_base_url": "https://docs.nautobot.com",
     "docs_app_url": "https://docs.nautobot.com/projects/floor-plan/en/latest",
-    "_template": "./cookiecutter-ntc/nautobot-plugin"
+    "_drift_manager": {
+      "template": "https://github.com/networktocode-llc/cookiecutter-ntc.git",
+      "template_dir": "nautobot-plugin",
+      "template_ref": "nautobot-plugin-v1.0",
+      "cookie_dir": "",
+      "branch_prefix": "drift-manager"
+    }
   }
 }

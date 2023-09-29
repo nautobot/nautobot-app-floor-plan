@@ -3,7 +3,7 @@
 import os
 import sys
 
-from nautobot.core.settings import *  # noqa: F401,F403
+from nautobot.core.settings import *  # noqa: F403
 from nautobot.core.settings_funcs import parse_redis_connection
 
 
