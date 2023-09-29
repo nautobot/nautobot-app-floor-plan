@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nautobot-floor-plan"
-version = "2.0.0rc1"
+version = "2.0.0"
 description = "Nautobot Floor Plan"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 license = "Apache-2.0"
@@ -17,7 +17,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-nautobot = { version = ">=2.0.0rc1,<2.0.0rc99" }
+nautobot = "^2.0.0"
 python = ">=3.8,<3.12"
 
 [tool.poetry.dev-dependencies]
