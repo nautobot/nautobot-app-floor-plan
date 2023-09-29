@@ -1076,6 +1076,20 @@ files = [
 Django = ">=2.2"
 
 [[package]]
+name = "emoji"
+version = "2.8.0"
+description = "Emoji for Python"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "emoji-2.8.0-py2.py3-none-any.whl", hash = "sha256:a8468fd836b7ecb6d1eac054c9a591701ce0ccd6c6f7779ad71b66f76664df90"},
+    {file = "emoji-2.8.0.tar.gz", hash = "sha256:8d8b5dec3c507444b58890e598fc895fcec022b3f5acb49497c6ccc5208b8b00"},
+]
+
+[package.extras]
+dev = ["coverage", "coveralls", "pytest"]
+
+[[package]]
 name = "flake8"
 version = "3.9.2"
 description = "the modular source code checker: pep8 pyflakes and co"
@@ -1124,17 +1138,20 @@ smmap = ">=3.0.1,<6"
 
 [[package]]
 name = "gitpython"
-version = "3.1.32"
+version = "3.1.37"
 description = "GitPython is a Python library used to interact with Git repositories"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "GitPython-3.1.32-py3-none-any.whl", hash = "sha256:e3d59b1c2c6ebb9dfa7a184daf3b6dd4914237e7488a1730a6d8f6f5d0b4187f"},
-    {file = "GitPython-3.1.32.tar.gz", hash = "sha256:8d9b8cb1e80b9735e8717c9362079d3ce4c6e5ddeebedd0361b228c3a67a62f6"},
+    {file = "GitPython-3.1.37-py3-none-any.whl", hash = "sha256:5f4c4187de49616d710a77e98ddf17b4782060a1788df441846bddefbb89ab33"},
+    {file = "GitPython-3.1.37.tar.gz", hash = "sha256:f9b9ddc0761c125d5780eab2d64be4873fc6817c2899cbcb34b02344bdc7bc54"},
 ]
 
 [package.dependencies]
 gitdb = ">=4.0.1,<5"
+
+[package.extras]
+test = ["black", "coverage[toml]", "ddt (>=1.1.1,!=1.4.3)", "mypy", "pre-commit", "pytest", "pytest-cov", "pytest-sugar"]
 
 [[package]]
 name = "graphene"
@@ -1788,13 +1805,13 @@ files = [
 
 [[package]]
 name = "nautobot"
-version = "2.0.0rc2"
+version = "2.0.0"
 description = "Source of truth and network automation platform."
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "nautobot-2.0.0rc2-py3-none-any.whl", hash = "sha256:0012663d52d4c12ae1327f8e8fef150654f67483ccc3c9c4fc7e3b039a05afb9"},
-    {file = "nautobot-2.0.0rc2.tar.gz", hash = "sha256:404a14977ba8e1097c3f6aaf34d21880ea66770e26ac2dc794a5310d8174a552"},
+    {file = "nautobot-2.0.0-py3-none-any.whl", hash = "sha256:71a1adb2a7a7fcd6df9da131f950f2d1ea397dfefba4cd8c8c85978f0a1d1f7a"},
+    {file = "nautobot-2.0.0.tar.gz", hash = "sha256:2e319fafb33f4f3c7638e067c2ffeab89a521ca60a7b889cdbc95472baf3389e"},
 ]
 
 [package.dependencies]
@@ -1820,7 +1837,8 @@ django-webserver = ">=1.2.0,<1.3.0"
 djangorestframework = ">=3.14.0,<3.15.0"
 drf-react-template-framework = ">=0.0.17,<0.0.18"
 drf-spectacular = {version = "0.26.3", extras = ["sidecar"]}
-GitPython = ">=3.1.32,<3.2.0"
+emoji = ">=2.8.0,<2.9.0"
+GitPython = ">=3.1.36,<3.2.0"
 graphene-django = ">=2.16.0,<2.17.0"
 graphene-django-optimizer = ">=0.8.0,<0.9.0"
 Jinja2 = ">=3.1.2,<3.2.0"
@@ -1828,11 +1846,12 @@ jsonschema = ">=4.7.0,<4.19.0"
 Markdown = ">=3.3.7,<3.4.0"
 MarkupSafe = ">=2.1.3,<2.2.0"
 netaddr = ">=0.8.0,<0.9.0"
-netutils = ">=1.5.0,<2.0.0"
+netutils = ">=1.6.0,<2.0.0"
 packaging = ">=23.1,<23.2"
 Pillow = ">=10.0.0,<10.1.0"
 prometheus-client = ">=0.17.1,<0.18.0"
 psycopg2-binary = ">=2.9.6,<2.10.0"
+python-slugify = ">=8.0.1,<8.1.0"
 pyuwsgi = ">=2.0.21,<2.1.0"
 PyYAML = ">=6.0,<6.1"
 social-auth-app-django = ">=5.2.0,<5.3.0"
@@ -1859,17 +1878,17 @@ files = [
 
 [[package]]
 name = "netutils"
-version = "1.5.0"
+version = "1.6.0"
 description = "Common helper functions useful in network automation."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "netutils-1.5.0-py3-none-any.whl", hash = "sha256:39654c367f291ed071477a2e5b4cda880eca9b8d5a1229ba3e39eec5f584cb67"},
-    {file = "netutils-1.5.0.tar.gz", hash = "sha256:c0d3a8836a030eca456a2e9291d02be1326e6d7fe4e88cb63b1155512001bb14"},
+    {file = "netutils-1.6.0-py3-none-any.whl", hash = "sha256:e755e6141d0968f1deeb61693a4023f4f5fe1f0dde25d94ac1008f8191d8d237"},
+    {file = "netutils-1.6.0.tar.gz", hash = "sha256:bd2fa691e172fe9d5c9e6fc5e2593316eb7fd2c36450454894ed13b274763d70"},
 ]
 
 [package.extras]
-optionals = ["napalm (>=4.0.0,<5.0.0)"]
+optionals = ["jsonschema (>=4.17.3,<5.0.0)", "napalm (>=4.0.0,<5.0.0)"]
 
 [[package]]
 name = "oauthlib"
@@ -2422,6 +2441,23 @@ files = [
 
 [package.extras]
 cli = ["click (>=5.0)"]
+
+[[package]]
+name = "python-slugify"
+version = "8.0.1"
+description = "A Python slugify application that also handles Unicode"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "python-slugify-8.0.1.tar.gz", hash = "sha256:ce0d46ddb668b3be82f4ed5e503dbc33dd815d83e2eb6824211310d3fb172a27"},
+    {file = "python_slugify-8.0.1-py2.py3-none-any.whl", hash = "sha256:70ca6ea68fe63ecc8fa4fcf00ae651fc8a5d02d93dcd12ae6d4fc7ca46c4d395"},
+]
+
+[package.dependencies]
+text-unidecode = ">=1.3"
+
+[package.extras]
+unidecode = ["Unidecode (>=1.1.1)"]
 
 [[package]]
 name = "python3-openid"
@@ -3179,4 +3215,4 @@ nautobot = ["nautobot"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "f39ee4e56159c3e8ca48d0f25633932c22fa34c4a477cb424f88e56853c7c5de"
+content-hash = "01c9c6e7a827fdef3cc5e91a378c9a7895d5b9b973d8fbf78555bad72cc55747"

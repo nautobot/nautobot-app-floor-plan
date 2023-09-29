@@ -17,7 +17,7 @@ class FloorPlanConfig(NautobotAppConfig):
     description = "Nautobot App for representing rack positions on per-location floor plan grids."
     base_url = "floor-plan"
     required_settings = []
-    min_version = "2.0.0rc2"
+    min_version = "2.0.0"
     max_version = "2.9999"
     default_settings = {}
     caching_config = {}
