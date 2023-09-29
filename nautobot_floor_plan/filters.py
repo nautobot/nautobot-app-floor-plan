@@ -4,7 +4,7 @@ import django_filters
 
 from nautobot.dcim.models import Location, Rack
 from nautobot.extras.filters import NautobotFilterSet
-from nautobot.utilities.filters import NaturalKeyOrPKMultipleChoiceFilter, SearchFilter, TagFilter
+from nautobot.apps.filters import NaturalKeyOrPKMultipleChoiceFilter, SearchFilter
 
 from nautobot_floor_plan import models
 
@@ -15,20 +15,18 @@ class FloorPlanFilterSet(NautobotFilterSet):
     q = SearchFilter(
         filter_predicates={
             "location__name": "icontains",
-            "location__slug": "icontains",
         },
     )
     location = NaturalKeyOrPKMultipleChoiceFilter(
         queryset=Location.objects.all(),
-        label="Location (slug or ID)",
+        label="Location (name or ID)",
     )
-    tag = TagFilter()
 
     class Meta:
         """Meta attributes for filter."""
 
         model = models.FloorPlan
-        fields = ["x_size", "y_size", "tile_width", "tile_depth"]
+        fields = ["x_size", "y_size", "tile_width", "tile_depth", "tags"]
 
 
 class FloorPlanTileFilterSet(NautobotFilterSet):
@@ -37,7 +35,6 @@ class FloorPlanTileFilterSet(NautobotFilterSet):
     q = SearchFilter(
         filter_predicates={
             "floor_plan__location__name": "icontains",
-            "floor_plan__location__slug": "icontains",
             "rack__name": "icontains",
         },
     )
@@ -45,17 +42,16 @@ class FloorPlanTileFilterSet(NautobotFilterSet):
     location = NaturalKeyOrPKMultipleChoiceFilter(
         field_name="floor_plan__location",
         queryset=Location.objects.all(),
-        label="Location (slug or ID)",
+        label="Location (name or ID)",
     )
     rack = NaturalKeyOrPKMultipleChoiceFilter(
         queryset=Rack.objects.all(),
         to_field_name="name",
         label="Rack (name or ID)",
     )
-    tag = TagFilter()
 
     class Meta:
         """Meta attributes."""
 
         model = models.FloorPlanTile
-        fields = ["x_origin", "y_origin"]
+        fields = ["x_origin", "y_origin", "tags"]

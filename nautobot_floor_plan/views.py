@@ -13,7 +13,6 @@ from nautobot_floor_plan.api import serializers
 class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of views
     """ViewSet for FloorPlan views."""
 
-    bulk_create_form_class = forms.FloorPlanCSVForm
     bulk_update_form_class = forms.FloorPlanBulkEditForm
     filterset_class = filters.FloorPlanFilterSet
     filterset_form_class = forms.FloorPlanFilterForm

@@ -1,10 +1,9 @@
 """Unit tests for nautobot_floor_plan."""
-
 from django.contrib.contenttypes.models import ContentType
 
 from nautobot.dcim.models import Rack
 from nautobot.extras.models import Tag
-from nautobot.utilities.testing import APIViewTestCases
+from nautobot.apps.testing import APIViewTestCases
 
 from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.tests import fixtures
@@ -53,21 +52,21 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
     def setUpTestData(cls):
         data = fixtures.create_prerequisites()
         floor_plans = fixtures.create_floor_plans(data["floors"])
-        cls.rack_2_2_2 = Rack(name="Rack 1", site=data["site"], status=data["status"], location=data["floors"][1])
+        cls.rack_2_2_2 = Rack(name="Rack 1", status=data["status"], location=data["floors"][1])
         cls.rack_2_2_2.validated_save()
         cls.model.objects.create(floor_plan=floor_plans[0], status=data["status"], x_origin=1, y_origin=1)
         cls.model.objects.create(
             floor_plan=floor_plans[1], status=data["status"], x_origin=2, y_origin=2, rack=cls.rack_2_2_2
         )
         cls.model.objects.create(floor_plan=floor_plans[2], status=data["status"], x_origin=3, y_origin=3)
-        cls.rack_3_1_1 = Rack(name="Rack 2", site=data["site"], status=data["status"], location=data["floors"][2])
+        cls.rack_3_1_1 = Rack(name="Rack 2", status=data["status"], location=data["floors"][2])
         cls.rack_3_1_1.validated_save()
         cls.create_data = [
             {
                 "floor_plan": floor_plans[2].pk,
                 "x_origin": 1,
                 "y_origin": 1,
-                "status": data["status"].slug,
+                "status": data["status"].name,
                 "rack": cls.rack_3_1_1.pk,
                 "rack_orientation": choices.RackOrientationChoices.RIGHT,
             },
@@ -77,7 +76,7 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
                 "y_origin": 1,
                 "x_size": 1,
                 "y_size": 1,
-                "status": data["status"].slug,
+                "status": data["status"].name,
             },
             {
                 "floor_plan": floor_plans[3].pk,
@@ -85,9 +84,9 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
                 "y_origin": 2,
                 "x_size": 2,
                 "y_size": 2,
-                "status": data["status"].slug,
+                "status": data["status"].name,
             },
         ]
-        tag = Tag.objects.create(name="Hello", slug="hello")
+        tag = Tag.objects.create(name="Hello")
         tag.content_types.add(ContentType.objects.get_for_model(models.FloorPlanTile))
         cls.bulk_update_data = {"tags": [tag.pk]}

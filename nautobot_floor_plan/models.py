@@ -5,11 +5,10 @@ import logging
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.urls import reverse
 
-from nautobot.core.models.generics import PrimaryModel
-from nautobot.extras.models import StatusModel
-from nautobot.extras.utils import extras_features
+from nautobot.apps.models import extras_features
+from nautobot.apps.models import PrimaryModel
+from nautobot.apps.models import StatusField
 
 from nautobot_floor_plan.choices import RackOrientationChoices
 from nautobot_floor_plan.svg import FloorPlanSVG
@@ -36,7 +35,6 @@ class FloorPlan(PrimaryModel):
 
     location = models.OneToOneField(to="dcim.Location", on_delete=models.CASCADE, related_name="floor_plan")
 
-    # Since a FloorPlan maps one-to-one to a Location, it doesn't need a separate name/slug/description of its own
     x_size = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)],
         help_text='Absolute width of the floor plan, in "tiles"',
@@ -61,31 +59,9 @@ class FloorPlan(PrimaryModel):
 
         ordering = ["location___name"]
 
-    csv_headers = [
-        "location",
-        "x_size",
-        "y_size",
-        "tile_width",
-        "tile_depth",
-    ]
-
-    def get_absolute_url(self):
-        """Return detail view for FloorPlan."""
-        return reverse("plugins:nautobot_floor_plan:floorplan", args=[self.pk])
-
     def __str__(self):
         """Stringify instance."""
         return f'Floor Plan for Location "{self.location.name}"'
-
-    def to_csv(self):
-        """Convert instance to a tuple for CSV export."""
-        return (
-            self.location.name,
-            self.x_size,
-            self.y_size,
-            self.tile_width,
-            self.tile_depth,
-        )
 
     def get_svg(self, *, user, base_url):
         """Get SVG representation of this FloorPlan."""
@@ -102,9 +78,12 @@ class FloorPlan(PrimaryModel):
     "statuses",
     "webhooks",
 )
-class FloorPlanTile(PrimaryModel, StatusModel):
+# TBD: Remove after releasing pylint-nautobot v0.3.0
+# pylint: disable-next=nb-string-field-blank-null
+class FloorPlanTile(PrimaryModel):
     """Model representing a single rectangular "tile" within a FloorPlan, its status, and any Rack that it contains."""
 
+    status = StatusField(blank=False, null=False)
     floor_plan = models.ForeignKey(to=FloorPlan, on_delete=models.CASCADE, related_name="tiles")
     # TODO: for efficiency we could consider using something like GeoDjango, rather than inventing geometry from
     # first principles, but since that requires changing settings.DATABASES and installing libraries, avoid it for now.
@@ -122,7 +101,11 @@ class FloorPlanTile(PrimaryModel, StatusModel):
     )
 
     rack = models.OneToOneField(
-        to="dcim.Rack", on_delete=models.CASCADE, blank=True, null=True, related_name="floor_plan_tile"
+        to="dcim.Rack",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="floor_plan_tile",
     )
     rack_orientation = models.CharField(
         max_length=10,
@@ -130,24 +113,12 @@ class FloorPlanTile(PrimaryModel, StatusModel):
         blank=True,
         help_text="Direction the rack's front is facing on the floor plan",
     )
-    # status field is automatically provided by StatusModel
 
     class Meta:
         """Metaclass attributes."""
 
         ordering = ["floor_plan", "y_origin", "x_origin"]
         unique_together = ["floor_plan", "x_origin", "y_origin"]
-
-    csv_headers = [
-        "location",
-        "x_origin",
-        "y_origin",
-        "x_size",
-        "y_size",
-        "status",
-        "rack",
-        "rack_orientation",
-    ]
 
     @property
     def bounds(self):
@@ -194,23 +165,6 @@ class FloorPlanTile(PrimaryModel, StatusModel):
             # Else they must overlap
             raise ValidationError("Tile overlaps with another defined tile.")
 
-    def get_absolute_url(self):
-        """Return detail view for FloorPlanTile."""
-        return reverse("plugins:nautobot_floor_plan:floorplantile", args=[self.pk])
-
     def __str__(self):
         """Stringify instance."""
         return f"Tile {self.bounds} in {self.floor_plan}"
-
-    def to_csv(self):
-        """Convert instance to a tuple for CSV export."""
-        return (
-            self.floor_plan.location.name,
-            self.x_origin,
-            self.y_origin,
-            self.x_size,
-            self.y_size,
-            self.status.name,
-            self.rack.name if self.rack is not None else None,
-            self.rack_orientation,
-        )

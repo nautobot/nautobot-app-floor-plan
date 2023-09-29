@@ -1,8 +1,8 @@
 """Tables for nautobot_floor_plan."""
 
 import django_tables2 as tables
-from nautobot.utilities.tables import BaseTable, ButtonsColumn, TagColumn, ToggleColumn
-from nautobot.utilities.templatetags.helpers import hyperlinked_object
+from nautobot.apps.tables import BaseTable, ButtonsColumn, TagColumn, ToggleColumn
+from nautobot.core.templatetags.helpers import hyperlinked_object
 
 from nautobot_floor_plan import models
 

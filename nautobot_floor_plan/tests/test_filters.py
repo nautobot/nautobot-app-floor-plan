@@ -29,13 +29,6 @@ class TestFloorPlanFilterSet(TestCase):
         params = {"q": "Floor 1"}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
 
-    def test_q_search_location_slug(self):
-        """Test using Q search with slug of Location."""
-        params = {"q": "building-1"}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 4)
-        params = {"q": "building-1-floor-1"}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
-
     def test_q_invalid(self):
         """Test using invalid Q search for FloorPlan."""
         params = {"q": "not-a-location"}
@@ -43,13 +36,13 @@ class TestFloorPlanFilterSet(TestCase):
 
     def test_location(self):
         """Test filtering by Location."""
-        params = {"location": [self.floors[0].slug, self.floors[1].pk]}
+        params = {"location": [self.floors[0].name, self.floors[1].pk]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
 
-    def test_tag(self):
-        """Test filtering by Tag."""
-        self.floors[0].floor_plan.tags.add(Tag.objects.create(name="Planned", slug="planned"))
-        params = {"tag": ["planned"]}
+    def test_tags(self):
+        """Test filtering by Tags."""
+        self.floors[0].floor_plan.tags.add(Tag.objects.create(name="Planned"))
+        params = {"tags": ["Planned"]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
 
     def test_x_size(self):
@@ -87,7 +80,6 @@ class TestFloorPlanTileFilterSet(TestCase):
                         rack = Rack.objects.create(
                             name=f"Rack ({x}, {y}) for floor {floor_plan.location}",
                             status=cls.active_status,
-                            site=data["site"],
                             location=floor_plan.location,
                         )
                     else:
@@ -104,13 +96,6 @@ class TestFloorPlanTileFilterSet(TestCase):
         params = {"q": "Floor 1"}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
 
-    def test_q_search_location_slug(self):
-        """Test using Q search with slug of Location."""
-        params = {"q": "building-1"}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 30)
-        params = {"q": "building-1-floor-1"}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
-
     def test_q_invalid(self):
         """Test using invalid Q search."""
         params = {"q": "no-matching"}
@@ -118,7 +103,7 @@ class TestFloorPlanTileFilterSet(TestCase):
 
     def test_location(self):
         """Test filtering by Location."""
-        params = {"location": [self.floors[0].slug, self.floors[1].pk]}
+        params = {"location": [self.floors[0].name, self.floors[1].pk]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 5)
 
     def test_rack(self):
@@ -126,10 +111,10 @@ class TestFloorPlanTileFilterSet(TestCase):
         params = {"rack": list(Rack.objects.all()[:3])}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 3)
 
-    def test_tag(self):
-        """Test filtering by Tag."""
-        self.queryset.first().tags.add(Tag.objects.create(name="Relevant", slug="relevant"))
-        params = {"tag": ["relevant"]}
+    def test_tags(self):
+        """Test filtering by Tags."""
+        self.queryset.first().tags.add(Tag.objects.create(name="Relevant"))
+        params = {"tags": ["Relevant"]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
 
     def test_floor_plan(self):
