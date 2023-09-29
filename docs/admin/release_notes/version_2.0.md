@@ -6,9 +6,7 @@ This document describes all new features and changes in the release `2.0`. The f
 
 Updated `nautobot` to `2.0.0`.
 
-## [v2.0.0] - 2023-MM-DD
-
-TBD: Date
+## [v2.0.0] - 2023-09-29
 
 ### Changed
 
