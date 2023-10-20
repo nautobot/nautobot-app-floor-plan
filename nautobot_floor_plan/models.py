@@ -14,17 +14,21 @@ from nautobot_floor_plan.choices import RackOrientationChoices
 from nautobot_floor_plan.svg import FloorPlanSVG
 
 
-# from nautobot.extras.utils import extras_features
-# If you want to use the extras_features decorator please reference the following documentation
-# https://docs.nautobot.com/projects/core/en/latest/plugins/development/#using-the-extras_features-decorator-for-graphql
-# Then based on your reading you may decide to put the following decorator before the declaration of your class
-# @extras_features("custom_fields", "custom_validators", "relationships", "graphql")
+logger = logging.getLogger(__name__)
 
 
-# If you want to choose a specific model to overload in your class declaration, please reference the following documentation:
-# how to chose a database model: https://docs.nautobot.com/projects/core/en/stable/plugins/development/#database-models
-class FloorPlan(BaseModel, ChangeLoggedModel):
-    """Base model for Nautobot Floor Plan plugin."""
+@extras_features(
+    "custom_fields",
+    # "custom_links",  Not really needed since this doesn't have distinct views as compared to a Location.
+    "custom_validators",
+    "export_templates",
+    "graphql",
+    "relationships",
+    "webhooks",
+)
+class FloorPlan(PrimaryModel):
+    """
+    Model representing the floor plan of a given Location.
 
     Within a FloorPlan, individual areas are defined as FloorPlanTile records.
     """
