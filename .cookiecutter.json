@@ -10,12 +10,10 @@
         "project_slug": "nautobot-plugin-floor-plan",
         "repo_url": "https://github.com/nautobot/nautobot-plugin-floor-plan",
         "base_url": "floor-plan",
-        "min_nautobot_version": "1.5.0",
-        "max_nautobot_version": "1.9999",
-        "nautobot_version": "latest",
+        "min_nautobot_version": "2.0.0",
+        "max_nautobot_version": "2.9999",
         "camel_name": "FloorPlan",
         "project_short_description": "Nautobot Floor Plan",
-        "version": "0.1.0",
         "model_class_name": "FloorPlan",
         "open_source_license": "Apache-2.0",
         "docs_base_url": "https://docs.nautobot.com",
@@ -25,7 +23,13 @@
             "template_dir": "nautobot-app",
             "template_ref": "develop",
             "cookie_dir": "",
-            "branch_prefix": "drift-manager"
+            "branch_prefix": "drift-manager",
+            "pull_request_strategy": "create",
+            "post_actions": [
+                "black"
+            ],
+            "draft": true,
+            "baked_commit_ref": ""
         }
     }
 }
