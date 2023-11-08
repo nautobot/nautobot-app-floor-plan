@@ -17,7 +17,7 @@ class FloorPlanTable(BaseTable):
     tags = TagColumn()
     actions = ButtonsColumn(models.FloorPlan)
 
-    def render_floor_plan(self, record):  # pylint: disable=no-self-use
+    def render_floor_plan(self, record):
         """Render a link to the detail view for the FloorPlan record itself."""
         return hyperlinked_object(record)
 
