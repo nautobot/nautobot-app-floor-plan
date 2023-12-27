@@ -1,4 +1,4 @@
-"""Plugin declaration for nautobot_floor_plan."""
+"""App declaration for nautobot_floor_plan."""
 # Metadata is inherited from Nautobot. If not including Nautobot in the environment, this should be added
 from importlib import metadata
 
@@ -8,7 +8,7 @@ from nautobot.apps import NautobotAppConfig
 
 
 class FloorPlanConfig(NautobotAppConfig):
-    """Plugin configuration for the nautobot_floor_plan plugin."""
+    """App configuration for the nautobot_floor_plan app."""
 
     name = "nautobot_floor_plan"
     verbose_name = "Floor Plans"

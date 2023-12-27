@@ -1,1 +1,1 @@
-"""Unit tests for nautobot_floor_plan plugin."""
+"""Unit tests for nautobot_floor_plan app."""
