@@ -6,7 +6,7 @@ from nautobot.extras.plugins import PluginTemplateExtension
 
 
 class LocationFloorPlanTab(PluginTemplateExtension):  # pylint: disable=abstract-method
-    """Plugin extensions for Location model detail view."""
+    """App extensions for Location model detail view."""
 
     model = "dcim.location"
 

@@ -1,1 +1,1 @@
-"""REST API module for nautobot_floor_plan plugin."""
+"""REST API module for nautobot_floor_plan app."""
