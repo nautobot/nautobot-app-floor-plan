@@ -1,17 +1,11 @@
 """API serializers for nautobot_floor_plan."""
-from rest_framework import serializers
-
-from nautobot.core.api.serializers import ValidatedModelSerializer
+from nautobot.apps.api import NautobotModelSerializer, TaggedModelSerializerMixin
 
 from nautobot_floor_plan import models
 
-from . import nested_serializers  # noqa: F401, pylint: disable=unused-import
 
-
-class FloorPlanSerializer(ValidatedModelSerializer):
+class FloorPlanSerializer(NautobotModelSerializer, TaggedModelSerializerMixin):  # pylint: disable=too-many-ancestors
     """FloorPlan Serializer."""
-
-    url = serializers.HyperlinkedIdentityField(view_name="plugins-api:nautobot_floor_plan-api:floorplan-detail")
 
     class Meta:
         """Meta attributes."""

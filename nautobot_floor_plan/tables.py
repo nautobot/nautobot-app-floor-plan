@@ -1,7 +1,7 @@
 """Tables for nautobot_floor_plan."""
 
 import django_tables2 as tables
-from nautobot.utilities.tables import BaseTable, ButtonsColumn, ToggleColumn
+from nautobot.apps.tables import BaseTable, ButtonsColumn, ToggleColumn
 
 from nautobot_floor_plan import models
 
@@ -17,7 +17,7 @@ class FloorPlanTable(BaseTable):
         # Option for modifying the default action buttons on each row:
         # buttons=("changelog", "edit", "delete"),
         # Option for modifying the pk for the action buttons:
-        pk_field="slug",
+        pk_field="pk",
     )
 
     class Meta(BaseTable.Meta):

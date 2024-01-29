@@ -1,10 +1,10 @@
 ---
 dev_addr: "127.0.0.1:8001"
-edit_uri: "edit/main/nautobot-plugin-floor-plan/docs"
+edit_uri: "edit/main/nautobot-app-floor-plan/docs"
 site_dir: "nautobot_floor_plan/static/nautobot_floor_plan/docs"
 site_name: "Nautobot Floor Plan Documentation"
 site_url: "https://docs.nautobot.com/projects/floor-plan/en/latest/"
-repo_url: "https://github.com/nautobot/nautobot-plugin-floor-plan"
+repo_url: "https://github.com/nautobot/nautobot-app-floor-plan"
 copyright: "Copyright &copy; The Authors"
 theme:
   name: "material"

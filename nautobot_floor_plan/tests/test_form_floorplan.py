@@ -11,7 +11,6 @@ class FloorPlanTest(TestCase):
         form = forms.FloorPlanForm(
             data={
                 "name": "Development",
-                "slug": "development",
                 "description": "Development Testing",
             }
         )
@@ -22,18 +21,12 @@ class FloorPlanTest(TestCase):
         form = forms.FloorPlanForm(
             data={
                 "name": "Development",
-                "slug": "development",
             }
         )
         self.assertTrue(form.is_valid())
         self.assertTrue(form.save())
 
     def test_validate_name_floorplan_is_required(self):
-        form = forms.FloorPlanForm(data={"slug": "development"})
+        form = forms.FloorPlanForm(data={"description": "Development Testing"})
         self.assertFalse(form.is_valid())
         self.assertIn("This field is required.", form.errors["name"])
-
-    def test_validate_slug_is_required(self):
-        form = forms.FloorPlanForm(data={"name": "Development"})
-        self.assertFalse(form.is_valid())
-        self.assertIn("This field is required.", form.errors["slug"])
