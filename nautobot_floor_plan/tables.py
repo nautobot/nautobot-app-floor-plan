@@ -1,8 +1,7 @@
 """Tables for nautobot_floor_plan."""
 
 import django_tables2 as tables
-from nautobot.apps.tables import BaseTable, ButtonsColumn, TagColumn, ToggleColumn
-from nautobot.core.templatetags.helpers import hyperlinked_object
+from nautobot.apps.tables import BaseTable, ButtonsColumn, ToggleColumn
 
 from nautobot_floor_plan import models
 
@@ -12,14 +11,14 @@ class FloorPlanTable(BaseTable):
     """Table for list view."""
 
     pk = ToggleColumn()
-    floor_plan = tables.Column(empty_values=[])
-    location = tables.Column(linkify=True)
-    tags = TagColumn()
-    actions = ButtonsColumn(models.FloorPlan)
-
-    def render_floor_plan(self, record):
-        """Render a link to the detail view for the FloorPlan record itself."""
-        return hyperlinked_object(record)
+    name = tables.Column(linkify=True)
+    actions = ButtonsColumn(
+        models.FloorPlan,
+        # Option for modifying the default action buttons on each row:
+        # buttons=("changelog", "edit", "delete"),
+        # Option for modifying the pk for the action buttons:
+        pk_field="pk",
+    )
 
     class Meta(BaseTable.Meta):
         """Meta attributes."""

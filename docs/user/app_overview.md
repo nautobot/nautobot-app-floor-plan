@@ -36,12 +36,8 @@ Included is a non-exhaustive list of capabilites beyond a standard MVC (model vi
 
 ## Nautobot Features Used
 
-This App:
-
-- Adds a "Location Floor Plans" menu item to Nautobot's "Organization" menu.
-- Adds two new database models, "Floor Plan" and "Floor Plan Tile".
-- Adds UI and REST API endpoints for performing standard create/retrieve/update/delete (CRUD) operations on these models.
-- Extends the detail view of Nautobot Locations to include an "Add/Remove Floor Plan" button and (when a Floor Plan is defined) a "Floor Plan" tab to display and interact with the rendered floor plan.
+!!! warning "Developer Note - Remove Me!"
+    What is shown today in the Installed Apps page in Nautobot. What parts of Nautobot does it interact with, what does it add etc. ?
 
 ### Extras
 

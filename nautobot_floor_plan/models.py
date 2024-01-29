@@ -6,58 +6,32 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from nautobot.apps.models import extras_features
+# Nautobot imports
 from nautobot.apps.models import PrimaryModel
-from nautobot.apps.models import StatusField
-
-from nautobot_floor_plan.choices import RackOrientationChoices
-from nautobot_floor_plan.svg import FloorPlanSVG
 
 
 logger = logging.getLogger(__name__)
 
 
-@extras_features(
-    "custom_fields",
-    # "custom_links",  Not really needed since this doesn't have distinct views as compared to a Location.
-    "custom_validators",
-    "export_templates",
-    "graphql",
-    "relationships",
-    "webhooks",
-)
-class FloorPlan(PrimaryModel):
-    """
-    Model representing the floor plan of a given Location.
+# If you want to choose a specific model to overload in your class declaration, please reference the following documentation:
+# how to chose a database model: https://docs.nautobot.com/projects/core/en/stable/plugins/development/#database-models
+class FloorPlan(PrimaryModel):  # pylint: disable=too-many-ancestors
+    """Base model for Nautobot Floor Plan app."""
 
-    Within a FloorPlan, individual areas are defined as FloorPlanTile records.
-    """
-
-    location = models.OneToOneField(to="dcim.Location", on_delete=models.CASCADE, related_name="floor_plan")
-
-    x_size = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)],
-        help_text='Absolute width of the floor plan, in "tiles"',
-    )
-    y_size = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)],
-        help_text='Absolute depth of the floor plan, in "tiles"',
-    )
-    tile_width = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)],
-        default=100,
-        help_text='Relative width of each "tile" in the floor plan (cm, inches, etc.)',
-    )
-    tile_depth = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)],
-        default=100,
-        help_text='Relative depth of each "tile" in the floor plan (cm, inches, etc.)',
-    )
+    name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=200, blank=True)
+    # additional model fields
 
     class Meta:
         """Metaclass attributes."""
 
-        ordering = ["location___name"]
+        ordering = ["name"]
+
+        # Option for fixing capitalization (i.e. "Snmp" vs "SNMP")
+        # verbose_name = "Nautobot Floor Plan"
+
+        # Option for fixing plural name (i.e. "Chicken Tenders" vs "Chicken Tendies")
+        # verbose_name_plural = "Nautobot Floor Plans"
 
     def __str__(self):
         """Stringify instance."""

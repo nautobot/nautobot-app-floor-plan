@@ -1,5 +1,5 @@
 """Unit tests for nautobot_floor_plan."""
-from django.contrib.contenttypes.models import ContentType
+from nautobot.apps.testing import APIViewTestCases
 
 from nautobot.dcim.models import Rack
 from nautobot.extras.models import Tag
@@ -13,8 +13,16 @@ class FloorPlanAPIViewTest(APIViewTestCases.APIViewTestCase):
     """Test the API viewsets for FloorPlan."""
 
     model = models.FloorPlan
-    bulk_update_data = {"x_size": 10, "y_size": 1}
-    brief_fields = ["display", "id", "url", "x_size", "y_size"]
+    create_data = [
+        {
+            "name": "Test Model 1",
+            "description": "test description",
+        },
+        {
+            "name": "Test Model 2",
+        },
+    ]
+    bulk_update_data = {"description": "Test Bulk Update"}
 
     @classmethod
     def setUpTestData(cls):

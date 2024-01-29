@@ -4,7 +4,7 @@
   <img src="https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/icon-nautobot-floor-plan.png" class="logo" height="200px">
   <br>
   <a href="https://github.com/nautobot/nautobot-app-floor-plan/actions"><img src="https://github.com/nautobot/nautobot-app-floor-plan/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://docs.nautobot.com/projects/floor-plan/en/latest"><img src="https://readthedocs.org/projects/nautobot-plugin-floor-plan/badge/"></a>
+  <a href="https://docs.nautobot.com/projects/floor-plan/en/latest"><img src="https://readthedocs.org/projects/nautobot-app-floor-plan/badge/"></a>
   <a href="https://pypi.org/project/nautobot-floor-plan/"><img src="https://img.shields.io/pypi/v/nautobot-floor-plan"></a>
   <a href="https://pypi.org/project/nautobot-floor-plan/"><img src="https://img.shields.io/pypi/dm/nautobot-floor-plan"></a>
   <br>
@@ -19,11 +19,11 @@ This App aids in data center management by providing the ability to create a gri
 
 ![A sample floor plan](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/floor-plan-populated.png)
 
-![Button to add a new floor plan](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/add-floor-plan-button.png)
+> Developer Note: Place the files in the `docs/images/` folder and link them using only full URLs from GitHub, for example: `![Overview](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/app-overview.png)`. This absolute static linking is required to ensure the README renders properly in GitHub, the docs site, and any other external sites like PyPI.
 
-![Form to define a new floor plan](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/add-floor-plan-form.png)
+More screenshots can be found in the [Using the App](https://docs.nautobot.com/projects/floor-plan/en/latest/user/app_use_cases/) page in the documentation. Here's a quick overview of some of the app's added functionality:
 
-![A new blank floor plan](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/floor-plan-empty.png)
+![](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/placeholder.png)
 
 More screenshots can be found in the [Using the App](https://docs.nautobot.com/projects/floor-plan/en/latest/user/app_use_cases/) page in the documentation.
 
