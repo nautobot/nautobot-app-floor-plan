@@ -1,11 +1,15 @@
 """Filtering for nautobot_floor_plan."""
 
-from nautobot.apps.filters import NautobotFilterSet, NameSearchFilterSet
+import django_filters
+
+from nautobot.dcim.models import Location, Rack
+from nautobot.apps.filters import NautobotFilterSet
+from nautobot.apps.filters import NaturalKeyOrPKMultipleChoiceFilter, SearchFilter
 
 from nautobot_floor_plan import models
 
 
-class FloorPlanFilterSet(NautobotFilterSet, NameSearchFilterSet):  # pylint: disable=too-many-ancestors
+class FloorPlanFilterSet(NautobotFilterSet):
     """Filter for FloorPlan."""
 
     q = SearchFilter(
@@ -24,5 +28,30 @@ class FloorPlanFilterSet(NautobotFilterSet, NameSearchFilterSet):  # pylint: dis
         model = models.FloorPlan
         fields = ["x_size", "y_size", "tile_width", "tile_depth", "tags"]
 
-        # add any fields from the model that you would like to filter your searches by using those
-        fields = ["id", "name", "description"]
+
+class FloorPlanTileFilterSet(NautobotFilterSet):
+    """Filter for FloorPlanTile."""
+
+    q = SearchFilter(
+        filter_predicates={
+            "floor_plan__location__name": "icontains",
+            "rack__name": "icontains",
+        },
+    )
+    floor_plan = django_filters.ModelMultipleChoiceFilter(queryset=models.FloorPlan.objects.all())
+    location = NaturalKeyOrPKMultipleChoiceFilter(
+        field_name="floor_plan__location",
+        queryset=Location.objects.all(),
+        label="Location (name or ID)",
+    )
+    rack = NaturalKeyOrPKMultipleChoiceFilter(
+        queryset=Rack.objects.all(),
+        to_field_name="name",
+        label="Rack (name or ID)",
+    )
+
+    class Meta:
+        """Meta attributes."""
+
+        model = models.FloorPlanTile
+        fields = ["x_origin", "y_origin", "tags"]

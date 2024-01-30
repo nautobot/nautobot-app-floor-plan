@@ -4,25 +4,41 @@
 
 """Forms for nautobot_floor_plan."""
 from django import forms
-from nautobot.apps.forms import NautobotBulkEditForm, NautobotFilterForm, NautobotModelForm, TagsBulkEditFormMixin
+
+from nautobot.dcim.models import Location, Rack
+from nautobot.apps.forms import (
+    NautobotBulkEditForm,
+    NautobotFilterForm,
+    NautobotModelForm,
+    TagsBulkEditFormMixin,
+    DynamicModelChoiceField,
+    DynamicModelMultipleChoiceField,
+    TagFilterField,
+)
 
 from nautobot_floor_plan import models
 
 
-class FloorPlanForm(NautobotModelForm):  # pylint: disable=too-many-ancestors
+class FloorPlanForm(NautobotModelForm):
     """FloorPlan creation/edit form."""
+
+    location = DynamicModelChoiceField(queryset=Location.objects.all())
 
     class Meta:
         """Meta attributes."""
 
         model = models.FloorPlan
         fields = [
-            "name",
-            "description",
+            "location",
+            "x_size",
+            "y_size",
+            "tile_width",
+            "tile_depth",
+            "tags",
         ]
 
 
-class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pylint: disable=too-many-ancestors
+class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
     """FloorPlan bulk edit form."""
 
     pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)
@@ -41,11 +57,33 @@ class FloorPlanFilterForm(NautobotFilterForm):
     """Filter form to filter searches."""
 
     model = models.FloorPlan
-    field_order = ["q", "name"]
+    field_order = ["q", "location", "x_size", "y_size"]
 
-    q = forms.CharField(
-        required=False,
-        label="Search",
-        help_text="Search within Name or Slug.",
+    q = forms.CharField(required=False, label="Search")
+    location = DynamicModelMultipleChoiceField(queryset=Location.objects.all(), to_field_name="pk", required=False)
+    tag = TagFilterField(model)
+
+
+class FloorPlanTileForm(NautobotModelForm):
+    """FloorPlanTile creation/edit form."""
+
+    floor_plan = DynamicModelChoiceField(queryset=models.FloorPlan.objects.all())
+    rack = DynamicModelChoiceField(
+        queryset=Rack.objects.all(), required=False, query_params={"nautobot_floor_plan_floor_plan": "$floor_plan"}
     )
-    name = forms.CharField(required=False, label="Name")
+
+    class Meta:
+        """Meta attributes."""
+
+        model = models.FloorPlanTile
+        fields = [
+            "floor_plan",
+            "x_origin",
+            "y_origin",
+            "x_size",
+            "y_size",
+            "status",
+            "rack",
+            "rack_orientation",
+            "tags",
+        ]

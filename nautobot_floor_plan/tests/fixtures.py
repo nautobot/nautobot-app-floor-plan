@@ -39,6 +39,13 @@ def create_prerequisites(floor_count=4):
 
 def create_floor_plans(locations):
     """Fixture to create necessary number of FloorPlan for tests."""
-    FloorPlan.objects.create(name="Test One")
-    FloorPlan.objects.create(name="Test Two")
-    FloorPlan.objects.create(name="Test Three")
+    size = 1
+    floor_plans = []
+
+    for location in locations:
+        floor_plan = FloorPlan(location=location, x_size=size, y_size=size)
+        floor_plan.validated_save()
+        floor_plans.append(floor_plan)
+        size += 1
+
+    return floor_plans

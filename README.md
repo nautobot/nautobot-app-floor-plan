@@ -19,11 +19,11 @@ This App aids in data center management by providing the ability to create a gri
 
 ![A sample floor plan](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/floor-plan-populated.png)
 
-> Developer Note: Place the files in the `docs/images/` folder and link them using only full URLs from GitHub, for example: `![Overview](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/app-overview.png)`. This absolute static linking is required to ensure the README renders properly in GitHub, the docs site, and any other external sites like PyPI.
+![Button to add a new floor plan](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/add-floor-plan-button.png)
 
-More screenshots can be found in the [Using the App](https://docs.nautobot.com/projects/floor-plan/en/latest/user/app_use_cases/) page in the documentation. Here's a quick overview of some of the app's added functionality:
+![Form to define a new floor plan](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/add-floor-plan-form.png)
 
-![](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/placeholder.png)
+![A new blank floor plan](https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/floor-plan-empty.png)
 
 More screenshots can be found in the [Using the App](https://docs.nautobot.com/projects/floor-plan/en/latest/user/app_use_cases/) page in the documentation.
 

@@ -13,7 +13,7 @@ Here you will find detailed instructions on how to **install** and **configure**
 ## Install Guide
 
 !!! note
-    Apps can be installed manually or using Python's `pip`. See the [nautobot documentation](https://nautobot.readthedocs.io/en/latest/plugins/#install-the-package) for more details. The pip package name for this app is [`nautobot-floor-plan`](https://pypi.org/project/nautobot-floor-plan/).
+    Apps can be installed manually or using Python's `pip`. See the [Nautobot documentation](https://nautobot.readthedocs.io/en/latest/plugins/#install-the-package) for more details. The pip package name for this app is [`nautobot-floor-plan`](https://pypi.org/project/nautobot-floor-plan/).
 
 The app is available as a Python package via PyPI and can be installed with `pip`:
 
@@ -52,15 +52,4 @@ Then restart the Nautobot services which may include:
 sudo systemctl restart nautobot nautobot-worker nautobot-scheduler
 ```
 
-## App Configuration
-
-!!! warning "Developer Note - Remove Me!"
-    Any configuration required to get the App set up. Edit the table below as per the examples provided.
-
-The app behavior can be controlled with the following list of settings:
-
-| Key     | Example | Default | Description                          |
-| ------- | ------ | -------- | ------------------------------------- |
-| `enable_backup` | `True` | `True` | A boolean to represent whether or not to run backup configurations within the app. |
-| `platform_slug_map` | `{"cisco_wlc": "cisco_aireos"}` | `None` | A dictionary in which the key is the platform slug and the value is what netutils uses in any "network_os" parameter. |
-| `per_feature_bar_width` | `0.15` | `0.15` | The width of the table bar within the overview report |
+If the App has been installed successfully, the Nautobot web UI should now show a new "Location Floor Plans" menu item under the "Organization" menu.
