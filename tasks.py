@@ -724,20 +724,6 @@ def check_migrations(context):
 
 @task(
     help={
-        "check": "Whether to run poetry check or lock (defaults to False)",
-    }
-)
-def lock_poetry(context, check=False):
-    """Generate poetry.lock, or run poetry check."""
-    command = [
-        "poetry",
-        "check" if check else "lock --no-update",
-    ]
-    run_command(context, " ".join(command))
-
-
-@task(
-    help={
         "keepdb": "save and re-use test database between test runs for faster re-testing.",
         "label": "specify a directory or module to test instead of running all Nautobot tests",
         "failfast": "fail as soon as a single test fails don't run the entire test suite",
