@@ -6,13 +6,13 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 
-from nautobot.extras.api.views import NautobotModelViewSet
+from nautobot.apps.api import NautobotModelViewSet
 
 from nautobot_floor_plan import filters, models
 from nautobot_floor_plan.api import serializers
 
 
-class FloorPlanViewSet(NautobotModelViewSet):
+class FloorPlanViewSet(NautobotModelViewSet):  # pylint: disable=too-many-ancestors
     """FloorPlan viewset."""
 
     queryset = models.FloorPlan.objects.all()

@@ -6,13 +6,11 @@
 from django import forms
 
 from nautobot.dcim.models import Location, Rack
-from nautobot.extras.forms import (
+from nautobot.apps.forms import (
     NautobotBulkEditForm,
     NautobotFilterForm,
     NautobotModelForm,
     TagsBulkEditFormMixin,
-)
-from nautobot.apps.forms import (
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,

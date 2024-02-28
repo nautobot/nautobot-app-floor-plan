@@ -1,9 +1,7 @@
 """Views for FloorPlan."""
 
-# TODO: when minimum Nautobot version becomes 1.5.2 or later, we can use:
-# from nautobot.apps import views
-from nautobot.core.views.generic import ObjectView
-from nautobot.core.views.viewsets import NautobotUIViewSet
+from nautobot.apps.views import NautobotUIViewSet
+from nautobot.apps.views import ObjectView
 from nautobot.dcim.models import Location
 
 from nautobot_floor_plan import filters, forms, models, tables

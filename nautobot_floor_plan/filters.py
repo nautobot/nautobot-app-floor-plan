@@ -3,7 +3,7 @@
 import django_filters
 
 from nautobot.dcim.models import Location, Rack
-from nautobot.extras.filters import NautobotFilterSet
+from nautobot.apps.filters import NautobotFilterSet
 from nautobot.apps.filters import NaturalKeyOrPKMultipleChoiceFilter, SearchFilter
 
 from nautobot_floor_plan import models
