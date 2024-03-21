@@ -9,7 +9,7 @@ from django.utils.http import urlencode
 
 from nautobot.core.templatetags.helpers import fgcolor
 
-from nautobot_floor_plan.choices import RackOrientationChoices
+from nautobot_floor_plan.choices import RackOrientationChoices, AxisLabelsChoices
 
 
 logger = logging.getLogger(__name__)
@@ -81,6 +81,18 @@ class FloorPlanSVG:
 
         return drawing
 
+    @staticmethod
+    def _col_num_to_letter(col_num):
+        col_str = ""
+        while col_num:
+            remainder = col_num % 26
+            if remainder == 0:
+                remainder = 26
+            col_letter = chr(ord("A") + remainder - 1)
+            col_str = col_letter + col_str
+            col_num = int((col_num - 1) / 26)
+        return col_str
+
     def _draw_grid(self, drawing):
         """Render the grid underlying all tiles."""
         # Vertical lines
@@ -109,9 +121,10 @@ class FloorPlanSVG:
             )
         # Axis labels
         for x in range(1, self.floor_plan.x_size + 1):
+            label = self._col_num_to_letter(x) if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS else x
             drawing.add(
                 drawing.text(
-                    str(x),
+                    label,
                     insert=(
                         (x - 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
@@ -120,9 +133,10 @@ class FloorPlanSVG:
                 )
             )
         for y in range(1, self.floor_plan.y_size + 1):
+            label = self._col_num_to_letter(y) if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS else y
             drawing.add(
                 drawing.text(
-                    str(y),
+                    label,
                     insert=(
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
                         (y - 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,

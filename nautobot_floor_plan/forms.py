@@ -34,6 +34,8 @@ class FloorPlanForm(NautobotModelForm):
             "y_size",
             "tile_width",
             "tile_depth",
+            "x_axis_labels",
+            "y_axis_labels",
             "tags",
         ]
 

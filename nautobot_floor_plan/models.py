@@ -10,7 +10,7 @@ from nautobot.apps.models import extras_features
 from nautobot.apps.models import PrimaryModel
 from nautobot.apps.models import StatusField
 
-from nautobot_floor_plan.choices import RackOrientationChoices
+from nautobot_floor_plan.choices import RackOrientationChoices, AxisLabelsChoices
 from nautobot_floor_plan.svg import FloorPlanSVG
 
 
@@ -52,6 +52,18 @@ class FloorPlan(PrimaryModel):
         validators=[MinValueValidator(1)],
         default=100,
         help_text='Relative depth of each "tile" in the floor plan (cm, inches, etc.)',
+    )
+    x_axis_labels = models.CharField(
+        max_length=10,
+        choices=AxisLabelsChoices,
+        default=AxisLabelsChoices.NUMBERS,
+        help_text="Grid numbering of X axis (horizontal).",
+    )
+    y_axis_labels = models.CharField(
+        max_length=10,
+        choices=AxisLabelsChoices,
+        default=AxisLabelsChoices.NUMBERS,
+        help_text="Grid numbering of Y axis (vertical).",
     )
 
     class Meta:
