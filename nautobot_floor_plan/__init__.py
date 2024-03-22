@@ -3,6 +3,7 @@
 from importlib import metadata
 
 from nautobot.apps import NautobotAppConfig
+from nautobot_floor_plan import choices
 
 __version__ = metadata.version(__name__)
 
@@ -19,7 +20,10 @@ class FloorPlanConfig(NautobotAppConfig):
     required_settings = []
     min_version = "2.0.0"
     max_version = "2.9999"
-    default_settings = {}
+    default_settings = {
+        "grid_x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+        "grid_y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+    }
     caching_config = {}
 
 
