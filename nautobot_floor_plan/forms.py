@@ -14,9 +14,10 @@ from nautobot.apps.forms import (
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,
+    add_blank_choice,
 )
 
-from nautobot_floor_plan import models
+from nautobot_floor_plan import models, choices, utils
 
 
 class FloorPlanForm(NautobotModelForm):
@@ -48,6 +49,8 @@ class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
     y_size = forms.IntegerField(min_value=1, required=False)
     tile_width = forms.IntegerField(min_value=1, required=False)
     tile_depth = forms.IntegerField(min_value=1, required=False)
+    x_axis_labels = forms.ChoiceField(choices=add_blank_choice(choices.AxisLabelsChoices), required=False)
+    y_axis_labels = forms.ChoiceField(choices=add_blank_choice(choices.AxisLabelsChoices), required=False)
 
     class Meta:
         """Meta attributes."""
@@ -73,6 +76,7 @@ class FloorPlanTileForm(NautobotModelForm):
     rack = DynamicModelChoiceField(
         queryset=Rack.objects.all(), required=False, query_params={"nautobot_floor_plan_floor_plan": "$floor_plan"}
     )
+    _char = forms.CharField()  # temp char field for replacement in __init__ if grid numbering is using letters.
 
     class Meta:
         """Meta attributes."""
@@ -89,3 +93,29 @@ class FloorPlanTileForm(NautobotModelForm):
             "rack_orientation",
             "tags",
         ]
+
+    def __init__(self, *args, **kwargs):
+        """Overwrite the constructor to swap x/y origins fields to CharField if letters are used for grid numbering."""
+        super().__init__(*args, **kwargs)
+        self.x_letters = False
+        self.y_letters = False
+        char_field = self.fields.pop("_char")
+
+        if fp_id := self.initial["floor_plan"] or self.data["floor_plan"]:
+            fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
+            if fp_obj.x_axis_labels == choices.AxisLabelsChoices.LETTERS:
+                self.x_letters = True
+                self.fields["x_origin"] = char_field
+            if fp_obj.y_axis_labels == choices.AxisLabelsChoices.LETTERS:
+                self.y_letters = True
+                self.fields["y_origin"] = char_field
+
+    def clean(self):
+        """Change x/y origins back to numbers."""
+        if self.x_letters:
+            self.cleaned_data["x_origin"] = utils.column_letter_to_num(self.cleaned_data.get("x_origin"))
+
+        if self.y_letters:
+            self.cleaned_data["y_origin"] = utils.column_letter_to_num(self.cleaned_data.get("y_origin"))
+
+        return super().clean()
