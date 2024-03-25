@@ -118,9 +118,9 @@ class FloorPlanTileForm(NautobotModelForm):
 
         if self.instance.x_origin or self.instance.y_origin:
             if self.x_letters:
-                self.initial["x_origin"] = utils.num_to_letter(self.instance.x_origin)
+                self.initial["x_origin"] = utils.grid_number_to_letter(self.instance.x_origin)
             if self.y_letters:
-                self.initial["y_origin"] = utils.num_to_letter(self.instance.y_origin)
+                self.initial["y_origin"] = utils.grid_number_to_letter(self.instance.y_origin)
 
     def letter_validator(self, value, axis):
         """Validate that origin uses combination of letters."""
@@ -137,7 +137,7 @@ class FloorPlanTileForm(NautobotModelForm):
         x_origin = self.cleaned_data.get("x_origin")
         if self.x_letters:
             self.letter_validator(x_origin, "X")
-            return utils.letter_to_num(x_origin)
+            return utils.grid_letter_to_number(x_origin)
         self.number_validator(x_origin, "X")
         return int(x_origin)
 
@@ -146,6 +146,6 @@ class FloorPlanTileForm(NautobotModelForm):
         y_origin = self.cleaned_data.get("y_origin")
         if self.y_letters:
             self.letter_validator(y_origin, "Y")
-            return utils.letter_to_num(y_origin)
+            return utils.grid_letter_to_number(y_origin)
         self.number_validator(y_origin, "Y")
         return int(y_origin)

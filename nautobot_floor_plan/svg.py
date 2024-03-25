@@ -10,7 +10,7 @@ from django.utils.http import urlencode
 from nautobot.core.templatetags.helpers import fgcolor
 
 from nautobot_floor_plan.choices import RackOrientationChoices, AxisLabelsChoices
-from nautobot_floor_plan.utils import num_to_letter
+from nautobot_floor_plan.utils import grid_number_to_letter
 
 
 logger = logging.getLogger(__name__)
@@ -110,7 +110,7 @@ class FloorPlanSVG:
             )
         # Axis labels
         for x in range(1, self.floor_plan.x_size + 1):
-            label = num_to_letter(x) if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS else str(x)
+            label = grid_number_to_letter(x) if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS else str(x)
             drawing.add(
                 drawing.text(
                     label,
@@ -122,7 +122,7 @@ class FloorPlanSVG:
                 )
             )
         for y in range(1, self.floor_plan.y_size + 1):
-            label = num_to_letter(y) if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS else str(y)
+            label = grid_number_to_letter(y) if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS else str(y)
             drawing.add(
                 drawing.text(
                     label,
@@ -142,8 +142,8 @@ class FloorPlanSVG:
                 query_params = urlencode(
                     {
                         "floor_plan": self.floor_plan.pk,
-                        "x_origin": num_to_letter(x) if x_letters else x,
-                        "y_origin": num_to_letter(y) if y_letters else y,
+                        "x_origin": grid_number_to_letter(x) if x_letters else x,
+                        "y_origin": grid_number_to_letter(y) if y_letters else y,
                         "return_url": self.return_url,
                     }
                 )
