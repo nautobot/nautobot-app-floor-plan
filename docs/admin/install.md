@@ -38,7 +38,7 @@ PLUGINS = ["nautobot_floor_plan"]
 # Optionally you can override default settings for config items to make grid labels like a chessboard (as seen in this example)
 PLUGINS_CONFIG = {
     "nautobot_floor_plan": {
-        "grid_x_axis_labels": "letters",
+        "default_x_axis_labels": "letters",
     }
 }
 ```

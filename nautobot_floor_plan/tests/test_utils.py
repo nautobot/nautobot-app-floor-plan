@@ -8,7 +8,7 @@ from nautobot_floor_plan import utils
 class TestUtils(unittest.TestCase):
     """Test class."""
 
-    def test_col_num_to_letter(self):
+    def test_num_to_letter(self):
         test_cases = [
             (1, "A"),
             (26, "Z"),
@@ -24,9 +24,9 @@ class TestUtils(unittest.TestCase):
 
         for num, expected in test_cases:
             with self.subTest(num=num):
-                self.assertEqual(utils.col_num_to_letter(num), expected)
+                self.assertEqual(utils.num_to_letter(num), expected)
 
-    def test_column_letter_to_num(self):
+    def test_letter_to_num(self):
         test_cases = [
             ("A", 1),
             ("Z", 26),
@@ -42,4 +42,4 @@ class TestUtils(unittest.TestCase):
 
         for letter, expected in test_cases:
             with self.subTest(letter=letter):
-                self.assertEqual(utils.column_letter_to_num(letter), expected)
+                self.assertEqual(utils.letter_to_num(letter), expected)

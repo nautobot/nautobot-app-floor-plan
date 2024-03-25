@@ -21,8 +21,8 @@ class FloorPlanConfig(NautobotAppConfig):
     min_version = "2.0.0"
     max_version = "2.9999"
     default_settings = {
-        "grid_x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
-        "grid_y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+        "default_x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+        "default_y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
     }
     caching_config = {}
 

@@ -1,7 +1,7 @@
 """Utilities module."""
 
 
-def col_num_to_letter(number):
+def num_to_letter(number):
     """Returns letter for number [1 - 26] --> [A - Z], [27 - 52] --> [AA - AZ]."""
     col_str = ""
     while number:
@@ -14,9 +14,9 @@ def col_num_to_letter(number):
     return col_str
 
 
-def column_letter_to_num(letter):
+def letter_to_num(letter):
     """Returns number for letter [A - Z] --> [1 - 26], [AA - AZ] --> [27 - 52]."""
     number = ord(letter[-1]) - 64
     if letter[:-1]:
-        return 26 * (column_letter_to_num(letter[:-1])) + number
+        return 26 * (letter_to_num(letter[:-1])) + number
     return number
