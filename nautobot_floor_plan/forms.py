@@ -120,7 +120,7 @@ class FloorPlanTileForm(NautobotModelForm):
             if self.x_letters:
                 self.initial["x_origin"] = utils.col_num_to_letter(self.instance.x_origin)
             if self.y_letters:
-                self.initial["x_origin"] = utils.col_num_to_letter(self.instance.y_origin)
+                self.initial["y_origin"] = utils.col_num_to_letter(self.instance.y_origin)
 
     def letter_validator(self, value, axis):
         """Validate that origin uses combination of letters."""
