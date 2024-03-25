@@ -35,7 +35,7 @@ Once installed, the app needs to be enabled in your Nautobot configuration. The 
 # In your nautobot_config.py
 PLUGINS = ["nautobot_floor_plan"]
 
-# Optionally you can override default settings for config items to make grid numbering like a chessboard (as seen in this example)
+# Optionally you can override default settings for config items to make grid labels like a chessboard (as seen in this example)
 PLUGINS_CONFIG = {
     "nautobot_floor_plan": {
         "grid_x_axis_labels": "letters",
@@ -67,5 +67,5 @@ The app behavior can be controlled with the following list of settings:
 
 | Key                | Example   | Default  | Description                                                                                                                                    |
 |--------------------|-----------|----------|------------------------------------------------------------------------------------------------------------------------------------------------|
-| grid_x_axis_labels | "leters"  | "numbers" | Label style for the floor plan gird. Can use numbers or letters in order. This setting will set the default selected value in the create form. |
-| grid_y_axis_labels | "numbers" | "numbers" | Label style for the floor plan gird. Can use numbers or letters in order. This setting will set the default selected value in the create form. |
+| default_x_axis_labels | "leters"  | "numbers" | Label style for the floor plan gird. Can use numbers or letters in order. This setting will set the default selected value in the create form. |
+| default_y_axis_labels | "numbers" | "numbers" | Label style for the floor plan gird. Can use numbers or letters in order. This setting will set the default selected value in the create form. |

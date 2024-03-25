@@ -57,13 +57,13 @@ class FloorPlan(PrimaryModel):
         max_length=10,
         choices=AxisLabelsChoices,
         default=AxisLabelsChoices.NUMBERS,
-        help_text="Grid numbering of X axis (horizontal).",
+        help_text="Grid labels of X axis (horizontal).",
     )
     y_axis_labels = models.CharField(
         max_length=10,
         choices=AxisLabelsChoices,
         default=AxisLabelsChoices.NUMBERS,
-        help_text="Grid numbering of Y axis (vertical).",
+        help_text="Grid labels of Y axis (vertical).",
     )
 
     class Meta:
