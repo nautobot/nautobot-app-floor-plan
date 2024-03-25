@@ -3,7 +3,10 @@
 # pylint: disable=nb-incorrect-base-class
 
 """Forms for nautobot_floor_plan."""
+import re
+
 from django import forms
+from django.core.exceptions import ValidationError
 
 from nautobot.dcim.models import Location, Rack
 from nautobot.apps.forms import (
@@ -113,14 +116,36 @@ class FloorPlanTileForm(NautobotModelForm):
             self.x_letters = fp_obj.x_axis_labels == choices.AxisLabelsChoices.LETTERS
             self.y_letters = fp_obj.y_axis_labels == choices.AxisLabelsChoices.LETTERS
 
+        if self.instance.x_origin or self.instance.y_origin:
+            if self.x_letters:
+                self.initial["x_origin"] = utils.col_num_to_letter(self.instance.x_origin)
+            if self.y_letters:
+                self.initial["x_origin"] = utils.col_num_to_letter(self.instance.y_origin)
+
+    def letter_validator(self, value, axis):
+        """Validate that origin uses combination of letters."""
+        if not re.search(r"[A-Z]+", value):
+            raise ValidationError(f"{axis} origin should use capital letters.")
+
+    def number_validator(self, value, axis):
+        """Validate that origin uses combination of numbers."""
+        if not re.search(r"\d+", value):
+            raise ValidationError(f"{axis} origin should use numbers.")
+
     def clean_x_origin(self):
-        """Convert x_origin to an integer."""
+        """Validate input and convert x_origin to an integer."""
+        x_origin = self.cleaned_data.get("x_origin")
         if self.x_letters:
-            return utils.column_letter_to_num(self.cleaned_data.get("x_origin"))
-        return int(self.cleaned_data["x_origin"])
+            self.letter_validator(x_origin, "X")
+            return utils.column_letter_to_num(x_origin)
+        self.number_validator(x_origin, "X")
+        return int(x_origin)
 
     def clean_y_origin(self):
-        """Convert y_origin to an integer."""
+        """Validate input and convert y_origin to an integer."""
+        y_origin = self.cleaned_data.get("y_origin")
         if self.y_letters:
-            return utils.column_letter_to_num(self.cleaned_data.get("y_origin"))
-        return int(self.cleaned_data["y_origin"])
+            self.letter_validator(y_origin, "Y")
+            return utils.column_letter_to_num(y_origin)
+        self.number_validator(y_origin, "Y")
+        return int(y_origin)
