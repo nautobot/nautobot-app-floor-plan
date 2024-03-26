@@ -67,5 +67,5 @@ The app behavior can be controlled with the following list of settings:
 
 | Key                | Example   | Default  | Description                                                                                                                                    |
 |--------------------|-----------|----------|------------------------------------------------------------------------------------------------------------------------------------------------|
-| default_x_axis_labels | "leters"  | "numbers" | Label style for the floor plan gird. Can use numbers or letters in order. This setting will set the default selected value in the create form. |
+| default_x_axis_labels | "letters" | "numbers" | Label style for the floor plan gird. Can use numbers or letters in order. This setting will set the default selected value in the create form. |
 | default_y_axis_labels | "numbers" | "numbers" | Label style for the floor plan gird. Can use numbers or letters in order. This setting will set the default selected value in the create form. |
