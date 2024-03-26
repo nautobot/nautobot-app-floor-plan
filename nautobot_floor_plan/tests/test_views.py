@@ -2,7 +2,7 @@
 
 from nautobot.apps.testing import ViewTestCases
 
-from nautobot_floor_plan import models
+from nautobot_floor_plan import models, choices
 from nautobot_floor_plan.tests import fixtures
 
 
@@ -28,4 +28,6 @@ class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
             "tile_width": 100,
             "x_size": 1,
             "y_size": 2,
+            "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+            "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
         }
