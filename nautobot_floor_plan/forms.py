@@ -6,7 +6,6 @@
 import re
 
 from django import forms
-from django.core.exceptions import ValidationError
 
 from nautobot.dcim.models import Location, Rack
 from nautobot.apps.forms import (
@@ -137,10 +136,11 @@ class FloorPlanTileForm(NautobotModelForm):
         return True
 
     def _clean_origin(self, field_name, axis):
+        """Common clean method for origin fields."""
         value = self.cleaned_data.get(field_name)
         if self.x_letters and field_name == "x_origin" or self.y_letters and field_name == "y_origin":
             if self.letter_validator(field_name, value, axis) is not True:
-                return 0 # required to pass model clean() method
+                return 0  # required to pass model clean() method
             return utils.grid_letter_to_number(value)
         if self.number_validator(field_name, value, axis) is not True:
             return 0  # required to pass model clean() method
