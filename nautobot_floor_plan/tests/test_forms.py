@@ -146,7 +146,7 @@ class TestFloorPlanTileForm(TestCase):
         self.assertIn(["Y origin should use numbers."], form.errors.values())
 
     def test_tile_outside_of_floor_plan(self):
-        """Test creation with minimal input data."""
+        """Test a tile located outside the floor plan space."""
         form = forms.FloorPlanTileForm(
             data={
                 "floor_plan": self.floor_plan.pk,
