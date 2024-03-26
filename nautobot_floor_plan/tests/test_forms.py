@@ -75,3 +75,87 @@ class TestFloorPlanForm(TestCase):
         )
         for message in form.errors.values():
             self.assertIn("This field is required.", message)
+
+
+class TestFloorPlanTileForm(TestCase):
+    """Test FloorPlanTileForm forms."""
+
+    def setUp(self):
+        """Create LocationType, Status, Location and FloorPlan records."""
+        data = fixtures.create_prerequisites()
+        self.status = data["status"]
+        self.floor_plan = models.FloorPlan.objects.create(
+            location=data["floors"][0],
+            x_size=8,
+            y_size=8,
+            tile_depth=100,
+            tile_width=100,
+            x_axis_labels=choices.AxisLabelsChoices.LETTERS,
+            y_axis_labels=choices.AxisLabelsChoices.NUMBERS,
+        )
+
+    def test_valid_minimal_inputs(self):
+        """Test creation with minimal input data."""
+        form = forms.FloorPlanTileForm(
+            data={
+                "floor_plan": self.floor_plan.pk,
+                "x_origin": "A",
+                "y_origin": 1,
+                "x_size": 1,
+                "y_size": 1,
+                "status": self.status.pk,
+            }
+        )
+        self.assertTrue(form.is_valid())
+        form.save()
+        tile = models.FloorPlanTile.objects.get(floor_plan=self.floor_plan)
+        self.assertEqual(tile.floor_plan, self.floor_plan)
+        self.assertEqual(tile.x_origin, 1)  # model uses integers.
+        self.assertEqual(tile.x_size, 1)
+        self.assertEqual(tile.y_size, 1)
+        self.assertEqual(tile.status, self.status)
+
+    def test_invalid_input_with_number(self):
+        """Test creation with number when X axis uses letter labels."""
+        form = forms.FloorPlanTileForm(
+            data={
+                "floor_plan": self.floor_plan.pk,
+                "x_origin": 1,  # 1 instead of "A"
+                "y_origin": 1,
+                "x_size": 1,
+                "y_size": 1,
+                "status": self.status.pk,
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn(["X origin should use capital letters."], form.errors.values())
+
+    def test_invalid_input_with_letter(self):
+        """Test creation with letter when Y axis uses number labels."""
+        form = forms.FloorPlanTileForm(
+            data={
+                "floor_plan": self.floor_plan.pk,
+                "x_origin": "A",
+                "y_origin": "A",  # "A" instead of 1
+                "x_size": 1,
+                "y_size": 1,
+                "status": self.status.pk,
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn(["Y origin should use numbers."], form.errors.values())
+
+    def test_tile_outside_of_floor_plan(self):
+        """Test creation with minimal input data."""
+        form = forms.FloorPlanTileForm(
+            data={
+                "floor_plan": self.floor_plan.pk,
+                "x_origin": "A",
+                "y_origin": 9,  # out of range
+                "x_size": 1,
+                "y_size": 1,
+                "status": self.status.pk,
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn(['Too large for Floor Plan for Location "Floor 1"'], form.errors.values())
