@@ -46,9 +46,9 @@ class FloorPlanForm(NautobotModelForm):
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to set initial values for select widget."""
         super().__init__(*args, **kwargs)
-        self.initial["x_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_x_axis_labels")
-        self.initial["y_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_y_axis_labels")
-
+        if not self.instance.created:
+            self.initial["x_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_x_axis_labels")
+            self.initial["y_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_y_axis_labels")
 
 class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
     """FloorPlan bulk edit form."""
@@ -85,7 +85,7 @@ class FloorPlanTileForm(NautobotModelForm):
     rack = DynamicModelChoiceField(
         queryset=Rack.objects.all(), required=False, query_params={"nautobot_floor_plan_floor_plan": "$floor_plan"}
     )
-    x_origin = forms.CharField(validators=[])
+    x_origin = forms.CharField()
     y_origin = forms.CharField()
 
     class Meta:
