@@ -3,7 +3,6 @@
 # pylint: disable=nb-incorrect-base-class
 
 """Forms for nautobot_floor_plan."""
-import re
 
 from django import forms
 
@@ -124,14 +123,14 @@ class FloorPlanTileForm(NautobotModelForm):
 
     def letter_validator(self, field, value, axis):
         """Validate that origin uses combination of letters."""
-        if not re.search(r"[A-Z]+", str(value)):
+        if not str(value).isupper():
             self.add_error(field, f"{axis} origin should use capital letters.")
             return False
         return True
 
     def number_validator(self, field, value, axis):
         """Validate that origin uses combination of numbers."""
-        if not re.search(r"\d+", str(value)):
+        if not str(value).isdigit():
             self.add_error(field, f"{axis} origin should use numbers.")
             return False
         return True
