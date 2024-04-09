@@ -33,6 +33,10 @@
                 <td>Tile Depth (Relative Units)</td>
                 <td>{{ object.tile_depth }}</td>
             </tr>
+            <tr>
+                <td>Children</td>
+                <td><a href="{% url 'plugins:nautobot_floor_plan:floorplantile_list' %}?floor_plan={{ object.pk }}">{{ object.tiles.count }}</a></td>
+            </tr>
         </table>
     </div>
 {% endblock content_left_page %}

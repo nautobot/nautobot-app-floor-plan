@@ -43,3 +43,50 @@ class FloorPlanTable(BaseTable):
             "tags",
             "actions",
         )
+
+
+class FloorPlanTileTable(BaseTable):
+    # pylint: disable=R0903
+    """Table for list view."""
+
+    floor_plan_tile = tables.Column(empty_values=[])
+    floor_plan = tables.Column(empty_values=[])
+    rack = tables.Column(linkify=True)
+    tags = TagColumn()
+    actions = ButtonsColumn(models.FloorPlanTile)
+
+    def render_floor_plan_tile(self, record):
+        """Render a link to the detail view for the FloorPlanTile record itself."""
+        return hyperlinked_object(record)
+
+    def render_floor_plan(self, record):
+        """Render a link to the detail view for the FloorPlan record itself."""
+        return hyperlinked_object(record.floor_plan)
+
+    class Meta(BaseTable.Meta):
+        """Meta attributes."""
+
+        model = models.FloorPlanTile
+        fields = (
+            "floor_plan_tile",
+            "floor_plan",
+            "x_origin",
+            "y_origin",
+            "x_size",
+            "y_size",
+            "rack",
+            "rack_orientation",
+            "tags",
+            "actions",
+        )
+        default_columns = (
+            "floor_plan_tile",
+            "floor_plan",
+            "x_origin",
+            "y_origin",
+            "x_size",
+            "y_size",
+            "rack",
+            "tags",
+            "actions",
+        )
