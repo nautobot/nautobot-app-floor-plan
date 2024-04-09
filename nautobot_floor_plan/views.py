@@ -7,7 +7,6 @@ from nautobot.apps.views import (
     ObjectEditViewMixin,
     ObjectDestroyViewMixin,
     ObjectChangeLogViewMixin,
-    ObjectNotesViewMixin,
     ObjectPermissionRequiredMixin,
 )
 from nautobot.apps.views import ObjectView
