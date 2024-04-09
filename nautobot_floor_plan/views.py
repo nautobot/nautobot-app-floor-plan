@@ -43,7 +43,6 @@ class FloorPlanTileUIViewSet(
     ObjectEditViewMixin,
     ObjectDestroyViewMixin,
     ObjectChangeLogViewMixin,
-    ObjectNotesViewMixin,
     ObjectPermissionRequiredMixin,
 ):  # No need to support bulk operations
     """ViewSet for FloorPlanTile views."""
