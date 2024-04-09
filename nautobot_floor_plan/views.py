@@ -45,7 +45,7 @@ class FloorPlanTileUIViewSet(
     ObjectChangeLogViewMixin,
     ObjectNotesViewMixin,
     ObjectPermissionRequiredMixin,
-):  
+):
     # pylint: disable=W0223
     """ViewSet for FloorPlanTile views."""
 
