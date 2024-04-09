@@ -7,6 +7,7 @@ from nautobot.apps.views import (
     ObjectEditViewMixin,
     ObjectDestroyViewMixin,
     ObjectChangeLogViewMixin,
+    ObjectNotesViewMixin,
     ObjectPermissionRequiredMixin,
 )
 from nautobot.apps.views import ObjectView
@@ -42,8 +43,9 @@ class FloorPlanTileUIViewSet(
     ObjectEditViewMixin,
     ObjectDestroyViewMixin,
     ObjectChangeLogViewMixin,
+    ObjectNotesViewMixin,
     ObjectPermissionRequiredMixin,
-):  # No need to support bulk operations
+):  #pylint: disable=W0223
     """ViewSet for FloorPlanTile views."""
 
     filterset_class = filters.FloorPlanTileFilterSet
