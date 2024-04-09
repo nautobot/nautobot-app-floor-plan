@@ -45,7 +45,8 @@ class FloorPlanTileUIViewSet(
     ObjectChangeLogViewMixin,
     ObjectNotesViewMixin,
     ObjectPermissionRequiredMixin,
-):  #pylint: disable=W0223
+):  
+    # pylint: disable=W0223
     """ViewSet for FloorPlanTile views."""
 
     filterset_class = filters.FloorPlanTileFilterSet
