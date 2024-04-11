@@ -9,7 +9,8 @@ from django.utils.http import urlencode
 
 from nautobot.core.templatetags.helpers import fgcolor
 
-from nautobot_floor_plan.choices import RackOrientationChoices
+from nautobot_floor_plan.choices import RackOrientationChoices, AxisLabelsChoices
+from nautobot_floor_plan.utils import grid_number_to_letter
 
 
 logger = logging.getLogger(__name__)
@@ -109,9 +110,10 @@ class FloorPlanSVG:
             )
         # Axis labels
         for x in range(1, self.floor_plan.x_size + 1):
+            label = grid_number_to_letter(x) if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS else str(x)
             drawing.add(
                 drawing.text(
-                    str(x),
+                    label,
                     insert=(
                         (x - 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
@@ -120,9 +122,10 @@ class FloorPlanSVG:
                 )
             )
         for y in range(1, self.floor_plan.y_size + 1):
+            label = grid_number_to_letter(y) if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS else str(y)
             drawing.add(
                 drawing.text(
-                    str(y),
+                    label,
                     insert=(
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
                         (y - 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
@@ -132,13 +135,15 @@ class FloorPlanSVG:
             )
 
         # Links to populate tiles
+        y_letters = self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS
+        x_letters = self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS
         for y in range(1, self.floor_plan.y_size + 1):
             for x in range(1, self.floor_plan.x_size + 1):
                 query_params = urlencode(
                     {
                         "floor_plan": self.floor_plan.pk,
-                        "x_origin": x,
-                        "y_origin": y,
+                        "x_origin": grid_number_to_letter(x) if x_letters else x,
+                        "y_origin": grid_number_to_letter(y) if y_letters else y,
                         "return_url": self.return_url,
                     }
                 )
