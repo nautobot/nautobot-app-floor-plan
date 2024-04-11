@@ -41,6 +41,10 @@
                 <td>Y Axis Labels</td>
                 <td>{{ object.y_axis_labels }}</td>
             </tr>
+            <tr>
+                <td>Tiles</td>
+                <td><a href="{% url 'plugins:nautobot_floor_plan:floorplantile_list' %}?floor_plan={{ object.pk }}">{{ object.tiles.count }}</a></td>
+            </tr>
         </table>
     </div>
 {% endblock content_left_page %}

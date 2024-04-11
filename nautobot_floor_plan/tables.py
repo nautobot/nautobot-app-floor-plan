@@ -8,7 +8,7 @@ from nautobot_floor_plan import models
 
 
 class FloorPlanTable(BaseTable):
-    # pylint: disable=R0903
+    # pylint: disable=too-few-public-methods
     """Table for list view."""
 
     pk = ToggleColumn()
@@ -40,6 +40,52 @@ class FloorPlanTable(BaseTable):
             "pk",
             "floor_plan",
             "location",
+            "tags",
+            "actions",
+        )
+
+
+class FloorPlanTileTable(BaseTable):
+    # pylint: disable=too-few-public-methods
+    """Table for list view."""
+
+    floor_plan_tile = tables.Column(verbose_name="Tile", empty_values=[])
+    floor_plan = tables.Column(linkify=True)
+    location = tables.Column(accessor="floor_plan__location", linkify=True)
+    rack = tables.Column(linkify=True)
+    tags = TagColumn()
+    actions = ButtonsColumn(models.FloorPlanTile)
+
+    def render_floor_plan_tile(self, record):
+        """Render a link to the detail view for the FloorPlanTile record itself."""
+        return hyperlinked_object(record)
+
+    class Meta(BaseTable.Meta):
+        """Meta attributes."""
+
+        model = models.FloorPlanTile
+        fields = (
+            "floor_plan_tile",
+            "floor_plan",
+            "location",
+            "x_origin",
+            "y_origin",
+            "x_size",
+            "y_size",
+            "rack",
+            "rack_orientation",
+            "tags",
+            "actions",
+        )
+        default_columns = (
+            "floor_plan_tile",
+            "floor_plan",
+            "location",
+            "x_origin",
+            "y_origin",
+            "x_size",
+            "y_size",
+            "rack",
             "tags",
             "actions",
         )
