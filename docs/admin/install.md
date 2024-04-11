@@ -34,6 +34,13 @@ Once installed, the app needs to be enabled in your Nautobot configuration. The 
 ```python
 # In your nautobot_config.py
 PLUGINS = ["nautobot_floor_plan"]
+
+# Optionally you can override default settings for config items to make grid labels like a chessboard (as seen in this example)
+PLUGINS_CONFIG = {
+    "nautobot_floor_plan": {
+        "default_x_axis_labels": "letters",
+    }
+}
 ```
 
 Once the Nautobot configuration is updated, run the Post Upgrade command (`nautobot-server post_upgrade`) to run migrations and clear any cache:
@@ -53,3 +60,12 @@ sudo systemctl restart nautobot nautobot-worker nautobot-scheduler
 ```
 
 If the App has been installed successfully, the Nautobot web UI should now show a new "Location Floor Plans" menu item under the "Organization" menu.
+
+## App Configuration
+
+The app behavior can be controlled with the following list of settings:
+
+| Key                | Example   | Default  | Description                                                                                                                                    |
+|--------------------|-----------|----------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| default_x_axis_labels | "letters" | "numbers" | Label style for the floor plan grid. Can use `numbers` or `letters` in order. This setting will set the default selected value in the create form. |
+| default_y_axis_labels | "numbers" | "numbers" | Label style for the floor plan grid. Can use `numbers` or `letters` in order. This setting will set the default selected value in the create form. |
