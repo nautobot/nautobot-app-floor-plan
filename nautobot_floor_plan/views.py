@@ -8,7 +8,6 @@ from nautobot.apps.views import (
     ObjectDestroyViewMixin,
     ObjectChangeLogViewMixin,
     ObjectNotesViewMixin,
-    ObjectPermissionRequiredMixin,
 )
 from nautobot.apps.views import ObjectView
 from nautobot.dcim.models import Location
