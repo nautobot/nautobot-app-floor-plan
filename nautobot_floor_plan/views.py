@@ -38,15 +38,14 @@ class LocationFloorPlanTab(ObjectView):
 
 
 class FloorPlanTileUIViewSet(
-    ObjectListViewMixin,
     ObjectDetailViewMixin,
+    ObjectListViewMixin,
     ObjectEditViewMixin,
     ObjectDestroyViewMixin,
     ObjectChangeLogViewMixin,
     ObjectNotesViewMixin,
-    ObjectPermissionRequiredMixin,
 ):
-    # pylint: disable=W0223
+    # pylint: disable=abstract-method
     """ViewSet for FloorPlanTile views."""
 
     filterset_class = filters.FloorPlanTileFilterSet
