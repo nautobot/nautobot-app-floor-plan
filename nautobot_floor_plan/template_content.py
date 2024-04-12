@@ -1,4 +1,5 @@
 """Added content to the device model view for floor plan."""
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 

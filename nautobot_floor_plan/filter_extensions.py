@@ -1,4 +1,5 @@
 """Extensions to Nautobot core models' filtering functionality."""
+
 import django_filters
 
 from nautobot.extras.plugins import PluginFilterExtension

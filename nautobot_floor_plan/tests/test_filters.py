@@ -1,4 +1,5 @@
 """Test FloorPlan Filter."""
+
 from django.test import TestCase
 
 from nautobot.dcim.models import Rack

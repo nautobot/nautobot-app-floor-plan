@@ -1,4 +1,5 @@
 """Render a FloorPlan as an SVG image."""
+
 import logging
 import os
 import svgwrite
