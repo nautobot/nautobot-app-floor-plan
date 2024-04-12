@@ -1,4 +1,5 @@
 """API serializers for nautobot_floor_plan."""
+
 from nautobot.apps.api import NautobotModelSerializer, TaggedModelSerializerMixin
 
 from nautobot_floor_plan import models

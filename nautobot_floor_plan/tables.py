@@ -25,6 +25,7 @@ class FloorPlanTable(BaseTable):
         """Meta attributes."""
 
         model = models.FloorPlan
+        # pylint: disable=nb-use-fields-all
         fields = (
             "pk",
             "floor_plan",
@@ -64,6 +65,7 @@ class FloorPlanTileTable(BaseTable):
         """Meta attributes."""
 
         model = models.FloorPlanTile
+        # pylint: disable=nb-use-fields-all
         fields = (
             "floor_plan_tile",
             "floor_plan",
