@@ -1,9 +1,15 @@
 """Views for FloorPlan."""
 
-# TODO: when minimum Nautobot version becomes 1.5.2 or later, we can use:
-# from nautobot.apps import views
-from nautobot.core.views.generic import ObjectView
-from nautobot.core.views.viewsets import NautobotUIViewSet
+from nautobot.apps.views import (
+    NautobotUIViewSet,
+    ObjectListViewMixin,
+    ObjectDetailViewMixin,
+    ObjectEditViewMixin,
+    ObjectDestroyViewMixin,
+    ObjectChangeLogViewMixin,
+    ObjectNotesViewMixin,
+)
+from nautobot.apps.views import ObjectView
 from nautobot.dcim.models import Location
 
 from nautobot_floor_plan import filters, forms, models, tables
@@ -30,10 +36,21 @@ class LocationFloorPlanTab(ObjectView):
     template_name = "nautobot_floor_plan/location_floor_plan.html"
 
 
-class FloorPlanTileUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of views
+class FloorPlanTileUIViewSet(
+    ObjectDetailViewMixin,
+    ObjectListViewMixin,
+    ObjectEditViewMixin,
+    ObjectDestroyViewMixin,
+    ObjectChangeLogViewMixin,
+    ObjectNotesViewMixin,
+):
+    # pylint: disable=abstract-method
     """ViewSet for FloorPlanTile views."""
 
+    filterset_class = filters.FloorPlanTileFilterSet
     form_class = forms.FloorPlanTileForm
     lookup_field = "pk"
     queryset = models.FloorPlanTile.objects.all()
     serializer_class = serializers.FloorPlanTileSerializer
+    table_class = tables.FloorPlanTileTable
+    action_buttons = ()

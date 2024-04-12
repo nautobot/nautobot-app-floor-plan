@@ -4,7 +4,7 @@ Here you will find detailed instructions on how to **install** and **configure**
 
 ## Prerequisites
 
-- The plugin is compatible with Nautobot 1.4.0 and higher, though Nautobot 1.5.x is recommended.
+- The app is compatible with Nautobot 2.0.0 and higher.
 - Databases supported: PostgreSQL, MySQL
 
 !!! note
@@ -13,9 +13,9 @@ Here you will find detailed instructions on how to **install** and **configure**
 ## Install Guide
 
 !!! note
-    Plugins can be installed manually or using Python's `pip`. See the [Nautobot documentation](https://nautobot.readthedocs.io/en/latest/plugins/#install-the-package) for more details. The pip package name for this plugin is [`nautobot-floor-plan`](https://pypi.org/project/nautobot-floor-plan/).
+    Apps can be installed from the [Python Package Index](https://pypi.org/) or locally. See the [Nautobot documentation](https://docs.nautobot.com/projects/core/en/stable/user-guide/administration/installation/app-install/) for more details. The pip package name for this app is [`nautobot-floor-plan`](https://pypi.org/project/nautobot-floor-plan/).
 
-The plugin is available as a Python package via PyPI and can be installed with `pip`:
+The app is available as a Python package via PyPI and can be installed with `pip`:
 
 ```shell
 pip install nautobot-floor-plan
@@ -27,13 +27,20 @@ To ensure Nautobot Floor Plan is automatically re-installed during future upgrad
 echo nautobot-floor-plan >> local_requirements.txt
 ```
 
-Once installed, the plugin needs to be enabled in your Nautobot configuration. The following block of code below shows the additional configuration required to be added to your `nautobot_config.py` file:
+Once installed, the app needs to be enabled in your Nautobot configuration. The following block of code below shows the additional configuration required to be added to your `nautobot_config.py` file:
 
 - Append `"nautobot_floor_plan"` to the `PLUGINS` list.
 
 ```python
 # In your nautobot_config.py
 PLUGINS = ["nautobot_floor_plan"]
+
+# Optionally you can override default settings for config items to make grid labels like a chessboard (as seen in this example)
+PLUGINS_CONFIG = {
+    "nautobot_floor_plan": {
+        "default_x_axis_labels": "letters",
+    }
+}
 ```
 
 Once the Nautobot configuration is updated, run the Post Upgrade command (`nautobot-server post_upgrade`) to run migrations and clear any cache:
@@ -53,3 +60,12 @@ sudo systemctl restart nautobot nautobot-worker nautobot-scheduler
 ```
 
 If the App has been installed successfully, the Nautobot web UI should now show a new "Location Floor Plans" menu item under the "Organization" menu.
+
+## App Configuration
+
+The app behavior can be controlled with the following list of settings:
+
+| Key                | Example   | Default  | Description                                                                                                                                    |
+|--------------------|-----------|----------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| default_x_axis_labels | "letters" | "numbers" | Label style for the floor plan grid. Can use `numbers` or `letters` in order. This setting will set the default selected value in the create form. |
+| default_y_axis_labels | "numbers" | "numbers" | Label style for the floor plan grid. Can use `numbers` or `letters` in order. This setting will set the default selected value in the create form. |

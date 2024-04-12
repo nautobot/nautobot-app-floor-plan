@@ -1,10 +1,8 @@
-"""Django urlpatterns declaration for nautobot_floor_plan plugin."""
+"""Django urlpatterns declaration for nautobot_floor_plan app."""
 
 from django.urls import path
 
-# TODO: when minimum Nautobot version becomes 1.5.2 or later, we can use:
-# from nautobot.apps.urls import NautobotUIViewSetRouter
-from nautobot.core.views.routers import NautobotUIViewSetRouter
+from nautobot.apps.urls import NautobotUIViewSetRouter
 from nautobot.extras.views import ObjectChangeLogView, ObjectNotesView
 
 from nautobot_floor_plan import models, views
