@@ -29,3 +29,15 @@ class AxisLabelsChoices(ChoiceSet):
         (NUMBERS, "Numbers"),
         (LETTERS, "Letters"),
     )
+
+
+class AllocationTypeChoices(ChoiceSet):
+    """Choices for tile allocation type."""
+
+    RACK = "RACK"
+    RACKGROUP = "RACKGROUP"
+
+    CHOICES = (
+        (RACK, "RACK"),
+        (RACKGROUP, "RACKGROUP"),
+    )

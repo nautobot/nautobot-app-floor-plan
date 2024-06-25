@@ -6,7 +6,7 @@
 
 from django import forms
 
-from nautobot.dcim.models import Location, Rack
+from nautobot.dcim.models import Location, Rack, RackGroup
 from nautobot.apps.forms import (
     NautobotBulkEditForm,
     NautobotFilterForm,
@@ -83,7 +83,12 @@ class FloorPlanTileForm(NautobotModelForm):
 
     floor_plan = DynamicModelChoiceField(queryset=models.FloorPlan.objects.all())
     rack = DynamicModelChoiceField(
-        queryset=Rack.objects.all(), required=False, query_params={"nautobot_floor_plan_floor_plan": "$floor_plan"}
+        queryset=Rack.objects.all(),
+        required=False,
+        query_params={"nautobot_floor_plan_floor_plan": "$floor_plan", "rack_group": "$rack_group"},
+    )
+    rack_group = DynamicModelChoiceField(
+        queryset=RackGroup.objects.all(), required=False, query_params={"nautobot_floor_plan_floor_plan": "$floor_plan"}
     )
     x_origin = forms.CharField()
     y_origin = forms.CharField()
@@ -100,6 +105,7 @@ class FloorPlanTileForm(NautobotModelForm):
             "y_size",
             "status",
             "rack",
+            "rack_group",
             "rack_orientation",
             "tags",
         ]
