@@ -200,9 +200,12 @@ class FloorPlanTile(PrimaryModel):
                     )
                 self.on_group_tile = True
                 if orack_group is not None:
-                    if orack_group != rack_group:
+                    # Set the tile rack_group equal to the rack.rack_group if the rack is in a rack_group
+                    if rack.rack_group is not None:
+                        self.rack_group = rack.rack_group
+                    if orack_group != self.rack_group:
                         # Is tile assigned to a rack_group? Racks must be assigned to the same rack_group
-                        raise ValidationError({"rack_group": f"Rack {self.rack} does not belong to {orack_group}"})
+                        raise ValidationError({"rack_group": f"Rack {self.rack} must belong to {orack_group}"})
             if rack is None:
                 if x_max > ox_max or x_min < ox_min:
                     # RACKGROUP tiles can grow and shrink but not overlap other RACKGROUP tiles
@@ -233,7 +236,7 @@ class FloorPlanTile(PrimaryModel):
         # Check for overlapping tiles.
         # TODO: this would be a lot more efficient using something like GeoDjango,
         # but since this is only checked at write time it's acceptable for now.
-        x_min, y_min, x_max, y_max, allocation_type, rack_group = self.bounds
+        x_min, y_min, x_max, y_max, allocation_type, self.rack_group = self.bounds
         for other in FloorPlanTile.objects.filter(floor_plan=self.floor_plan).exclude(pk=self.pk):
             ox_min, oy_min, ox_max, oy_max, oallocation_type, orack_group = other.bounds
             # Is either bounds rectangle completely to the right of the other?
