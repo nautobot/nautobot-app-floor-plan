@@ -60,6 +60,7 @@ class TestFloorPlanTile(TestCase):
         self.rack = Rack.objects.create(
             name="Rack 1", status=self.active_status, rack_group=self.rack_group, location=self.floors[2]
         )
+        self.valid_rack_group = RackGroup.objects.create(name="RackGroup 2", location=self.floors[3])
 
     def test_create_floor_plan_single_tiles_valid(self):
         """A FloorPlanTile can be created for each legal position in a FloorPlan."""
@@ -89,8 +90,9 @@ class TestFloorPlanTile(TestCase):
         tile_3_2_2.validated_save()
 
     def test_create_floor_plan_spanning_tiles_valid(self):
-        """FloorPlanTiles can span multiple squares so long as they do not overlap.
-
+        """
+        FloorPlanTiles can span multiple squares so long as they do not overlap.
+        Racks can be installed on RackGroup Tiles if the Rack is in the correct RackGroup
         +-+-+-+-+
         |2|2|2|4|
         +-+-+-+-+
@@ -101,8 +103,27 @@ class TestFloorPlanTile(TestCase):
         |3|5|5|5|
         +-+-+-+-+
         """
+        valid_rack = Rack.objects.create(
+            name="Rack 3", status=self.active_status, rack_group=self.valid_rack_group, location=self.floors[3]
+        )
         models.FloorPlanTile(
-            floor_plan=self.floor_plans[3], status=self.active_status, x_origin=2, y_origin=2, x_size=2, y_size=2
+            floor_plan=self.floor_plans[3],
+            status=self.active_status,
+            rack_group=self.valid_rack_group,
+            x_origin=2,
+            y_origin=2,
+            x_size=2,
+            y_size=2,
+        ).validated_save()
+        models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.active_status,
+            rack_group=self.valid_rack_group,
+            rack=valid_rack,
+            x_origin=2,
+            y_origin=2,
+            x_size=2,
+            y_size=2,
         ).validated_save()
         models.FloorPlanTile(
             floor_plan=self.floor_plans[3], status=self.active_status, x_origin=1, y_origin=1, x_size=3, y_size=1
@@ -114,7 +135,13 @@ class TestFloorPlanTile(TestCase):
             floor_plan=self.floor_plans[3], status=self.active_status, x_origin=4, y_origin=1, x_size=1, y_size=3
         ).validated_save()
         models.FloorPlanTile(
-            floor_plan=self.floor_plans[3], status=self.active_status, x_origin=2, y_origin=4, x_size=3, y_size=1
+            floor_plan=self.floor_plans[3],
+            status=self.active_status,
+            rack_group=self.valid_rack_group,
+            x_origin=2,
+            y_origin=4,
+            x_size=3,
+            y_size=1,
         ).validated_save()
 
     def test_create_floor_plan_single_tile_invalid_duplicate_position(self):
@@ -138,11 +165,16 @@ class TestFloorPlanTile(TestCase):
             ).validated_save()
 
     def test_create_floor_plan_tile_invalid_rack_rackgroup(self):
-        """A Rack being placed on a Rackgroup tile must also be in the reck_group."""
+        """A Rack being placed on a Rackgroup tile must also be in the rack_group."""
+        valid_rack = Rack.objects.create(
+            name="Rack 3", status=self.active_status, rack_group=self.valid_rack_group, location=self.floors[3]
+        )
         models.FloorPlanTile(
             floor_plan=self.floor_plans[2],
             x_origin=1,
             y_origin=1,
+            x_size=1,
+            y_size=1,
             status=self.active_status,
             rack_group=self.rack_group,
         ).validated_save()
@@ -153,8 +185,35 @@ class TestFloorPlanTile(TestCase):
                 floor_plan=self.floor_plans[2],
                 x_origin=1,
                 y_origin=1,
+                x_size=1,
+                y_size=1,
                 status=self.active_status,
                 rack=non_rack_group_rack,
+            ).validated_save()
+        # How about a tile with with a rack and the incorrect rackgroup
+        invalid_rack_group = RackGroup.objects.create(name="RackGroup 2", location=self.floors[2])
+        with self.assertRaises(ValidationError):
+            models.FloorPlanTile(
+                floor_plan=self.floor_plans[2],
+                x_origin=1,
+                y_origin=1,
+                x_size=1,
+                y_size=1,
+                status=self.active_status,
+                rack_group=invalid_rack_group,
+                rack=valid_rack,
+            ).validated_save()
+        # How about a rack extending beyond the bounds of the rackgroup tile
+        with self.assertRaises(ValidationError):
+            models.FloorPlanTile(
+                floor_plan=self.floor_plans[2],
+                x_origin=1,
+                y_origin=1,
+                x_size=2,
+                y_size=1,
+                status=self.active_status,
+                rack_group=self.valid_rack_group,
+                rack=valid_rack,
             ).validated_save()
 
     def test_create_floor_plan_tile_invalid_illegal_position(self):

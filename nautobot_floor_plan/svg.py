@@ -29,7 +29,7 @@ class FloorPlanSVG:
     RACK_PADDING = 4
     RACK_TILE_INSET = 3
     RACK_FRONT_DEPTH = 15
-    RACK_BUTON_OFFSET = 5
+    RACK_BUTTON_OFFSET = 5
     RACK_BORDER_OFFSET = 8
     RACK_ORIENTATION_OFFSET = 14
     RACKGROUP_TEXT_OFFSET = 12
@@ -180,84 +180,88 @@ class FloorPlanSVG:
                     )
                 )
 
-    # draw edit and delete functionality to Status and Rackgroup tiles
-    def _draw_defined_status_tiles(self, drawing, tile):
-        """Render a tile based on its Status."""
-        if tile.on_group_tile is False:
-            origin = (
-                (tile.x_origin - 1) * self.GRID_SIZE_X + self.GRID_OFFSET + self.TILE_INSET,
-                (tile.y_origin - 1) * self.GRID_SIZE_Y + self.GRID_OFFSET + self.TILE_INSET,
-            )
-            # Add a button for editing the tile definition
-            edit_url = reverse("plugins:nautobot_floor_plan:floorplantile_edit", kwargs={"pk": tile.pk})
-            query_params = urlencode({"return_url": self.return_url})
-            edit_url = f"{self.base_url}{edit_url}?{query_params}"
-            link = drawing.add(drawing.a(href=edit_url, target="_top"))
-            link.add(
-                drawing.rect(
-                    (origin[0] + self.TILE_INSET, origin[1] + self.TILE_INSET),
-                    (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
-                    class_="edit-tile-button",
-                    rx=self.CORNER_RADIUS,
-                )
-            )
-            link.add(
-                drawing.text(
-                    "✎",
-                    insert=(
-                        origin[0] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
-                        origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
-                    ),
-                    class_="button-text",
-                )
-            )
+    def _draw_edit_delete_button(self, drawing, tile, button_offset, grid_offset):
+        if tile.allocation_type == AllocationTypeChoices.RACK:
+            tile_inset = 0
+        else:
+            tile_inset = self.TILE_INSET
 
-            # Add a button for deleting the tile definition
-            delete_url = reverse("plugins:nautobot_floor_plan:floorplantile_delete", kwargs={"pk": tile.pk})
-            query_params = urlencode({"return_url": self.return_url})
-            delete_url = f"{self.base_url}{delete_url}?{query_params}"
-            link = drawing.add(drawing.a(href=delete_url, target="_top"))
-            link.add(
-                drawing.rect(
-                    (
-                        origin[0]
-                        + tile.x_size * self.GRID_SIZE_X
-                        - self.RACK_TILE_INSET * self.TILE_INSET
-                        - self.TEXT_LINE_HEIGHT,
-                        origin[1] + self.TILE_INSET,
-                    ),
-                    (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
-                    class_="delete-tile-button",
-                    rx=self.CORNER_RADIUS,
-                )
+        origin = (
+            (tile.x_origin - 1) * self.GRID_SIZE_X + self.GRID_OFFSET + tile_inset,
+            (tile.y_origin - 1) * self.GRID_SIZE_Y + self.GRID_OFFSET + tile_inset,
+        )
+
+        # Add a button for editing the tile definition
+        edit_url = reverse("plugins:nautobot_floor_plan:floorplantile_edit", kwargs={"pk": tile.pk})
+        query_params = urlencode({"return_url": self.return_url})
+        edit_url = f"{self.base_url}{edit_url}?{query_params}"
+        link = drawing.add(drawing.a(href=edit_url, target="_top"))
+        link.add(
+            drawing.rect(
+                (origin[0] + self.TILE_INSET + button_offset, origin[1] + self.TILE_INSET + grid_offset),
+                (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
+                class_="edit-tile-button",
+                rx=self.CORNER_RADIUS,
             )
-            link.add(
-                drawing.text(
-                    "X",
-                    insert=(
-                        origin[0]
-                        + tile.x_size * self.GRID_SIZE_X
-                        - self.RACK_TILE_INSET * self.TILE_INSET
-                        - self.TEXT_LINE_HEIGHT / 2,
-                        origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2,
-                    ),
-                    class_="button-text",
-                )
+        )
+        link.add(
+            drawing.text(
+                "✎",
+                insert=(
+                    origin[0] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + button_offset,
+                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + grid_offset,
+                ),
+                class_="button-text",
             )
+        )
+
+        # Add a button for deleting the tile definition
+        delete_url = reverse("plugins:nautobot_floor_plan:floorplantile_delete", kwargs={"pk": tile.pk})
+        query_params = urlencode({"return_url": self.return_url})
+        delete_url = f"{self.base_url}{delete_url}?{query_params}"
+        link = drawing.add(drawing.a(href=delete_url, target="_top"))
+        link.add(
+            drawing.rect(
+                (
+                    origin[0]
+                    + tile.x_size * self.GRID_SIZE_X
+                    - self.RACK_TILE_INSET * self.TILE_INSET
+                    - self.TEXT_LINE_HEIGHT,
+                    origin[1] + self.TILE_INSET + grid_offset,
+                ),
+                (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
+                class_="delete-tile-button",
+                rx=self.CORNER_RADIUS,
+            )
+        )
+        link.add(
+            drawing.text(
+                "X",
+                insert=(
+                    origin[0]
+                    + tile.x_size * self.GRID_SIZE_X
+                    - self.RACK_TILE_INSET * self.TILE_INSET
+                    - self.TEXT_LINE_HEIGHT / 2,
+                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + grid_offset,
+                ),
+                class_="button-text",
+            )
+        )
 
     def _draw_tile(self, drawing, tile):
         """Render an individual FloorPlanTile to the drawing."""
         # functions to handle rack_group tiles and status tiles.
         # Add text to status group and rack group tiles
         self._draw_defined_rackgroup_tile(drawing, tile)
-        # Draw status grids with edit and delete buttons
-        self._draw_defined_status_tiles(drawing, tile)
+        # Add buttons for editing and deleting the group tile definition
+        if tile.on_group_tile is False:
+            self._draw_edit_delete_button(drawing, tile, 0, 0)
         # Draw tiles that contain racks
         if tile.rack is not None:
             self._draw_rack_tile(drawing, tile)
 
     # Draw a outline of status and Rackgroup
-    def _draw_status_tiles(self, drawing, tile):
+    def _draw_underlay_tiles(self, drawing, tile):
         """Render a tile based on its Status."""
         # If a tile is a rackgroup or status tile with no installed racks
         # or if a tile is a single Rackgroup tile with a rack installed
@@ -279,26 +283,26 @@ class FloorPlanSVG:
                     class_="tile-status",
                 )
             )
-
+        # TODO Make this a user option in the future or remove. It would draw a smaller status box around a Rack tile.
         # Tile contains a rack and is being placed on a group of rackgroup tiles or status tiles
-        else:
-            origin = (
-                (tile.x_origin - 1) * self.GRID_SIZE_X + self.GRID_OFFSET + self.BORDER_WIDTH,
-                (tile.y_origin - 1) * self.GRID_SIZE_Y + self.GRID_OFFSET + self.BORDER_WIDTH,
-            )
-            # Draw the tile outline and fill it with its status color
-            drawing.add(
-                drawing.rect(
-                    origin,
-                    (
-                        self.GRID_SIZE_X * tile.x_size - self.BORDER_WIDTH * self.TILE_INSET,
-                        self.GRID_SIZE_Y * tile.y_size - self.RACK_BORDER_OFFSET * self.TILE_INSET,
-                    ),
-                    rx=self.CORNER_RADIUS,
-                    style=f"fill: #{tile.status.color}",
-                    class_="tile-status",
-                )
-            )
+        # else:
+        #     origin = (
+        #         (tile.x_origin - 1) * self.GRID_SIZE_X + self.GRID_OFFSET + self.BORDER_WIDTH,
+        #         (tile.y_origin - 1) * self.GRID_SIZE_Y + self.GRID_OFFSET + self.BORDER_WIDTH,
+        #     )
+        #     # Draw the tile outline and fill it with its status color
+        #     drawing.add(
+        #         drawing.rect(
+        #             origin,
+        #             (
+        #                 self.GRID_SIZE_X * tile.x_size - self.BORDER_WIDTH * self.TILE_INSET,
+        #                 self.GRID_SIZE_Y * tile.y_size - self.RACK_BORDER_OFFSET * self.TILE_INSET,
+        #             ),
+        #             rx=self.CORNER_RADIUS,
+        #             style=f"fill: #{tile.status.color}",
+        #             class_="tile-status",
+        #         )
+        #     )
 
     def _draw_defined_rackgroup_tile(self, drawing, tile):
         """Add Status and RackGroup text to a rendered tile."""
@@ -479,62 +483,9 @@ class FloorPlanSVG:
                 style=f"fill: {fgcolor(tile.rack.status.color)}",
             )
         )
-        # Add a button for editing the tile definition
-        edit_url = reverse("plugins:nautobot_floor_plan:floorplantile_edit", kwargs={"pk": tile.pk})
-        query_params = urlencode({"return_url": self.return_url})
-        edit_url = f"{self.base_url}{edit_url}?{query_params}"
-        link = drawing.add(drawing.a(href=edit_url, target="_top"))
-        link.add(
-            drawing.rect(
-                (origin[0] + self.TILE_INSET + self.RACK_BUTON_OFFSET, origin[1] + self.TILE_INSET + self.GRID_OFFSET),
-                (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
-                class_="edit-tile-button",
-                rx=self.CORNER_RADIUS,
-            )
-        )
-        link.add(
-            drawing.text(
-                "✎",
-                insert=(
-                    origin[0] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + self.RACK_BUTON_OFFSET,
-                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + self.GRID_OFFSET,
-                ),
-                class_="button-text",
-            )
-        )
-
-        # Add a button for deleting the tile definition
-        delete_url = reverse("plugins:nautobot_floor_plan:floorplantile_delete", kwargs={"pk": tile.pk})
-        query_params = urlencode({"return_url": self.return_url})
-        delete_url = f"{self.base_url}{delete_url}?{query_params}"
-        link = drawing.add(drawing.a(href=delete_url, target="_top"))
-        link.add(
-            drawing.rect(
-                (
-                    origin[0]
-                    + tile.x_size * self.GRID_SIZE_X
-                    - self.RACK_TILE_INSET * self.TILE_INSET
-                    - self.TEXT_LINE_HEIGHT,
-                    origin[1] + self.TILE_INSET + self.GRID_OFFSET,
-                ),
-                (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
-                class_="delete-tile-button",
-                rx=self.CORNER_RADIUS,
-            )
-        )
-        link.add(
-            drawing.text(
-                "X",
-                insert=(
-                    origin[0]
-                    + tile.x_size * self.GRID_SIZE_X
-                    - self.RACK_TILE_INSET * self.TILE_INSET
-                    - self.TEXT_LINE_HEIGHT / 2,
-                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + self.GRID_OFFSET,
-                ),
-                class_="button-text",
-            )
-        )
+        # Add buttons for editing and deleting the Rack tile definition
+        if tile.on_group_tile is True:
+            self._draw_edit_delete_button(drawing, tile, self.RACK_BUTTON_OFFSET, self.GRID_OFFSET)
 
     def render(self):
         """Generate an SVG document representing a FloorPlan."""
@@ -546,7 +497,7 @@ class FloorPlanSVG:
         # Draw Rack Groups and status boxes before the grid is created
         logger.debug("Rendering underlying rack_group and status tiles...")
         for tile in self.floor_plan.tiles.all():
-            self._draw_status_tiles(drawing, tile)
+            self._draw_underlay_tiles(drawing, tile)
 
         # Overlay the grid on top of the status and rackgroups to show available rack space
         logger.debug("Rendering underlying grid...")

@@ -201,17 +201,19 @@ class FloorPlanTile(PrimaryModel):
                 self.on_group_tile = True
                 if orack_group is not None:
                     if orack_group != rack_group:
-                        # If rack is not in the correct rack group or rack with with a rack group is being placed on a status group tile?
-                        raise ValidationError({"rack_group": f"Rack {self.rack} must belong to {orack_group}"})
+                        # Is tile assigned to a rack_group? Racks must be assigned to the same rack_group
+                        raise ValidationError({"rack_group": f"Rack {self.rack} does not belong to {orack_group}"})
             if rack is None:
                 if x_max > ox_max or x_min < ox_min:
-                    # Allow for the extending of exising underlying Rack Group and Status tiles
+                    # RACKGROUP tiles can grow and shrink but not overlap other RACKGROUP tiles
                     if orack_group is not None and allocation_type != AllocationTypeChoices.RACKGROUP:
                         raise ValidationError({"Tile must not extend beyond the boundary of the defined group tiles"})
                 if y_max > oy_max or y_min < oy_min:
-                    # Allow for the extending of exising underlying Rack Group and Status tiles
+                    # RACKGROUP tiles can grow and shrink but not overlap other RACKGROUP tiles
                     if orack_group is not None and allocation_type != AllocationTypeChoices.RACKGROUP:
                         raise ValidationError({"Tile must not extend beyond the boundary of the defined group tiles"})
+                if allocation_type == oallocation_type:
+                    raise ValidationError("Tile overlaps with another defined tile.")
 
         # x <= 0, y <= 0 are covered by the base field definitions
         if self.x_origin > self.floor_plan.x_size:

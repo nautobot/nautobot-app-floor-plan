@@ -47,7 +47,6 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
     model = models.FloorPlanTile
     brief_fields = ["display", "id", "url", "x_origin", "x_size", "y_origin", "y_size"]
     choices_fields = ["rack_orientation", "allocation_type"]
-    # TODO choices_fields = ["rack_orientation", "status"]
     validation_excluded_fields = ["status", "allocation_type"]
 
     @classmethod
