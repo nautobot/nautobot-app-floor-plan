@@ -88,7 +88,9 @@ class FloorPlanTileForm(NautobotModelForm):
         query_params={"nautobot_floor_plan_floor_plan": "$floor_plan", "rack_group": "$rack_group"},
     )
     rack_group = DynamicModelChoiceField(
-        queryset=RackGroup.objects.all(), required=False, query_params={"nautobot_floor_plan_floor_plan": "$floor_plan"}
+        queryset=RackGroup.objects.all(),
+        required=False,
+        query_params={"nautobot_floor_plan_floor_plan": "$floor_plan", "racks": "$rack"},
     )
     x_origin = forms.CharField()
     y_origin = forms.CharField()
