@@ -30,6 +30,7 @@ class FloorPlanConfig(NautobotAppConfig):
         "default_y_axis_labels": AxisLabelsChoices.NUMBERS,
     }
     caching_config = {}
+    docs_view_name = "plugins:nautobot_floor_plan:docs"
 
     def validate_config_options(self):
         """Validates app configuration options."""
