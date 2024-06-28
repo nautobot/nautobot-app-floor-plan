@@ -1,6 +1,8 @@
 """Django urlpatterns declaration for nautobot_floor_plan app."""
 
 from django.urls import path
+from django.templatetags.static import static
+from django.views.generic import RedirectView
 
 from nautobot.apps.urls import NautobotUIViewSetRouter
 from nautobot.extras.views import ObjectChangeLogView, ObjectNotesView
@@ -26,5 +28,6 @@ urlpatterns = [
         kwargs={"model": models.FloorPlan},
     ),
     path("locations/<uuid:pk>/floor_plan/", views.LocationFloorPlanTab.as_view(), name="location_floor_plan_tab"),
+    path("docs/", RedirectView.as_view(url=static("nautobot_circuit_maintenance/docs/index.html")), name="docs"),
 ]
 urlpatterns += router.urls
