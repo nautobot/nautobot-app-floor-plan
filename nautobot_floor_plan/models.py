@@ -187,9 +187,13 @@ class FloorPlanTile(PrimaryModel):
         super().clean()
         FloorPlanTile.allocation_type_assignment(self)
 
-        def group_tile_bounds(rack):
+        def group_tile_bounds(rack, rack_group):
             """Validate the overlapping of group tiles."""
             if rack is not None:
+                # Set the tile rack_group equal to the rack.rack_group if the rack is in a rack_group
+                if rack.rack_group is not None:
+                    rack_group = rack.rack_group
+                    self.rack_group = rack.rack_group
                 if x_max > ox_max or x_min < ox_min:
                     raise ValidationError(
                         {f"Rack {self.rack} must not extend beyond the boundary of the defined group tiles"}
@@ -200,21 +204,17 @@ class FloorPlanTile(PrimaryModel):
                     )
                 self.on_group_tile = True
                 if orack_group is not None:
-                    # Set the tile rack_group equal to the rack.rack_group if the rack is in a rack_group
-                    if rack.rack_group is not None:
-                        self.rack_group = rack.rack_group
-                    if orack_group != self.rack_group:
+                    if orack_group != rack_group or rack.rack_group != orack_group:
                         # Is tile assigned to a rack_group? Racks must be assigned to the same rack_group
                         raise ValidationError({"rack_group": f"Rack {self.rack} must belong to {orack_group}"})
             if rack is None:
+                # RACKGROUP tiles can grow and shrink but not overlap other RACKGROUP tiles or Racks that are not assigned to the correct rackgroup
                 if x_max > ox_max or x_min < ox_min:
-                    # RACKGROUP tiles can grow and shrink but not overlap other RACKGROUP tiles
-                    if orack_group is not None and allocation_type != AllocationTypeChoices.RACKGROUP:
-                        raise ValidationError({"Tile must not extend beyond the boundary of the defined group tiles"})
+                    if oallocation_type == AllocationTypeChoices.RACK and orack_group != rack_group:
+                        raise ValidationError("Tile overlaps a Rack that is not in the correct Rackgroup")
                 if y_max > oy_max or y_min < oy_min:
-                    # RACKGROUP tiles can grow and shrink but not overlap other RACKGROUP tiles
-                    if orack_group is not None and allocation_type != AllocationTypeChoices.RACKGROUP:
-                        raise ValidationError({"Tile must not extend beyond the boundary of the defined group tiles"})
+                    if oallocation_type == AllocationTypeChoices.RACK and orack_group != rack_group:
+                        raise ValidationError("Tile overlaps a Rack that is not in the correct Rackgroup")
                 if allocation_type == oallocation_type:
                     raise ValidationError("Tile overlaps with another defined tile.")
 
@@ -236,7 +236,7 @@ class FloorPlanTile(PrimaryModel):
         # Check for overlapping tiles.
         # TODO: this would be a lot more efficient using something like GeoDjango,
         # but since this is only checked at write time it's acceptable for now.
-        x_min, y_min, x_max, y_max, allocation_type, self.rack_group = self.bounds
+        x_min, y_min, x_max, y_max, allocation_type, rack_group = self.bounds
         for other in FloorPlanTile.objects.filter(floor_plan=self.floor_plan).exclude(pk=self.pk):
             ox_min, oy_min, ox_max, oy_max, oallocation_type, orack_group = other.bounds
             # Is either bounds rectangle completely to the right of the other?
@@ -249,10 +249,10 @@ class FloorPlanTile(PrimaryModel):
             # If they are in the same rackgroup, do they overlap tiles?
             if allocation_type != oallocation_type:
                 if self.rack is not None:
-                    group_tile_bounds(self.rack)
+                    group_tile_bounds(self.rack, rack_group)
                     continue
                 if self.rack is None:
-                    group_tile_bounds(self.rack)
+                    group_tile_bounds(self.rack, rack_group)
                     continue
             # Else they must overlap
             raise ValidationError("Tile overlaps with another defined tile.")
