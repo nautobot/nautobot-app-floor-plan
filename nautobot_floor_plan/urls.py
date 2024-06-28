@@ -28,6 +28,6 @@ urlpatterns = [
         kwargs={"model": models.FloorPlan},
     ),
     path("locations/<uuid:pk>/floor_plan/", views.LocationFloorPlanTab.as_view(), name="location_floor_plan_tab"),
-    path("docs/", RedirectView.as_view(url=static("nautobot_circuit_maintenance/docs/index.html")), name="docs"),
+    path("docs/", RedirectView.as_view(url=static("nautobot_floor_plan/docs/index.html")), name="docs"),
 ]
 urlpatterns += router.urls
