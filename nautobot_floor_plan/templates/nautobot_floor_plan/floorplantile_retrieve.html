@@ -38,8 +38,16 @@
                 </td>
             </tr>
             <tr>
+                <td>Tile Type</td>
+                <td>{{ object.allocation_type | hyperlinked_object }}</td>
+            </tr>
+            <tr>
                 <td>Rack</td>
                 <td>{{ object.rack | hyperlinked_object }}</td>
+            </tr>
+            <tr>
+                <td>Rack Group</td>
+                <td>{{ object.rack_group| hyperlinked_object }}</td>
             </tr>
             <tr>
                 <td>Rack Orientation</td>
