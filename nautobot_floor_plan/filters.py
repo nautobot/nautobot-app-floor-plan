@@ -2,7 +2,7 @@
 
 import django_filters
 
-from nautobot.dcim.models import Location, Rack
+from nautobot.dcim.models import Location, Rack, RackGroup
 from nautobot.apps.filters import NautobotFilterSet
 from nautobot.apps.filters import NaturalKeyOrPKMultipleChoiceFilter, SearchFilter
 
@@ -36,6 +36,7 @@ class FloorPlanTileFilterSet(NautobotFilterSet):
         filter_predicates={
             "floor_plan__location__name": "icontains",
             "rack__name": "icontains",
+            "rack_group__name": "icontains",
         },
     )
     floor_plan = django_filters.ModelMultipleChoiceFilter(queryset=models.FloorPlan.objects.all())
@@ -48,6 +49,12 @@ class FloorPlanTileFilterSet(NautobotFilterSet):
         queryset=Rack.objects.all(),
         to_field_name="name",
         label="Rack (name or ID)",
+    )
+
+    rack_group = NaturalKeyOrPKMultipleChoiceFilter(
+        queryset=RackGroup.objects.all(),
+        to_field_name="name",
+        label="RackGroup (name or ID)",
     )
 
     class Meta:

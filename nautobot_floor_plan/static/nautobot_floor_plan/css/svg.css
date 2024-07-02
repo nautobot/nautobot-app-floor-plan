@@ -22,6 +22,7 @@ text {
 .tile-status {
     stroke: black;
     fill: #f7f7f7;
+    opacity: .6;
 }
 
 .button-text {

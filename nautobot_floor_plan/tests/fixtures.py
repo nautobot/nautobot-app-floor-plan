@@ -2,7 +2,7 @@
 
 from django.contrib.contenttypes.models import ContentType
 
-from nautobot.dcim.models import LocationType, Rack, Location
+from nautobot.dcim.models import LocationType, Rack, RackGroup, Location
 from nautobot.extras.models import Status
 
 from nautobot_floor_plan.models import FloorPlan, FloorPlanTile
@@ -14,6 +14,7 @@ def create_prerequisites(floor_count=4):
     parent_location_type = LocationType.objects.create(name="Building")
     location_type = LocationType.objects.create(name="Floor", parent=parent_location_type)
     location_type.content_types.add(ContentType.objects.get_for_model(Rack))
+    location_type.content_types.add(ContentType.objects.get_for_model(RackGroup))
 
     active_status = Status.objects.get(name="Active")
     active_status.content_types.add(ContentType.objects.get_for_model(FloorPlanTile))

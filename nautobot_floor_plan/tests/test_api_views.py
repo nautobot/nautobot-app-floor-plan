@@ -2,7 +2,7 @@
 
 from django.contrib.contenttypes.models import ContentType
 
-from nautobot.dcim.models import Rack
+from nautobot.dcim.models import Rack, RackGroup
 from nautobot.extras.models import Tag
 from nautobot.apps.testing import APIViewTestCases
 
@@ -46,9 +46,8 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
 
     model = models.FloorPlanTile
     brief_fields = ["display", "id", "url", "x_origin", "x_size", "y_origin", "y_size"]
-    choices_fields = ["rack_orientation"]
-    # TODO choices_fields = ["rack_orientation", "status"]
-    validation_excluded_fields = ["status"]
+    choices_fields = ["rack_orientation", "allocation_type"]
+    validation_excluded_fields = ["status", "allocation_type"]
 
     @classmethod
     def setUpTestData(cls):
@@ -56,13 +55,39 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
         floor_plans = fixtures.create_floor_plans(data["floors"])
         cls.rack_2_2_2 = Rack(name="Rack 1", status=data["status"], location=data["floors"][1])
         cls.rack_2_2_2.validated_save()
-        cls.model.objects.create(floor_plan=floor_plans[0], status=data["status"], x_origin=1, y_origin=1)
         cls.model.objects.create(
-            floor_plan=floor_plans[1], status=data["status"], x_origin=2, y_origin=2, rack=cls.rack_2_2_2
+            floor_plan=floor_plans[0],
+            status=data["status"],
+            x_origin=1,
+            y_origin=1,
+            allocation_type=choices.AllocationTypeChoices.RACKGROUP,
+        )
+        cls.model.objects.create(
+            floor_plan=floor_plans[1],
+            status=data["status"],
+            x_origin=2,
+            y_origin=2,
+            rack=cls.rack_2_2_2,
+            allocation_type=choices.AllocationTypeChoices.RACK,
         )
         cls.model.objects.create(floor_plan=floor_plans[2], status=data["status"], x_origin=3, y_origin=3)
-        cls.rack_3_1_1 = Rack(name="Rack 2", status=data["status"], location=data["floors"][2])
+        cls.rackgroup1_1_1 = RackGroup(
+            name="RackGroup 1",
+            location=data["floors"][2],
+        )
+        cls.rackgroup1_1_1.validated_save()
+        cls.rack_3_1_1 = Rack(
+            name="Rack 2",
+            status=data["status"],
+            rack_group=cls.rackgroup1_1_1,
+            location=data["floors"][2],
+        )
         cls.rack_3_1_1.validated_save()
+        cls.rackgroup2_1_1 = RackGroup(
+            name="RackGroup 2",
+            location=data["floors"][3],
+        )
+        cls.rackgroup2_1_1.validated_save()
         cls.create_data = [
             {
                 "floor_plan": floor_plans[2].pk,
@@ -70,7 +95,9 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
                 "y_origin": 1,
                 "status": data["status"].name,
                 "rack": cls.rack_3_1_1.pk,
+                "rack_group": cls.rackgroup1_1_1.pk,
                 "rack_orientation": choices.RackOrientationChoices.RIGHT,
+                "allocation_type": choices.AllocationTypeChoices.RACK,
             },
             {
                 "floor_plan": floor_plans[2].pk,
@@ -79,6 +106,7 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
                 "x_size": 1,
                 "y_size": 1,
                 "status": data["status"].name,
+                "allocation_type": choices.AllocationTypeChoices.RACKGROUP,
             },
             {
                 "floor_plan": floor_plans[3].pk,
@@ -87,6 +115,8 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
                 "x_size": 2,
                 "y_size": 2,
                 "status": data["status"].name,
+                "rack_group": cls.rackgroup2_1_1.pk,
+                "allocation_type": choices.AllocationTypeChoices.RACKGROUP,
             },
         ]
         tag = Tag.objects.create(name="Hello")
