@@ -32,9 +32,9 @@ After clicking "Create", you will be presented with a new floor plan render:
 
 You can click the "+" icon in the corner of any rectangle in the grid to define information about this Tile in the Floor Plan. (If you've defined a large floor plan, or have a small display, you may find it useful to use your mouse wheel to zoom in first. You can also click and drag when zoomed in to pan around the grid.) This will bring you to a simple create/edit form for describing the Tile.
 
-You can assign a Status to each tile, and optionally assign a Rack or Rackgroup as well as specifying the orientation of the Rack relative to the Floor Plan. You can also specify the size of a Tile if you want it to cover multiple "spaces" in the Floor Plan - this can be useful to document larger-than-usual Racks, or to mark entire sections of the Floor Plan as "Reserved" or "Unavailable". 
+You can assign a Status to each tile, and optionally assign a Rack or RackGroup as well as specifying the orientation of the Rack relative to the Floor Plan. You can also specify the size of a Tile if you want it to cover multiple "spaces" in the Floor Plan - this can be useful to document larger-than-usual Racks, or to mark entire sections of the Floor Plan as "Reserved" or "Unavailable". 
 
-You can place racks within the Status or Rackgroup tiles that are covering multiple spaces. When placing a Rack onto a Rackgroup tile, the rack must be added to the appropriate Rackgroup. Rackgroup and Status tiles that cover multiple "spaces" can be increased or reduced in size as long as they don't overlap with over status or Rackgroup tiles.
+You can place racks within the Status or RackGroup tiles that are covering multiple spaces. When placing a Rack onto a RackGroup tile, the rack must be added to the appropriate RackGroup. RackGroup and Status tiles that cover multiple "spaces" can be increased or reduced in size as long as they don't overlap with other Status or RackGroup tiles.
 
 ![Add Tile form](../images/add-tile-form.png)
 
