@@ -137,12 +137,11 @@ class FloorPlanTile(PrimaryModel):
         choices=AllocationTypeChoices,
         max_length=10,
         blank=True,
+        help_text="Assigns a type of either Rack or RackGroup to a tile",
     )
 
     on_group_tile = models.BooleanField(
-        default=False,
-        blank=True,
-        null=True,
+        default=False, blank=True, help_text="Determines if a tile is placed on top of another tile"
     )
 
     class Meta:
