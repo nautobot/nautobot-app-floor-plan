@@ -38,8 +38,16 @@
                 </td>
             </tr>
             <tr>
+                <td>Allocation Type</td>
+                <td>{{ object.get_allocation_type_display|placeholder }}</td>
+            </tr>
+            <tr>
                 <td>Rack</td>
                 <td>{{ object.rack | hyperlinked_object }}</td>
+            </tr>
+            <tr>
+                <td>Rack Group</td>
+                <td>{{ object.rack_group| hyperlinked_object }}</td>
             </tr>
             <tr>
                 <td>Rack Orientation</td>
