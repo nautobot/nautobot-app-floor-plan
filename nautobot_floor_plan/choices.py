@@ -38,6 +38,6 @@ class AllocationTypeChoices(ChoiceSet):
     RACKGROUP = "rackgroup"
 
     CHOICES = (
-        (RACK, "rack"),
-        (RACKGROUP, "rackgroup"),
+        (RACK, "Rack"),
+        (RACKGROUP, "RackGroup"),
     )
