@@ -211,10 +211,10 @@ class FloorPlanTile(PrimaryModel):
                 # RACKGROUP tiles can grow and shrink but not overlap other RACKGROUP tiles or Racks that are not assigned to the correct rackgroup
                 if x_max > ox_max or x_min < ox_min:
                     if oallocation_type == AllocationTypeChoices.RACK and orack_group != rack_group:
-                        raise ValidationError("Tile overlaps a Rack that is not in the correct Rackgroup")
+                        raise ValidationError("Tile overlaps a Rack that is not in the specified RackGroup")
                 if y_max > oy_max or y_min < oy_min:
                     if oallocation_type == AllocationTypeChoices.RACK and orack_group != rack_group:
-                        raise ValidationError("Tile overlaps a Rack that is not in the correct Rackgroup")
+                        raise ValidationError("Tile overlaps a Rack that is not in the specified RackGroup")
                 if allocation_type == oallocation_type:
                     raise ValidationError("Tile overlaps with another defined tile.")
 
