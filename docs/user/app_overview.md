@@ -23,6 +23,7 @@ Included is a non-exhaustive list of capabilites beyond a standard MVC (model vi
 
 - Provides visualization of racks on a floor map.
 - Provides visualization of racks being assigned to a rack group on a floor map.
+- Provides visualization of tenant and tenant groups for racks on a floor map.
 - Provides easy navigation from floor map to rack and subsequently device from Rack.
 - Provides the ability to assign Racks to coordinates / tiles.
     - From the Floor Plan UI.

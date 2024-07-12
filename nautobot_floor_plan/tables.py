@@ -77,6 +77,8 @@ class FloorPlanTileTable(BaseTable):
             "rack",
             "rack_group",
             "rack_orientation",
+            "rack.tenant",
+            "rack.tenant.tenant_group",
             "tags",
             "actions",
         )
