@@ -36,7 +36,7 @@ You can assign a Status to each tile, and optionally assign a Rack or RackGroup 
 
 You can place racks within the Status or RackGroup tiles that are covering multiple spaces. When placing a Rack onto a RackGroup tile, the rack must be added to the appropriate RackGroup. RackGroup and Status tiles that cover multiple "spaces" can be increased or reduced in size as long as they don't overlap with other Status or RackGroup tiles.
 
-Tenant and TenantGroup information for Racks that placed on tiles will be displayed if the Rack belongs to a Tenant or TenantGroup
+When a Rack is assigned to a tile, the display of the tile will additionally include any Tenant and TenantGroup information for the rack.
 
 ![Add Tile form](../images/add-tile-form.png)
 
