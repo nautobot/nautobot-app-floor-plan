@@ -451,7 +451,7 @@ class FloorPlanSVG:
                 tile.rack.status.name,
                 insert=(
                     origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 - self.TEXT_LINE_HEIGHT
+                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 - self.TEXT_LINE_HEIGHT,
                 ),
                 class_="label-text",
                 style=f"fill: {fgcolor(tile.rack.status.color)}",
