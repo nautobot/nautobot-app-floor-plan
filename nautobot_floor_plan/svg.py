@@ -439,7 +439,7 @@ class FloorPlanSVG:
                 tile.rack.name,
                 insert=(
                     origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 - self.TEXT_LINE_HEIGHT,
+                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 - self.TEXT_LINE_HEIGHT * 2,
                 ),
                 class_="label-text-primary",
                 style=f"fill: {fgcolor(tile.rack.status.color)}",
@@ -451,7 +451,7 @@ class FloorPlanSVG:
                 tile.rack.status.name,
                 insert=(
                     origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2,
+                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 - self.TEXT_LINE_HEIGHT,
                 ),
                 class_="label-text",
                 style=f"fill: {fgcolor(tile.rack.status.color)}",
@@ -464,12 +464,38 @@ class FloorPlanSVG:
                     tile.rack_group.name,
                     insert=(
                         origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
+                        origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 + self.TEXT_LINE_HEIGHT,
+                    ),
+                    class_="label-text",
+                    style=f"fill: {fgcolor(tile.rack.status.color)}",
+                )
+            )
+        # Add the tenant name if it is configured
+        if tile.rack.tenant is not None:
+            link.add(
+                drawing.text(
+                    tile.rack.tenant.name,
+                    insert=(
+                        origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
                         origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 + self.TEXT_LINE_HEIGHT * 2,
                     ),
                     class_="label-text",
                     style=f"fill: {fgcolor(tile.rack.status.color)}",
                 )
             )
+            # Add the tenant_group name if the tenant is in a group
+            if tile.rack.tenant.tenant_group is not None:
+                link.add(
+                    drawing.text(
+                        tile.rack.tenant.tenant_group.name,
+                        insert=(
+                            origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
+                            origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 + self.TEXT_LINE_HEIGHT * 3,
+                        ),
+                        class_="label-text",
+                        style=f"fill: {fgcolor(tile.rack.status.color)}",
+                    )
+                )
         # Add the rack utilization as text
         ru_used, ru_total = tile.rack.get_utilization()
         link.add(
@@ -477,7 +503,7 @@ class FloorPlanSVG:
                 f"{ru_used} / {ru_total} RU",
                 insert=(
                     origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 + self.TEXT_LINE_HEIGHT,
+                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2,
                 ),
                 class_="label-text",
                 style=f"fill: {fgcolor(tile.rack.status.color)}",
