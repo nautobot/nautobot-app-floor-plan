@@ -2,7 +2,7 @@
 
 from django.test import TestCase
 
-from nautobot.dcim.models import Rack
+from nautobot.dcim.models import Rack, RackGroup
 from nautobot.extras.models import Tag
 
 from nautobot_floor_plan import filters
@@ -83,10 +83,20 @@ class TestFloorPlanTileFilterSet(TestCase):
                             status=cls.active_status,
                             location=floor_plan.location,
                         )
+                        rack_group = RackGroup.objects.create(
+                            name=f"RackGroup ({x}, {y}) for floor {floor_plan.location}",
+                            location=floor_plan.location,
+                        )
                     else:
                         rack = None
+                        rack_group = None
                     floor_plan_tile = models.FloorPlanTile(
-                        floor_plan=floor_plan, status=cls.active_status, x_origin=x, y_origin=y, rack=rack
+                        floor_plan=floor_plan,
+                        status=cls.active_status,
+                        x_origin=x,
+                        y_origin=y,
+                        rack=rack,
+                        rack_group=rack_group,
                     )
                     floor_plan_tile.validated_save()
 
@@ -110,6 +120,11 @@ class TestFloorPlanTileFilterSet(TestCase):
     def test_rack(self):
         """Test filtering by Rack."""
         params = {"rack": list(Rack.objects.all()[:3])}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 3)
+
+    def test_rack_group(self):
+        """Test filtering by RackGroup."""
+        params = {"rack_group": list(RackGroup.objects.all()[:3])}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 3)
 
     def test_tags(self):

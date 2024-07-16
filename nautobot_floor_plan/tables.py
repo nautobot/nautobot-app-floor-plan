@@ -75,7 +75,10 @@ class FloorPlanTileTable(BaseTable):
             "x_size",
             "y_size",
             "rack",
+            "rack_group",
             "rack_orientation",
+            "rack.tenant",
+            "rack.tenant.tenant_group",
             "tags",
             "actions",
         )
@@ -88,6 +91,7 @@ class FloorPlanTileTable(BaseTable):
             "x_size",
             "y_size",
             "rack",
+            "rack_group",
             "tags",
             "actions",
         )

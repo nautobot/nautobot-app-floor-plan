@@ -22,6 +22,8 @@ This App is primarily developed and maintained by Network to Code, LLC.
 Included is a non-exhaustive list of capabilites beyond a standard MVC (model view controller) paradigm.
 
 - Provides visualization of racks on a floor map.
+- Provides visualization of racks being assigned to a rack group on a floor map.
+- Provides visualization of tenant and tenant groups for racks on a floor map.
 - Provides easy navigation from floor map to rack and subsequently device from Rack.
 - Provides the ability to assign Racks to coordinates / tiles.
     - From the Floor Plan UI.
@@ -31,6 +33,7 @@ Included is a non-exhaustive list of capabilites beyond a standard MVC (model vi
     - Leveraging this you can depict hot / cold aisle.
 - Provides the ability to set the direction of the Rack and show up.
 - Provides the ability to span multiple adjacent tiles by a single rack.
+- Provides the ability to place racks in a group that spans multiple tiles.
 - Provides custom layout size in any rectangular shape using X & Y axis.
 - Provides the ability to save the generated SVG from a click of a "Save SVG" link.
 

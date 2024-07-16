@@ -2,7 +2,7 @@
 
 {% if floor_plan %}
     <h4>{{ floor_plan }} {% edit_button floor_plan %}</h4>
-    Use scroll wheel to zoom in or out. Click and drag to scroll.
+    Use shift+scroll wheel to zoom in or out. Click and drag to scroll.
     <div class="text-center text-small">
         <a href="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=floor_plan.pk %}" class="rack_elevation_save_svg_link" download="floor_plan_{{ floor_plan.location.name }}.svg">
             <i class="mdi mdi-content-save-outline"></i> Save SVG
@@ -13,7 +13,7 @@
     See https://css-tricks.com/scale-svg/ for more details.
     {% endcomment %}
     <div id="floor-plan-svg-container"
-         style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ floor_plan.x_size}} * {{ floor_plan.tile_depth }}) / ({{ floor_plan.y_size }} * {{ floor_plan.tile_width }}) / 2);">
+         style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ floor_plan.y_size}} * {{ floor_plan.tile_depth }}) / ({{ floor_plan.x_size }} * {{ floor_plan.tile_width }}) / 1.2);">
         <object id="floor-plan-svg" type="image/svg+xml" role="img"
                 data="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=floor_plan.pk %}"
                 style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
@@ -64,6 +64,7 @@
 
             // On scroll wheel in the SVG, zoom in or out
             svgImage.contentDocument.addEventListener("wheel", function(e){
+                if (!e.shiftKey) return
                 e.preventDefault();
                 var w = viewBox.w;
                 var h = viewBox.h;
