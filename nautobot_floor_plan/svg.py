@@ -116,26 +116,26 @@ class FloorPlanSVG:
                 )
             )
         # Axis labels
-        for x in range(self.floor_plan.x_origin_start, self.floor_plan.x_size + self.floor_plan.x_origin_start):
+        for x in range(self.floor_plan.x_origin_seed, self.floor_plan.x_size + self.floor_plan.x_origin_seed):
             label = grid_number_to_letter(x) if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS else str(x)
             drawing.add(
                 drawing.text(
                     label,
                     insert=(
-                        (x - self.floor_plan.x_origin_start + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
+                        (x - self.floor_plan.x_origin_seed + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
                     ),
                     class_="grid-label",
                 )
             )
-        for y in range(self.floor_plan.y_origin_start, self.floor_plan.y_size + self.floor_plan.y_origin_start):
+        for y in range(self.floor_plan.y_origin_seed, self.floor_plan.y_size + self.floor_plan.y_origin_seed):
             label = grid_number_to_letter(y) if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS else str(y)
             drawing.add(
                 drawing.text(
                     label,
                     insert=(
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
-                        (y - self.floor_plan.y_origin_start + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
+                        (y - self.floor_plan.y_origin_seed + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
                     ),
                     class_="grid-label",
                 )
@@ -144,8 +144,8 @@ class FloorPlanSVG:
         # Links to populate tiles
         y_letters = self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS
         x_letters = self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS
-        for y in range(self.floor_plan.y_origin_start, self.floor_plan.y_size + self.floor_plan.y_origin_start):
-            for x in range(self.floor_plan.x_origin_start, self.floor_plan.x_size + self.floor_plan.x_origin_start):
+        for y in range(self.floor_plan.y_origin_seed, self.floor_plan.y_size + self.floor_plan.y_origin_seed):
+            for x in range(self.floor_plan.x_origin_seed, self.floor_plan.x_size + self.floor_plan.x_origin_seed):
                 query_params = urlencode(
                     {
                         "floor_plan": self.floor_plan.pk,
@@ -160,8 +160,8 @@ class FloorPlanSVG:
                 add_link.add(
                     drawing.rect(
                         (
-                            (x - self.floor_plan.x_origin_start + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET - (self.TEXT_LINE_HEIGHT / 2),
-                            (y - self.floor_plan.y_origin_start + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET - (self.TEXT_LINE_HEIGHT / 2),
+                            (x - self.floor_plan.x_origin_seed + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET - (self.TEXT_LINE_HEIGHT / 2),
+                            (y - self.floor_plan.y_origin_seed + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET - (self.TEXT_LINE_HEIGHT / 2),
                         ),
                         (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
                         class_="add-tile-button",
@@ -173,8 +173,8 @@ class FloorPlanSVG:
                     drawing.text(
                         "+",
                         insert=(
-                            (x - self.floor_plan.x_origin_start + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
-                            (y - self.floor_plan.y_origin_start + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
+                            (x - self.floor_plan.x_origin_seed + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
+                            (y - self.floor_plan.y_origin_seed + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
                         ),
                         class_="button-text",
                     )
@@ -187,8 +187,8 @@ class FloorPlanSVG:
             tile_inset = self.TILE_INSET
 
         origin = (
-            (tile.x_origin - self.floor_plan.x_origin_start) * self.GRID_SIZE_X + self.GRID_OFFSET + tile_inset,
-            (tile.y_origin - self.floor_plan.y_origin_start) * self.GRID_SIZE_Y + self.GRID_OFFSET + tile_inset,
+            (tile.x_origin - self.floor_plan.x_origin_seed) * self.GRID_SIZE_X + self.GRID_OFFSET + tile_inset,
+            (tile.y_origin - self.floor_plan.y_origin_seed) * self.GRID_SIZE_Y + self.GRID_OFFSET + tile_inset,
         )
 
         # Add a button for editing the tile definition
@@ -267,8 +267,8 @@ class FloorPlanSVG:
         # or if a tile is a single Rackgroup tile with a rack installed
         if (tile.allocation_type == AllocationTypeChoices.RACKGROUP) or tile.on_group_tile is False:
             origin = (
-                (tile.x_origin - self.floor_plan.x_origin_start) * self.GRID_SIZE_X + self.GRID_OFFSET + self.TILE_INSET,
-                (tile.y_origin - self.floor_plan.y_origin_start) * self.GRID_SIZE_Y + self.GRID_OFFSET + self.TILE_INSET,
+                (tile.x_origin - self.floor_plan.x_origin_seed) * self.GRID_SIZE_X + self.GRID_OFFSET + self.TILE_INSET,
+                (tile.y_origin - self.floor_plan.y_origin_seed) * self.GRID_SIZE_Y + self.GRID_OFFSET + self.TILE_INSET,
             )
             # Draw the tile outline and fill it with its status color
             drawing.add(
@@ -307,8 +307,8 @@ class FloorPlanSVG:
     def _draw_defined_rackgroup_tile(self, drawing, tile):
         """Add Status and RackGroup text to a rendered tile."""
         origin = (
-            (tile.x_origin - self.floor_plan.x_origin_start) * self.GRID_SIZE_X + self.GRID_OFFSET + self.TILE_INSET,
-            (tile.y_origin - self.floor_plan.y_origin_start) * self.GRID_SIZE_Y + self.GRID_OFFSET + self.TILE_INSET,
+            (tile.x_origin - self.floor_plan.x_origin_seed) * self.GRID_SIZE_X + self.GRID_OFFSET + self.TILE_INSET,
+            (tile.y_origin - self.floor_plan.y_origin_seed) * self.GRID_SIZE_Y + self.GRID_OFFSET + self.TILE_INSET,
         )
         if tile.on_group_tile is False:
             # Add text at the top of the tile labeling the status
@@ -342,8 +342,8 @@ class FloorPlanSVG:
     def _draw_rack_tile(self, drawing, tile):
         """Overlay Rack information onto an already drawn tile."""
         origin = (
-            (tile.x_origin - self.floor_plan.x_origin_start) * self.GRID_SIZE_X + self.GRID_OFFSET,
-            (tile.y_origin - self.floor_plan.y_origin_start) * self.GRID_SIZE_Y + self.GRID_OFFSET,
+            (tile.x_origin - self.floor_plan.x_origin_seed) * self.GRID_SIZE_X + self.GRID_OFFSET,
+            (tile.y_origin - self.floor_plan.y_origin_seed) * self.GRID_SIZE_Y + self.GRID_OFFSET,
         )
 
         rack_url = reverse("dcim:rack", kwargs={"pk": tile.rack.pk})

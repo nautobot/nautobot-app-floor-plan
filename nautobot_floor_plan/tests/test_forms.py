@@ -28,8 +28,8 @@ class TestFloorPlanForm(TestCase):
                 "tile_width": 200,
                 "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
                 "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
-                "x_origin_start": 1,
-                "y_origin_start": 1,
+                "x_origin_seed": 1,
+                "y_origin_seed": 1,
             }
         )
         self.assertTrue(form.is_valid())
@@ -53,8 +53,8 @@ class TestFloorPlanForm(TestCase):
                 "tile_width": 2,
                 "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
                 "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
-                "x_origin_start": 1,
-                "y_origin_start": 1,
+                "x_origin_seed": 1,
+                "y_origin_seed": 1,
                 "tags": [tag],
             }
         )
@@ -74,7 +74,7 @@ class TestFloorPlanForm(TestCase):
         form = forms.FloorPlanForm(data={})
         self.assertFalse(form.is_valid())
         self.assertEqual(
-            ["location", "tile_depth", "tile_width", "x_axis_labels", "x_origin_start", "x_size", "y_axis_labels", "y_origin_start", "y_size"],
+            ["location", "tile_depth", "tile_width", "x_axis_labels", "x_origin_seed", "x_size", "y_axis_labels", "y_origin_seed", "y_size"],
             sorted(form.errors.keys()),
         )
         for message in form.errors.values():
@@ -96,8 +96,8 @@ class TestFloorPlanTileForm(TestCase):
             tile_width=100,
             x_axis_labels=choices.AxisLabelsChoices.LETTERS,
             y_axis_labels=choices.AxisLabelsChoices.NUMBERS,
-            x_origin_start=1,
-            y_origin_start=1,
+            x_origin_seed=1,
+            y_origin_seed=1,
         )
 
     def test_valid_minimal_inputs(self):
