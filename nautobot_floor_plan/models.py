@@ -82,6 +82,7 @@ class FloorPlan(PrimaryModel):
         return FloorPlanSVG(floor_plan=self, user=user, base_url=base_url).render()
 
     def save(self, **kwargs):
+        """Override save in order to update any existing tiles."""
         if not self.created:
             super().save(**kwargs)
             return
@@ -98,6 +99,7 @@ class FloorPlan(PrimaryModel):
             self.update_tile_origins(x_initial, x_updated, y_initial, y_updated)
             
     def update_tile_origins(self, x_initial, x_updated, y_initial, y_updated):
+        """Update any existing tiles if axis_origin_start was modified."""
         tiles = self.tiles.all()
         x_delta = x_updated - x_initial
         y_delta = y_updated - y_initial
