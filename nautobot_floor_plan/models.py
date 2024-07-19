@@ -65,8 +65,8 @@ class FloorPlan(PrimaryModel):
         default=AxisLabelsChoices.NUMBERS,
         help_text="Grid labels of Y axis (vertical).",
     )    
-    x_origin_start = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
-    y_origin_start = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+    x_origin_start = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], default=1)
+    y_origin_start = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], default=1)
 
     class Meta:
         """Metaclass attributes."""
@@ -108,8 +108,7 @@ class FloorPlan(PrimaryModel):
                 tile.x_origin += x_delta
                 tile.y_origin += y_delta
 
-                tile.full_clean()
-                tile.save()
+                tile.validated_save()
 
 @extras_features(
     "custom_fields",
@@ -249,13 +248,17 @@ class FloorPlanTile(PrimaryModel):
                     raise ValidationError("Tile overlaps with another defined tile.")
 
         # x <= 0, y <= 0 are covered by the base field definitions
-        if self.x_origin > self.floor_plan.x_size + self.floor_plan.x_origin_start:
-            raise ValidationError({"x_origin": f"Too large for {self.floor_plan}, {self.x_origin=}, {self.y_origin=}"})
-        if self.y_origin > self.floor_plan.y_size + self.floor_plan.y_origin_start:
-            raise ValidationError({"y_origin": f"Too large for {self.floor_plan}, {self.x_origin=}, {self.y_origin=}"})
-        if self.x_origin + self.x_size - 1 > self.floor_plan.x_size + self.floor_plan.x_origin_start:
+        if self.x_origin > self.floor_plan.x_size + self.floor_plan.x_origin_start - 1:
+            raise ValidationError({"x_origin": f"Too large for {self.floor_plan}"})
+        if self.y_origin > self.floor_plan.y_size + self.floor_plan.y_origin_start - 1:
+            raise ValidationError({"y_origin": f"Too large for {self.floor_plan}"})
+        if self.x_origin < self.floor_plan.x_origin_start:
+            raise ValidationError({"x_origin": f"Too small for {self.floor_plan}"})
+        if self.y_origin < self.floor_plan.y_origin_start:
+            raise ValidationError({"y_origin": f"Too small for {self.floor_plan}"})
+        if self.x_origin + self.x_size - 1 > self.floor_plan.x_size + self.floor_plan.x_origin_start - 1:
             raise ValidationError({"x_size": f"Extends beyond the edge of {self.floor_plan}"})
-        if self.y_origin + self.y_size - 1 > self.floor_plan.y_size + self.floor_plan.y_origin_start:
+        if self.y_origin + self.y_size - 1 > self.floor_plan.y_size + self.floor_plan.y_origin_start - 1:
             raise ValidationError({"y_size": f"Extends beyond the edge of {self.floor_plan}"})
 
         if self.rack is not None:
