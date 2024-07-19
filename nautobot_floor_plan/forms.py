@@ -20,12 +20,22 @@ from nautobot.apps.forms import (
 from nautobot.apps.config import get_app_settings_or_config
 
 from nautobot_floor_plan import models, choices, utils
+from nautobot_floor_plan.choices import AxisLabelsChoices
 
 
 class FloorPlanForm(NautobotModelForm):
     """FloorPlan creation/edit form."""
 
     location = DynamicModelChoiceField(queryset=Location.objects.all())
+
+    x_origin_start = forms.CharField(
+        label = "Beginning X value",
+        help_text = "The first value to begin X Axis at.",
+    ) 
+    y_origin_start = forms.CharField(
+        label = "Beginning Y value",
+        help_text = "The first value to begin Y Axis at.",
+    ) 
 
     class Meta:
         """Meta attributes."""
@@ -39,6 +49,8 @@ class FloorPlanForm(NautobotModelForm):
             "tile_depth",
             "x_axis_labels",
             "y_axis_labels",
+            "x_origin_start",
+            "y_origin_start",
             "tags",
         ]
 
@@ -48,8 +60,11 @@ class FloorPlanForm(NautobotModelForm):
         if not self.instance.created:
             self.initial["x_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_x_axis_labels")
             self.initial["y_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_y_axis_labels")
+            self.initial["x_origin_start"] = "1" if self.initial["x_axis_labels"] == AxisLabelsChoices.NUMBERS else "A"
+            self.initial["y_origin_start"] = "1" if self.initial["y_axis_labels"] == AxisLabelsChoices.NUMBERS else "A"
 
-
+    # def clean_x_origin_start(self):
+    
 class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
     """FloorPlan bulk edit form."""
 

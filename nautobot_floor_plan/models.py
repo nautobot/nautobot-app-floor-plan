@@ -4,7 +4,7 @@ import logging
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
 
 from nautobot.apps.models import extras_features
 from nautobot.apps.models import PrimaryModel
@@ -64,7 +64,9 @@ class FloorPlan(PrimaryModel):
         choices=AxisLabelsChoices,
         default=AxisLabelsChoices.NUMBERS,
         help_text="Grid labels of Y axis (vertical).",
-    )
+    )    
+    x_origin_start = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+    y_origin_start = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
         """Metaclass attributes."""
@@ -79,6 +81,35 @@ class FloorPlan(PrimaryModel):
         """Get SVG representation of this FloorPlan."""
         return FloorPlanSVG(floor_plan=self, user=user, base_url=base_url).render()
 
+    def save(self, **kwargs):
+        if not self.created:
+            super().save(**kwargs)
+            return
+        # Get origin_start pre/post values
+        initial_instance = self.__class__.objects.get(pk=self.pk)
+        x_initial = initial_instance.x_origin_start
+        y_initial = initial_instance.y_origin_start
+        x_updated = self.x_origin_start
+        y_updated = self.y_origin_start
+
+        super().save(**kwargs)
+
+        if x_initial != x_updated or y_initial != y_updated:
+            self.update_tile_origins(x_initial, x_updated, y_initial, y_updated)
+            
+    def update_tile_origins(self, x_initial, x_updated, y_initial, y_updated):
+        tiles = self.tiles.all()
+        x_delta = x_updated - x_initial
+        y_delta = y_updated - y_initial
+
+        # should bulk_update these instead?
+        with transaction.atomic():
+            for tile in tiles:
+                tile.x_origin += x_delta
+                tile.y_origin += y_delta
+
+                tile.full_clean()
+                tile.save()
 
 @extras_features(
     "custom_fields",
@@ -218,13 +249,13 @@ class FloorPlanTile(PrimaryModel):
                     raise ValidationError("Tile overlaps with another defined tile.")
 
         # x <= 0, y <= 0 are covered by the base field definitions
-        if self.x_origin > self.floor_plan.x_size:
-            raise ValidationError({"x_origin": f"Too large for {self.floor_plan}"})
-        if self.y_origin > self.floor_plan.y_size:
-            raise ValidationError({"y_origin": f"Too large for {self.floor_plan}"})
-        if self.x_origin + self.x_size - 1 > self.floor_plan.x_size:
+        if self.x_origin > self.floor_plan.x_size + self.floor_plan.x_origin_start:
+            raise ValidationError({"x_origin": f"Too large for {self.floor_plan}, {self.x_origin=}, {self.y_origin=}"})
+        if self.y_origin > self.floor_plan.y_size + self.floor_plan.y_origin_start:
+            raise ValidationError({"y_origin": f"Too large for {self.floor_plan}, {self.x_origin=}, {self.y_origin=}"})
+        if self.x_origin + self.x_size - 1 > self.floor_plan.x_size + self.floor_plan.x_origin_start:
             raise ValidationError({"x_size": f"Extends beyond the edge of {self.floor_plan}"})
-        if self.y_origin + self.y_size - 1 > self.floor_plan.y_size:
+        if self.y_origin + self.y_size - 1 > self.floor_plan.y_size + self.floor_plan.y_origin_start:
             raise ValidationError({"y_size": f"Extends beyond the edge of {self.floor_plan}"})
 
         if self.rack is not None:
