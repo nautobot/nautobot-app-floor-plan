@@ -74,7 +74,7 @@ class TestFloorPlanForm(TestCase):
         form = forms.FloorPlanForm(data={})
         self.assertFalse(form.is_valid())
         self.assertEqual(
-            ["location", "tile_depth", "tile_width", "x_axis_labels", "x_origin_seed", "x_size", "y_axis_labels", "y_origin_seed", "y_size"],
+            ["location", "tile_depth", "tile_width", "x_axis_labels", "x_size", "y_axis_labels", "y_size"],
             sorted(form.errors.keys()),
         )
         for message in form.errors.values():

@@ -1,5 +1,6 @@
 {% extends "generic/object_retrieve.html" %}
 {% load helpers %}
+{% load seed_helpers %}
 
 {% block breadcrumbs %}
     <li><a href="{% url 'dcim:location_list' %}">Locations</a></li>
@@ -43,11 +44,11 @@
             </tr>
             <tr>
                 <td>X Axis Seed</td>
-                <td>{{ object.x_origin_start}}</td>
+                <td>{{ object|seed_conversion:'x' }}</td>
             </tr>
             <tr>
                 <td>Y Axis Seed</td>
-                <td>{{ object.y_origin_start }}</td>
+                <td>{{ object|seed_conversion:'y' }}</td>
             </tr>
             <tr>
                 <td>Tiles</td>

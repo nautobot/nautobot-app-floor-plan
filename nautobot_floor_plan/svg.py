@@ -11,7 +11,7 @@ from django.utils.http import urlencode
 from nautobot.core.templatetags.helpers import fgcolor
 
 from nautobot_floor_plan.choices import RackOrientationChoices, AxisLabelsChoices, AllocationTypeChoices
-from nautobot_floor_plan.utils import grid_letter_to_number, grid_number_to_letter
+from nautobot_floor_plan.utils import grid_number_to_letter
 
 
 logger = logging.getLogger(__name__)

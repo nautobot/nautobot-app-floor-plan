@@ -30,10 +30,12 @@ class FloorPlanForm(NautobotModelForm):
     x_origin_seed = forms.CharField(
         label = "Beginning X value",
         help_text = "The first value to begin X Axis at.",
+        required=False,
     ) 
     y_origin_seed = forms.CharField(
         label = "Beginning Y value",
         help_text = "The first value to begin Y Axis at.",
+        required=False,
     ) 
 
     class Meta:
@@ -75,10 +77,12 @@ class FloorPlanForm(NautobotModelForm):
 
     def _clean_origin_seed(self, field_name, axis):
         """Common clean method for origin_seed fields."""
+        value = self.cleaned_data.get(field_name)
+        if not value:
+            return 1
+        
         self.x_letters = self.cleaned_data.get("x_axis_labels") == choices.AxisLabelsChoices.LETTERS
         self.y_letters = self.cleaned_data.get("y_axis_labels") == choices.AxisLabelsChoices.LETTERS
-
-        value = self.cleaned_data.get(field_name)
         
         if self.x_letters and field_name == "x_origin_seed" or self.y_letters and field_name == "y_origin_seed":
             if not str(value).isupper():
