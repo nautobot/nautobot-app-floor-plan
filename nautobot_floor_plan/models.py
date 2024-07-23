@@ -65,8 +65,8 @@ class FloorPlan(PrimaryModel):
         default=AxisLabelsChoices.NUMBERS,
         help_text="Grid labels of Y axis (vertical).",
     )    
-    x_origin_seed = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], default=1)
-    y_origin_seed = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], default=1)
+    x_origin_seed = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)], default=1)
+    y_origin_seed = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)], default=1)
 
     class Meta:
         """Metaclass attributes."""
@@ -131,8 +131,8 @@ class FloorPlanTile(PrimaryModel):
     floor_plan = models.ForeignKey(to=FloorPlan, on_delete=models.CASCADE, related_name="tiles")
     # TODO: for efficiency we could consider using something like GeoDjango, rather than inventing geometry from
     # first principles, but since that requires changing settings.DATABASES and installing libraries, avoid it for now.
-    x_origin = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
-    y_origin = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+    x_origin = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)])
+    y_origin = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)])
     x_size = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)],
         default=1,
