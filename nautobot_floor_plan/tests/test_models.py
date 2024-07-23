@@ -70,7 +70,6 @@ class TestFloorPlan(TestCase):
         floor_plan.validated_save()
         self.assertEquals(floor_plan.tiles.first().y_origin, 3)
 
-
 class TestFloorPlanTile(TestCase):
     """Test FloorPlanTile model."""
 

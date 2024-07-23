@@ -75,7 +75,6 @@ class TestFloorPlanForm(TestCase):
         )
         for message in form.errors.values():
             self.assertIn("This field is required.", message)
-            
 
 class TestFloorPlanTileForm(TestCase):
     """Test FloorPlanTileForm forms."""
