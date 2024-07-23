@@ -41,7 +41,6 @@ def create_prerequisites(floor_count=4):
 def create_floor_plans(locations):
     """Fixture to create necessary number of FloorPlan for tests."""
     size = 1
-    start = 1
     floor_plans = []
 
     for location in locations:
