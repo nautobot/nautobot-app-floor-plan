@@ -45,7 +45,7 @@ def create_floor_plans(locations):
     floor_plans = []
 
     for location in locations:
-        floor_plan = FloorPlan(location=location, x_size=size, y_size=size, x_origin_seed=start, y_origin_seed=start)
+        floor_plan = FloorPlan(location=location, x_size=size, y_size=size)
         floor_plan.validated_save()
         floor_plans.append(floor_plan)
         size += 1

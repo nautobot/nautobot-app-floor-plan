@@ -28,8 +28,6 @@ class TestFloorPlanForm(TestCase):
                 "tile_width": 200,
                 "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
                 "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
-                "x_origin_seed": 1,
-                "y_origin_seed": 1,
             }
         )
         self.assertTrue(form.is_valid())
@@ -53,8 +51,6 @@ class TestFloorPlanForm(TestCase):
                 "tile_width": 2,
                 "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
                 "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
-                "x_origin_seed": 1,
-                "y_origin_seed": 1,
                 "tags": [tag],
             }
         )
@@ -96,8 +92,6 @@ class TestFloorPlanTileForm(TestCase):
             tile_width=100,
             x_axis_labels=choices.AxisLabelsChoices.LETTERS,
             y_axis_labels=choices.AxisLabelsChoices.NUMBERS,
-            x_origin_seed=1,
-            y_origin_seed=1,
         )
 
     def test_valid_minimal_inputs(self):

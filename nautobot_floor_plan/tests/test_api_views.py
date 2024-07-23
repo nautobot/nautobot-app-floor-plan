@@ -27,22 +27,16 @@ class FloorPlanAPIViewTest(APIViewTestCases.APIViewTestCase):
                 "location": data["floors"][3].pk,
                 "x_size": 1,
                 "y_size": 2,
-                "x_origin_seed": 1,
-                "y_origin_seed": 1,
             },
             {
                 "location": data["floors"][4].pk,
                 "x_size": 3,
                 "y_size": 4,
-                "x_origin_seed": 1,
-                "y_origin_seed": 1,
             },
             {
                 "location": data["floors"][5].pk,
                 "x_size": 4,
                 "y_size": 5,
-                "x_origin_seed": 1,
-                "y_origin_seed": 1,
             },
         ]
 

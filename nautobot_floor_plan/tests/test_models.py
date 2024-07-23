@@ -20,31 +20,31 @@ class TestFloorPlan(TestCase):
 
     def test_create_floor_plan_valid(self):
         """Successfully create various FloorPlan records."""
-        floor_plan_minimal = models.FloorPlan(location=self.floors[0], x_size=1, y_size=1, x_origin_seed=1, y_origin_seed=1)
+        floor_plan_minimal = models.FloorPlan(location=self.floors[0], x_size=1, y_size=1)
         floor_plan_minimal.validated_save()
-        floor_plan_huge = models.FloorPlan(location=self.floors[1], x_size=100, y_size=100, x_origin_seed=1, y_origin_seed=1)
+        floor_plan_huge = models.FloorPlan(location=self.floors[1], x_size=100, y_size=100)
         floor_plan_huge.validated_save()
 
     def test_create_floor_plan_invalid_no_location(self):
         """Can't create a FloorPlan with no Location."""
         with self.assertRaises(ValidationError):
-            models.FloorPlan(x_size=1, y_size=1, x_origin_seed=1, y_origin_seed=1).validated_save()
+            models.FloorPlan(x_size=1, y_size=1).validated_save()
 
     def test_create_floor_plan_invalid_x_size(self):
         """A FloorPlan must have an x_size greater than zero."""
         with self.assertRaises(ValidationError):
-            models.FloorPlan(location=self.floors[0], x_size=0, y_size=1, x_origin_seed=1, y_origin_seed=1).validated_save()
+            models.FloorPlan(location=self.floors[0], x_size=0, y_size=1).validated_save()
 
     def test_create_floor_plan_invalid_y_size(self):
         """A FloorPlan must have a y_size greater than zero."""
         with self.assertRaises(ValidationError):
-            models.FloorPlan(location=self.floors[0], x_size=1, y_size=0, x_origin_seed=1, y_origin_seed=1).validated_save()
+            models.FloorPlan(location=self.floors[0], x_size=1, y_size=0).validated_save()
 
     def test_create_floor_plan_invalid_duplicate_location(self):
         """Only one FloorPlan per Location can be created."""
-        models.FloorPlan(location=self.floors[0], x_size=1, y_size=1, x_origin_seed=1, y_origin_seed=1).validated_save()
+        models.FloorPlan(location=self.floors[0], x_size=1, y_size=1).validated_save()
         with self.assertRaises(ValidationError):
-            models.FloorPlan(location=self.floors[0], x_size=2, y_size=2, x_origin_seed=1, y_origin_seed=1).validated_save()
+            models.FloorPlan(location=self.floors[0], x_size=2, y_size=2).validated_save()
 
     def test_origin_seed_increase(self):
         """Test that existing tile origins are updated during origin_seed updates"""

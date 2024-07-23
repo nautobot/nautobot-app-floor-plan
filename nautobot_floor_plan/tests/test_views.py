@@ -30,6 +30,4 @@ class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
             "y_size": 2,
             "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
             "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
-            "x_origin_seed": 1,
-            "y_origin_seed": 1,
         }
