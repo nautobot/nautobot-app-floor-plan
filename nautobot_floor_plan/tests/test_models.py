@@ -48,10 +48,10 @@ class TestFloorPlan(TestCase):
 
     def test_origin_seed_increase(self):
         """Test that existing tile origins are updated during origin_seed updates"""
-        floor_plan = models.FloorPlan.objects.create(location=self.floors[0], x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1)
-        tile_1_1_1 = models.FloorPlanTile(
-            floor_plan=floor_plan, x_origin=1, y_origin=1, status=self.status
+        floor_plan = models.FloorPlan.objects.create(
+            location=self.floors[0], x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1
         )
+        tile_1_1_1 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=1, y_origin=1, status=self.status)
         tile_1_1_1.validated_save()
 
         floor_plan.x_origin_seed = 5
@@ -60,15 +60,16 @@ class TestFloorPlan(TestCase):
 
     def test_origin_seed_decrease(self):
         """Test that existing tile origins are updated during origin_seed updates"""
-        floor_plan = models.FloorPlan.objects.create(location=self.floors[0], x_size=3, y_size=3, x_origin_seed=3, y_origin_seed=3)
-        tile_1_1_1 = models.FloorPlanTile(
-            floor_plan=floor_plan, x_origin=5, y_origin=5, status=self.status
+        floor_plan = models.FloorPlan.objects.create(
+            location=self.floors[0], x_size=3, y_size=3, x_origin_seed=3, y_origin_seed=3
         )
+        tile_1_1_1 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=5, y_origin=5, status=self.status)
         tile_1_1_1.validated_save()
 
         floor_plan.y_origin_seed = 1
         floor_plan.validated_save()
         self.assertEquals(floor_plan.tiles.first().y_origin, 3)
+
 
 class TestFloorPlanTile(TestCase):
     """Test FloorPlanTile model."""

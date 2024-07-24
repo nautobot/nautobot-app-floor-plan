@@ -1,8 +1,11 @@
 """Helper for seed conversion to letters."""
+
 from django import template
 
 from nautobot_floor_plan import choices, utils
+
 register = template.Library()
+
 
 @register.filter()
 def seed_conversion(object, axis):
@@ -12,5 +15,5 @@ def seed_conversion(object, axis):
 
     if letters == choices.AxisLabelsChoices.LETTERS:
         seed = utils.grid_number_to_letter(seed)
-        
-    return f"{seed}" 
+
+    return f"{seed}"

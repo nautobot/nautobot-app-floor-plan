@@ -160,8 +160,12 @@ class FloorPlanSVG:
                 add_link.add(
                     drawing.rect(
                         (
-                            (x - self.floor_plan.x_origin_seed + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET - (self.TEXT_LINE_HEIGHT / 2),
-                            (y - self.floor_plan.y_origin_seed + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET - (self.TEXT_LINE_HEIGHT / 2),
+                            (x - self.floor_plan.x_origin_seed + 0.5) * self.GRID_SIZE_X
+                            + self.GRID_OFFSET
+                            - (self.TEXT_LINE_HEIGHT / 2),
+                            (y - self.floor_plan.y_origin_seed + 0.5) * self.GRID_SIZE_Y
+                            + self.GRID_OFFSET
+                            - (self.TEXT_LINE_HEIGHT / 2),
                         ),
                         (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
                         class_="add-tile-button",

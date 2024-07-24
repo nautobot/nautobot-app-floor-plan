@@ -64,7 +64,7 @@ class FloorPlan(PrimaryModel):
         choices=AxisLabelsChoices,
         default=AxisLabelsChoices.NUMBERS,
         help_text="Grid labels of Y axis (vertical).",
-    )    
+    )
     x_origin_seed = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)], default=1)
     y_origin_seed = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)], default=1)
 
@@ -97,7 +97,7 @@ class FloorPlan(PrimaryModel):
 
         if x_initial != x_updated or y_initial != y_updated:
             self.update_tile_origins(x_initial, x_updated, y_initial, y_updated)
-            
+
     def update_tile_origins(self, x_initial, x_updated, y_initial, y_updated):
         """Update any existing tiles if axis_origin_seed was modified."""
         tiles = self.tiles.all()
@@ -111,6 +111,7 @@ class FloorPlan(PrimaryModel):
                 tile.y_origin += y_delta
 
                 tile.validated_save()
+
 
 @extras_features(
     "custom_fields",
