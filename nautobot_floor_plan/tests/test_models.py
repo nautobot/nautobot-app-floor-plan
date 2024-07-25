@@ -56,7 +56,7 @@ class TestFloorPlan(TestCase):
 
         floor_plan.x_origin_seed = 5
         floor_plan.validated_save()
-        self.assertEquals(floor_plan.tiles.first().x_origin, 5)
+        self.assertEqual(floor_plan.tiles.first().x_origin, 5)
 
     def test_origin_seed_decrease(self):
         """Test that existing tile origins are updated during origin_seed updates"""
@@ -68,7 +68,7 @@ class TestFloorPlan(TestCase):
 
         floor_plan.y_origin_seed = 1
         floor_plan.validated_save()
-        self.assertEquals(floor_plan.tiles.first().y_origin, 3)
+        self.assertEqual(floor_plan.tiles.first().y_origin, 3)
 
 
 class TestFloorPlanTile(TestCase):

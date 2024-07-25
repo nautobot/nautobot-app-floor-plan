@@ -87,12 +87,12 @@ class FloorPlanForm(NautobotModelForm):
         if self.x_letters and field_name == "x_origin_seed" or self.y_letters and field_name == "y_origin_seed":
             if not str(value).isupper():
                 self.add_error(field_name, f"{axis} origin start should use capital letters.")
-                return
+                return 0
             return utils.grid_letter_to_number(value)
 
         if not str(value).isdigit():
             self.add_error(field_name, f"{axis} origin start should use numbers.")
-            return
+            return 0
         return int(value)
 
     def clean_x_origin_seed(self):

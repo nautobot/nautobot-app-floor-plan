@@ -81,10 +81,10 @@ class FloorPlan(PrimaryModel):
         """Get SVG representation of this FloorPlan."""
         return FloorPlanSVG(floor_plan=self, user=user, base_url=base_url).render()
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         """Override save in order to update any existing tiles."""
         if not self.created:
-            super().save(**kwargs)
+            super().save(*args, **kwargs)
             return
         # Get origin_seed pre/post values
         initial_instance = self.__class__.objects.get(pk=self.pk)
@@ -192,6 +192,21 @@ class FloorPlanTile(PrimaryModel):
             self.allocation_type = AllocationTypeChoices.RACK
             self.on_group_tile = False
 
+    def validate_tile_placement(self):
+        """Check that tile fits within the floorplan."""
+        if self.x_origin > self.floor_plan.x_size + self.floor_plan.x_origin_seed - 1:
+            raise ValidationError({"x_origin": f"Too large for {self.floor_plan}"})
+        if self.y_origin > self.floor_plan.y_size + self.floor_plan.y_origin_seed - 1:
+            raise ValidationError({"y_origin": f"Too large for {self.floor_plan}"})
+        if self.x_origin < self.floor_plan.x_origin_seed:
+            raise ValidationError({"x_origin": f"Too small for {self.floor_plan}"})
+        if self.y_origin < self.floor_plan.y_origin_seed:
+            raise ValidationError({"y_origin": f"Too small for {self.floor_plan}"})
+        if self.x_origin + self.x_size - 1 > self.floor_plan.x_size + self.floor_plan.x_origin_seed - 1:
+            raise ValidationError({"x_size": f"Extends beyond the edge of {self.floor_plan}"})
+        if self.y_origin + self.y_size - 1 > self.floor_plan.y_size + self.floor_plan.y_origin_seed - 1:
+            raise ValidationError({"y_size": f"Extends beyond the edge of {self.floor_plan}"})
+
     @property
     def bounds(self):
         """Get the tuple representing the set of grid spaces occupied by this FloorPlanTile.
@@ -218,6 +233,7 @@ class FloorPlanTile(PrimaryModel):
         """
         super().clean()
         FloorPlanTile.allocation_type_assignment(self)
+        FloorPlanTile.validate_tile_placement(self)
 
         def group_tile_bounds(rack, rack_group):
             """Validate the overlapping of group tiles."""
@@ -249,20 +265,6 @@ class FloorPlanTile(PrimaryModel):
                         raise ValidationError("Tile overlaps a Rack that is not in the specified RackGroup")
                 if allocation_type == oallocation_type:
                     raise ValidationError("Tile overlaps with another defined tile.")
-
-        # x <= 0, y <= 0 are covered by the base field definitions
-        if self.x_origin > self.floor_plan.x_size + self.floor_plan.x_origin_seed - 1:
-            raise ValidationError({"x_origin": f"Too large for {self.floor_plan}"})
-        if self.y_origin > self.floor_plan.y_size + self.floor_plan.y_origin_seed - 1:
-            raise ValidationError({"y_origin": f"Too large for {self.floor_plan}"})
-        if self.x_origin < self.floor_plan.x_origin_seed:
-            raise ValidationError({"x_origin": f"Too small for {self.floor_plan}"})
-        if self.y_origin < self.floor_plan.y_origin_seed:
-            raise ValidationError({"y_origin": f"Too small for {self.floor_plan}"})
-        if self.x_origin + self.x_size - 1 > self.floor_plan.x_size + self.floor_plan.x_origin_seed - 1:
-            raise ValidationError({"x_size": f"Extends beyond the edge of {self.floor_plan}"})
-        if self.y_origin + self.y_size - 1 > self.floor_plan.y_size + self.floor_plan.y_origin_seed - 1:
-            raise ValidationError({"y_size": f"Extends beyond the edge of {self.floor_plan}"})
 
         if self.rack is not None:
             if self.rack.location != self.floor_plan.location:
