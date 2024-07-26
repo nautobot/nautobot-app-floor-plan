@@ -11,6 +11,12 @@
         "default_y_axis_labels": {
             "type": "string",
             "default": "numbers"
+        },
+        "default_statuses": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
         }
     },
     "additionalProperties": false
