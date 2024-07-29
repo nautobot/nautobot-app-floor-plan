@@ -15,11 +15,12 @@ def post_migrate_create__add_statuses(sender, *, apps=global_apps, **kwargs):
         return
 
     Status = apps.get_model("extras", "Status")
-    Status.objects.update_or_create(name="Unavailable", defaults={"color": "111111"})
 
     for default_statuses in PLUGIN_SETTINGS["default_statuses"]:
         model = sender.get_model(MODEL_NAME)
 
+        if default_statuses == "Unavailable":
+            Status.objects.update_or_create(name="Unavailable", defaults={"color": "111111"})
         ContentType = apps.get_model("contenttypes", "ContentType")
         ct_model = ContentType.objects.get_for_model(model)
         try:
