@@ -5,8 +5,6 @@ from django.conf import settings
 
 PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_floor_plan"]
 
-MODEL_NAME = "FloorPlanTile"
-
 
 def post_migrate_create__add_statuses(sender, *, apps=global_apps, **kwargs):
     """Callback function for post_migrate() -- create default Statuses."""
@@ -15,20 +13,14 @@ def post_migrate_create__add_statuses(sender, *, apps=global_apps, **kwargs):
         return
 
     Status = apps.get_model("extras", "Status")
+    ContentType = apps.get_model("contenttypes", "ContentType")
 
-    for default_statuses in PLUGIN_SETTINGS["default_statuses"]:
-        model = sender.get_model(MODEL_NAME)
-
-        if default_statuses == "Unavailable":
-            Status.objects.update_or_create(name="Unavailable", defaults={"color": "111111"})
-        ContentType = apps.get_model("contenttypes", "ContentType")
-        ct_model = ContentType.objects.get_for_model(model)
-        try:
-            status = Status.objects.get(name=default_statuses)
-        except Status.DoesNotExist:
-            print(f"nautobot_floor_plan: Unable to find status: {default_statuses} .. SKIPPING")
-            continue
-
-        if ct_model not in status.content_types.all():
-            status.content_types.add(ct_model)
-            status.save()
+    for model_name, default_statuses in PLUGIN_SETTINGS.get("default_statuses", {}).items():
+        model = sender.get_model(model_name)
+        for status in default_statuses:
+            Status.objects.get_or_create(name=status["name"], defaults={"color": status["color"]})
+            ct_status = Status.objects.get(name=status["name"])
+            ct_model = ContentType.objects.get_for_model(model)
+            if ct_model not in ct_status.content_types.all():
+                ct_status.content_types.add(ct_model)
+                ct_status.save()

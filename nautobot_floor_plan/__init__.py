@@ -28,13 +28,15 @@ class FloorPlanConfig(NautobotAppConfig):
     default_settings = {
         "default_x_axis_labels": AxisLabelsChoices.NUMBERS,
         "default_y_axis_labels": AxisLabelsChoices.NUMBERS,
-        "default_statuses": [
-            "Active",
-            "Reserved",
-            "Decommissioning",
-            "Unavailable",
-            "Planned",
-        ],
+        "default_statuses": {
+            "FloorPlanTile": [
+                {"name": "Active", "color": "4caf50"},
+                {"name": "Reserved", "color": "00bcd4"},
+                {"name": "Decommissioning", "color": "ffc107"},
+                {"name": "Unavailable", "color": "111111"},
+                {"name": "Planned", "color": "00bcd4"},
+            ],
+        },
     }
     caching_config = {}
     docs_view_name = "plugins:nautobot_floor_plan:docs"

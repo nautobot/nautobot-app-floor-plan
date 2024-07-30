@@ -13,11 +13,24 @@
             "default": "numbers"
         },
         "default_statuses": {
-            "type": "array",
-            "items": {
-                "type": "string"
+            "type": "object",
+            "properties": {
+                "FloorPlanTile": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
             }
-        }
-    },
-    "additionalProperties": false
+        },
+        "additionalProperties": false
+    }
 }
