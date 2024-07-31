@@ -31,6 +31,6 @@
                 }
             }
         },
-        "additionalProperties": false
+    "additionalProperties": false
     }
 }
