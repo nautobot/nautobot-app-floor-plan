@@ -83,20 +83,22 @@ class FloorPlan(PrimaryModel):
 
     def save(self, *args, **kwargs):
         """Override save in order to update any existing tiles."""
-        if not self.created:
-            super().save(*args, **kwargs)
-            return
-        # Get origin_seed pre/post values
-        initial_instance = self.__class__.objects.get(pk=self.pk)
-        x_initial = initial_instance.x_origin_seed
-        y_initial = initial_instance.y_origin_seed
-        x_updated = self.x_origin_seed
-        y_updated = self.y_origin_seed
+        if self.present_in_database:
+            # Get origin_seed pre/post values
+            initial_instance = self.__class__.objects.get(pk=self.pk)
+            x_initial = initial_instance.x_origin_seed
+            y_initial = initial_instance.y_origin_seed
+            changed = x_initial != self.x_origin_seed or y_initial != self.y_origin_seed
+        else:
+            changed = False
 
-        super().save(**kwargs)
+        with transaction.atomic():
+            super().save(**kwargs)
 
-        if x_initial != x_updated or y_initial != y_updated:
-            self.update_tile_origins(x_initial, x_updated, y_initial, y_updated)
+            if changed:
+                tiles = self.update_tile_origins(x_initial, self.x_origin_seed, y_initial, self.y_origin_seed)
+                for tile in tiles:
+                    tile.validated_save()
 
     def update_tile_origins(self, x_initial, x_updated, y_initial, y_updated):
         """Update any existing tiles if axis_origin_seed was modified."""
@@ -104,13 +106,16 @@ class FloorPlan(PrimaryModel):
         x_delta = x_updated - x_initial
         y_delta = y_updated - y_initial
 
-        # should bulk_update these instead?
-        with transaction.atomic():
-            for tile in tiles:
-                tile.x_origin += x_delta
-                tile.y_origin += y_delta
+        if x_delta > 0:
+            tiles = tiles.order_by("-x_origin")
+        if y_delta > 0:
+            tiles = tiles.order_by("-y_origin")
 
-                tile.validated_save()
+        for tile in tiles:
+            tile.x_origin += x_delta
+            tile.y_origin += y_delta
+
+        return tiles
 
 
 @extras_features(
