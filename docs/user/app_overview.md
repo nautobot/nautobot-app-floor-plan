@@ -48,4 +48,4 @@ This App:
 
 ### Extras
 
-This App does not presently auto-define any Nautobot extras/extensibility features. To use this App fully, you will need to create or update one or more Status records that permit usage with the Floor Plan Tile model.
+This App presently auto-defines Nautobot extras/extensibility status features. This app automatically assigns the following default statuses for use with Floor plan Tiles. `Active, Reserved, Decommissioning, Unavailable and Planned`.

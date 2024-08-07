@@ -4,10 +4,10 @@
 from importlib import metadata
 
 from django.core.exceptions import ImproperlyConfigured
+from django.db.models.signals import post_migrate
 
 from nautobot.apps import NautobotAppConfig
 from nautobot.apps.config import get_app_settings_or_config
-
 from nautobot_floor_plan.choices import AxisLabelsChoices
 
 __version__ = metadata.version(__name__)
@@ -28,6 +28,15 @@ class FloorPlanConfig(NautobotAppConfig):
     default_settings = {
         "default_x_axis_labels": AxisLabelsChoices.NUMBERS,
         "default_y_axis_labels": AxisLabelsChoices.NUMBERS,
+        "default_statuses": {
+            "FloorPlanTile": [
+                {"name": "Active", "color": "4caf50"},
+                {"name": "Reserved", "color": "00bcd4"},
+                {"name": "Decommissioning", "color": "ffc107"},
+                {"name": "Unavailable", "color": "111111"},
+                {"name": "Planned", "color": "00bcd4"},
+            ],
+        },
     }
     caching_config = {}
     docs_view_name = "plugins:nautobot_floor_plan:docs"
@@ -44,6 +53,12 @@ class FloorPlanConfig(NautobotAppConfig):
     def ready(self):
         """Callback after app is loaded."""
         super().ready()
+        from .signals import (  # pylint: disable=import-outside-toplevel
+            post_migrate_create__add_statuses,
+        )
+
+        post_migrate.connect(post_migrate_create__add_statuses, sender=self)
+
         self.validate_config_options()
 
 

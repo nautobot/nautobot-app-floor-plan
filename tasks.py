@@ -48,7 +48,7 @@ namespace = Collection("nautobot_floor_plan")
 namespace.configure(
     {
         "nautobot_floor_plan": {
-            "nautobot_ver": "2.0.0",
+            "nautobot_ver": "2.2.8",
             "project_name": "nautobot-floor-plan",
             "python_ver": "3.11",
             "local": False,

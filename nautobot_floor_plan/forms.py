@@ -27,6 +27,17 @@ class FloorPlanForm(NautobotModelForm):
 
     location = DynamicModelChoiceField(queryset=Location.objects.all())
 
+    x_origin_seed = forms.CharField(
+        label="X Axis Seed",
+        help_text="The first value to begin X Axis at.",
+        required=False,
+    )
+    y_origin_seed = forms.CharField(
+        label="Y Axis Seed",
+        help_text="The first value to begin Y Axis at.",
+        required=False,
+    )
+
     class Meta:
         """Meta attributes."""
 
@@ -38,16 +49,59 @@ class FloorPlanForm(NautobotModelForm):
             "tile_width",
             "tile_depth",
             "x_axis_labels",
+            "x_origin_seed",
             "y_axis_labels",
+            "y_origin_seed",
             "tags",
         ]
 
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to set initial values for select widget."""
         super().__init__(*args, **kwargs)
+
         if not self.instance.created:
             self.initial["x_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_x_axis_labels")
             self.initial["y_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_y_axis_labels")
+            self.x_letters = self.initial["x_axis_labels"] == choices.AxisLabelsChoices.LETTERS
+            self.y_letters = self.initial["y_axis_labels"] == choices.AxisLabelsChoices.LETTERS
+            self.initial["x_origin_seed"] = "A" if self.x_letters else "1"
+            self.initial["y_origin_seed"] = "A" if self.y_letters else "1"
+        else:
+            self.x_letters = self.instance.x_axis_labels == choices.AxisLabelsChoices.LETTERS
+            self.y_letters = self.instance.y_axis_labels == choices.AxisLabelsChoices.LETTERS
+
+        if self.x_letters and str(self.initial["y_origin_seed"]).isdigit():
+            self.initial["x_origin_seed"] = utils.grid_number_to_letter(self.instance.x_origin_seed)
+        if self.y_letters and str(self.initial["y_origin_seed"]).isdigit():
+            self.initial["y_origin_seed"] = utils.grid_number_to_letter(self.instance.y_origin_seed)
+
+    def _clean_origin_seed(self, field_name, axis):
+        """Common clean method for origin_seed fields."""
+        value = self.cleaned_data.get(field_name)
+        if not value:
+            return 1
+
+        self.x_letters = self.cleaned_data.get("x_axis_labels") == choices.AxisLabelsChoices.LETTERS
+        self.y_letters = self.cleaned_data.get("y_axis_labels") == choices.AxisLabelsChoices.LETTERS
+
+        if self.x_letters and field_name == "x_origin_seed" or self.y_letters and field_name == "y_origin_seed":
+            if not str(value).isupper():
+                self.add_error(field_name, f"{axis} origin start should use capital letters.")
+                return 0
+            return utils.grid_letter_to_number(value)
+
+        if not str(value).isdigit():
+            self.add_error(field_name, f"{axis} origin start should use numbers.")
+            return 0
+        return int(value)
+
+    def clean_x_origin_seed(self):
+        """Validate input and convert y_origin to an integer."""
+        return self._clean_origin_seed("x_origin_seed", "X")
+
+    def clean_y_origin_seed(self):
+        """Validate input and convert y_origin to an integer."""
+        return self._clean_origin_seed("y_origin_seed", "Y")
 
 
 class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):

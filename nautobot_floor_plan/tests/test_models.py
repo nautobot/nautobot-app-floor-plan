@@ -16,6 +16,7 @@ class TestFloorPlan(TestCase):
         """Create LocationType, Status, and Location records."""
         data = fixtures.create_prerequisites()
         self.floors = data["floors"]
+        self.status = data["status"]
 
     def test_create_floor_plan_valid(self):
         """Successfully create various FloorPlan records."""
@@ -44,6 +45,63 @@ class TestFloorPlan(TestCase):
         models.FloorPlan(location=self.floors[0], x_size=1, y_size=1).validated_save()
         with self.assertRaises(ValidationError):
             models.FloorPlan(location=self.floors[0], x_size=2, y_size=2).validated_save()
+
+    def test_origin_seed_x_increase(self):
+        """Test that existing tile origins are updated during origin_seed updates"""
+        floor_plan = models.FloorPlan.objects.create(
+            location=self.floors[0], x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1
+        )
+
+        tile_1_1_1 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=1, y_origin=1, status=self.status)
+        tile_2_3_1 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=3, y_origin=1, status=self.status)
+        tile_1_1_1.validated_save()
+        tile_2_3_1.validated_save()
+        tile_1_id = tile_1_1_1.id
+        tile_2_id = tile_2_3_1.id
+
+        floor_plan.x_origin_seed = 3
+        floor_plan.validated_save()
+        self.assertEqual(floor_plan.tiles.get(id=tile_1_id).x_origin, 3)
+        self.assertEqual(floor_plan.tiles.get(id=tile_2_id).x_origin, 5)
+
+    def test_origin_seed_y_decrease(self):
+        """Test that existing tile origins are updated during origin_seed updates"""
+        floor_plan = models.FloorPlan.objects.create(
+            location=self.floors[0], x_size=3, y_size=3, x_origin_seed=3, y_origin_seed=3
+        )
+        tile_1_5_5 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=5, y_origin=5, status=self.status)
+        tile_1_5_5.validated_save()
+
+        floor_plan.y_origin_seed = 1
+        floor_plan.validated_save()
+        self.assertEqual(floor_plan.tiles.first().y_origin, 3)
+
+    def test_origin_seed_x_increase_y_decrease(self):
+        """Test that existing tile origins are updated during origin_seed updates"""
+        floor_plan = models.FloorPlan.objects.create(
+            location=self.floors[0], x_size=5, y_size=5, x_origin_seed=3, y_origin_seed=3
+        )
+
+        tile_1_3_3 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=3, y_origin=4, status=self.status)
+        tile_2_5_3 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=5, y_origin=4, status=self.status)
+        tile_3_4_3 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=4, y_origin=4, status=self.status)
+        tile_4_4_5 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=4, y_origin=5, status=self.status)
+        ids = []
+        for tile in (tile_1_3_3, tile_2_5_3, tile_3_4_3, tile_4_4_5):
+            tile.validated_save()
+            ids.append(tile.id)
+
+        floor_plan.x_origin_seed = 4
+        floor_plan.y_origin_seed = 2
+        floor_plan.validated_save()
+        self.assertEqual(floor_plan.tiles.get(id=ids[0]).x_origin, 4)
+        self.assertEqual(floor_plan.tiles.get(id=ids[0]).y_origin, 3)
+        self.assertEqual(floor_plan.tiles.get(id=ids[1]).x_origin, 6)
+        self.assertEqual(floor_plan.tiles.get(id=ids[1]).y_origin, 3)
+        self.assertEqual(floor_plan.tiles.get(id=ids[2]).x_origin, 5)
+        self.assertEqual(floor_plan.tiles.get(id=ids[2]).y_origin, 3)
+        self.assertEqual(floor_plan.tiles.get(id=ids[3]).x_origin, 5)
+        self.assertEqual(floor_plan.tiles.get(id=ids[3]).y_origin, 4)
 
 
 class TestFloorPlanTile(TestCase):

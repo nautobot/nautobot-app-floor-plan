@@ -128,7 +128,7 @@ class TestFloorPlanTileForm(TestCase):
             }
         )
         self.assertFalse(form.is_valid())
-        self.assertIn(["X origin should use capital letters."], form.errors.values())
+        self.assertIn("X origin should use capital letters.", form.errors.get("x_origin"))
 
     def test_invalid_input_with_letter(self):
         """Test creation with letter when Y axis uses number labels."""
@@ -143,7 +143,7 @@ class TestFloorPlanTileForm(TestCase):
             }
         )
         self.assertFalse(form.is_valid())
-        self.assertIn(["Y origin should use numbers."], form.errors.values())
+        self.assertIn("Y origin should use numbers.", form.errors.get("y_origin"))
 
     def test_tile_outside_of_floor_plan(self):
         """Test a tile located outside the floor plan space."""
