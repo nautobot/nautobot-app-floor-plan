@@ -1,0 +1,1 @@
+Fixed conflicting migration files caused by parallel PRs.
