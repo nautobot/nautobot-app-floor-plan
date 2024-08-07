@@ -4,7 +4,7 @@ import logging
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
 
 from nautobot.apps.models import extras_features
 from nautobot.apps.models import PrimaryModel
@@ -65,6 +65,8 @@ class FloorPlan(PrimaryModel):
         default=AxisLabelsChoices.NUMBERS,
         help_text="Grid labels of Y axis (vertical).",
     )
+    x_origin_seed = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)], default=1)
+    y_origin_seed = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)], default=1)
 
     class Meta:
         """Metaclass attributes."""
@@ -78,6 +80,42 @@ class FloorPlan(PrimaryModel):
     def get_svg(self, *, user, base_url):
         """Get SVG representation of this FloorPlan."""
         return FloorPlanSVG(floor_plan=self, user=user, base_url=base_url).render()
+
+    def save(self, *args, **kwargs):
+        """Override save in order to update any existing tiles."""
+        if self.present_in_database:
+            # Get origin_seed pre/post values
+            initial_instance = self.__class__.objects.get(pk=self.pk)
+            x_initial = initial_instance.x_origin_seed
+            y_initial = initial_instance.y_origin_seed
+            changed = x_initial != self.x_origin_seed or y_initial != self.y_origin_seed
+        else:
+            changed = False
+
+        with transaction.atomic():
+            super().save(**kwargs)
+
+            if changed:
+                tiles = self.update_tile_origins(x_initial, self.x_origin_seed, y_initial, self.y_origin_seed)
+                for tile in tiles:
+                    tile.validated_save()
+
+    def update_tile_origins(self, x_initial, x_updated, y_initial, y_updated):
+        """Update any existing tiles if axis_origin_seed was modified."""
+        tiles = self.tiles.all()
+        x_delta = x_updated - x_initial
+        y_delta = y_updated - y_initial
+
+        if x_delta > 0:
+            tiles = tiles.order_by("-x_origin")
+        if y_delta > 0:
+            tiles = tiles.order_by("-y_origin")
+
+        for tile in tiles:
+            tile.x_origin += x_delta
+            tile.y_origin += y_delta
+
+        return tiles
 
 
 @extras_features(
@@ -99,8 +137,8 @@ class FloorPlanTile(PrimaryModel):
     floor_plan = models.ForeignKey(to=FloorPlan, on_delete=models.CASCADE, related_name="tiles")
     # TODO: for efficiency we could consider using something like GeoDjango, rather than inventing geometry from
     # first principles, but since that requires changing settings.DATABASES and installing libraries, avoid it for now.
-    x_origin = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
-    y_origin = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+    x_origin = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)])
+    y_origin = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)])
     x_size = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)],
         default=1,
@@ -159,6 +197,21 @@ class FloorPlanTile(PrimaryModel):
             self.allocation_type = AllocationTypeChoices.RACK
             self.on_group_tile = False
 
+    def validate_tile_placement(self):
+        """Check that tile fits within the floorplan."""
+        if self.x_origin > self.floor_plan.x_size + self.floor_plan.x_origin_seed - 1:
+            raise ValidationError({"x_origin": f"Too large for {self.floor_plan}"})
+        if self.y_origin > self.floor_plan.y_size + self.floor_plan.y_origin_seed - 1:
+            raise ValidationError({"y_origin": f"Too large for {self.floor_plan}"})
+        if self.x_origin < self.floor_plan.x_origin_seed:
+            raise ValidationError({"x_origin": f"Too small for {self.floor_plan}"})
+        if self.y_origin < self.floor_plan.y_origin_seed:
+            raise ValidationError({"y_origin": f"Too small for {self.floor_plan}"})
+        if self.x_origin + self.x_size - 1 > self.floor_plan.x_size + self.floor_plan.x_origin_seed - 1:
+            raise ValidationError({"x_size": f"Extends beyond the edge of {self.floor_plan}"})
+        if self.y_origin + self.y_size - 1 > self.floor_plan.y_size + self.floor_plan.y_origin_seed - 1:
+            raise ValidationError({"y_size": f"Extends beyond the edge of {self.floor_plan}"})
+
     @property
     def bounds(self):
         """Get the tuple representing the set of grid spaces occupied by this FloorPlanTile.
@@ -185,6 +238,7 @@ class FloorPlanTile(PrimaryModel):
         """
         super().clean()
         FloorPlanTile.allocation_type_assignment(self)
+        FloorPlanTile.validate_tile_placement(self)
 
         def group_tile_bounds(rack, rack_group):
             """Validate the overlapping of group tiles."""
@@ -216,16 +270,6 @@ class FloorPlanTile(PrimaryModel):
                         raise ValidationError("Tile overlaps a Rack that is not in the specified RackGroup")
                 if allocation_type == oallocation_type:
                     raise ValidationError("Tile overlaps with another defined tile.")
-
-        # x <= 0, y <= 0 are covered by the base field definitions
-        if self.x_origin > self.floor_plan.x_size:
-            raise ValidationError({"x_origin": f"Too large for {self.floor_plan}"})
-        if self.y_origin > self.floor_plan.y_size:
-            raise ValidationError({"y_origin": f"Too large for {self.floor_plan}"})
-        if self.x_origin + self.x_size - 1 > self.floor_plan.x_size:
-            raise ValidationError({"x_size": f"Extends beyond the edge of {self.floor_plan}"})
-        if self.y_origin + self.y_size - 1 > self.floor_plan.y_size:
-            raise ValidationError({"y_size": f"Extends beyond the edge of {self.floor_plan}"})
 
         if self.rack is not None:
             if self.rack.location != self.floor_plan.location:
