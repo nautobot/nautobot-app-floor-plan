@@ -8,7 +8,7 @@
   <a href="https://pypi.org/project/nautobot-floor-plan/"><img src="https://img.shields.io/pypi/v/nautobot-floor-plan"></a>
   <a href="https://pypi.org/project/nautobot-floor-plan/"><img src="https://img.shields.io/pypi/dm/nautobot-floor-plan"></a>
   <br>
-  An <a href="https://www.networktocode.com/nautobot/apps/">App</a> for <a href="https://nautobot.com/">Nautobot</a>.
+  An <a href="https://networktocode.com/nautobot-apps/">App</a> for <a href="https://nautobot.com/">Nautobot</a>.
 </p>
 
 ## Overview
