@@ -1,6 +1,6 @@
 """Filtering for nautobot_floor_plan."""
 
-from nautobot.apps.filters import NautobotFilterSet, NameSearchFilterSet
+from nautobot.apps.filters import NameSearchFilterSet, NautobotFilterSet
 
 from nautobot_floor_plan import models
 
