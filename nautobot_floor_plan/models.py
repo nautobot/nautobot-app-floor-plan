@@ -13,8 +13,11 @@ from nautobot.apps.models import StatusField
 from nautobot_floor_plan.choices import RackOrientationChoices, AxisLabelsChoices, AllocationTypeChoices
 from nautobot_floor_plan.svg import FloorPlanSVG
 
-
-logger = logging.getLogger(__name__)
+# from nautobot.extras.utils import extras_features
+# If you want to use the extras_features decorator please reference the following documentation
+# https://docs.nautobot.com/projects/core/en/latest/plugins/development/#using-the-extras_features-decorator-for-graphql
+# Then based on your reading you may decide to put the following decorator before the declaration of your class
+# @extras_features("custom_fields", "custom_validators", "relationships", "graphql")
 
 
 @extras_features(

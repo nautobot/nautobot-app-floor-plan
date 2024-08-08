@@ -1,15 +1,13 @@
 """Filtering for nautobot_floor_plan."""
 
-import django_filters
-
-from nautobot.dcim.models import Location, Rack, RackGroup
-from nautobot.apps.filters import NautobotFilterSet
-from nautobot.apps.filters import NaturalKeyOrPKMultipleChoiceFilter, SearchFilter
+from nautobot.apps.filters import NameSearchFilterSet, NautobotFilterSet
 
 from nautobot_floor_plan import models
 
 
-class FloorPlanFilterSet(NautobotFilterSet):
+class FloorPlanFilterSet(
+    NautobotFilterSet, NameSearchFilterSet
+):  # pylint: disable=too-many-ancestors
     """Filter for FloorPlan."""
 
     q = SearchFilter(
