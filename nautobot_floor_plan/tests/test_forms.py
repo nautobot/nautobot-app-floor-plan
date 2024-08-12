@@ -51,6 +51,8 @@ class TestFloorPlanForm(TestCase):
                 "tile_width": 2,
                 "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
                 "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+                "x_axis_step": 2,
+                "y_axis_step": 1,
                 "tags": [tag],
             }
         )
@@ -63,6 +65,8 @@ class TestFloorPlanForm(TestCase):
         self.assertEqual(floor_plan.tile_depth, 1)
         self.assertEqual(floor_plan.x_axis_labels, choices.AxisLabelsChoices.NUMBERS)
         self.assertEqual(floor_plan.y_axis_labels, choices.AxisLabelsChoices.NUMBERS)
+        self.assertEqual(floor_plan.x_axis_step, 2)
+        self.assertEqual(floor_plan.y_axis_step, 1)
         self.assertEqual(list(floor_plan.tags.all()), [tag])
 
     def test_invalid_required_fields(self):

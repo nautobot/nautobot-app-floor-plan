@@ -10,6 +10,8 @@ To install the App, please follow the instructions detailed in the [Installation
 
 As a first step you will want to define which Status(es) can be applied to individual tiles in a floor plan. This can be done by navigating to "Organization > Statuses" in the Nautobot UI, and creating or updating the desired Status records to include `nautobot_floor_plan | floor plan tile` as one of the Status's "Content Types".
 
+The app installs with the the following statuses by default. `"Active", "Reserved", "Decommissioning", "Unavailable", "Planned"`
+
 ![Status definition](../images/status-definition.png)
 
 ## What are the next steps?
@@ -23,6 +25,12 @@ Clicking this button will bring you to a standard Nautobot create/edit form, in 
 ![Add Floor Plan form](../images/add-floor-plan-form.png)
 
 The "X size" and "Y size" parameters define the number of Tiles in the Floor Plan, and the "Tile width" and "Tile depth" parameters define the relative proportions of each Tile when rendered in the Nautobot UI. You can leave the tile parameters as defaults for a square grid, or set them as desired for a off-square rectangular grid.
+
+The "X Axis Labels" and "Y Axis Labels" parameters can be used to represent "Numbers" or "Letters" for grid labeling. The default setting is "Numbers".
+
+The "X Axis Seed" and "Y Axis Seed" parameters allow you to define the starting location for a grid label. The default setting is "1".
+
+The "X Axis Step" and "Y Axis Step" parameters allow you to choose a positive or negative integer step value that are used to skip numbers or letters for grid labeling. The default setting is "1".
 
 After clicking "Create", you will be presented with a new floor plan render:
 

@@ -37,6 +37,18 @@ class FloorPlanForm(NautobotModelForm):
         help_text="The first value to begin Y Axis at.",
         required=False,
     )
+    x_axis_step = forms.IntegerField(
+        label="X Axis Step",
+        help_text="A positive or negative integer, excluding zero",
+        required=False,
+        validators=[utils.validate_not_zero],
+    )
+    y_axis_step = forms.IntegerField(
+        label="Y Axis Step",
+        help_text="A positive or negative integer, excluding zero",
+        required=False,
+        validators=[utils.validate_not_zero],
+    )
 
     class Meta:
         """Meta attributes."""
@@ -50,8 +62,10 @@ class FloorPlanForm(NautobotModelForm):
             "tile_depth",
             "x_axis_labels",
             "x_origin_seed",
+            "x_axis_step",
             "y_axis_labels",
             "y_origin_seed",
+            "y_axis_step",
             "tags",
         ]
 

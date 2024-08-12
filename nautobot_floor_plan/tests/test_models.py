@@ -24,6 +24,10 @@ class TestFloorPlan(TestCase):
         floor_plan_minimal.validated_save()
         floor_plan_huge = models.FloorPlan(location=self.floors[1], x_size=100, y_size=100)
         floor_plan_huge.validated_save()
+        floor_plan_pos_neg_step = models.FloorPlan(
+            location=self.floors[2], x_size=20, y_size=20, x_axis_step=-1, y_axis_step=2
+        )
+        floor_plan_pos_neg_step.validated_save()
 
     def test_create_floor_plan_invalid_no_location(self):
         """Can't create a FloorPlan with no Location."""
@@ -102,6 +106,13 @@ class TestFloorPlan(TestCase):
         self.assertEqual(floor_plan.tiles.get(id=ids[2]).y_origin, 3)
         self.assertEqual(floor_plan.tiles.get(id=ids[3]).x_origin, 5)
         self.assertEqual(floor_plan.tiles.get(id=ids[3]).y_origin, 4)
+
+    def test_create_floor_plan_invalid_step(self):
+        """A FloorPlan must not use a step value of zero."""
+        with self.assertRaises(ValidationError):
+            models.FloorPlan(
+                location=self.floors[1], x_size=100, y_size=100, x_axis_step=0, y_axis_step=2
+            ).validated_save()
 
 
 class TestFloorPlanTile(TestCase):

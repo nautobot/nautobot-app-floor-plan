@@ -13,6 +13,8 @@ from nautobot.apps.models import StatusField
 from nautobot_floor_plan.choices import RackOrientationChoices, AxisLabelsChoices, AllocationTypeChoices
 from nautobot_floor_plan.svg import FloorPlanSVG
 
+from nautobot_floor_plan.utils import validate_not_zero
+
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +67,20 @@ class FloorPlan(PrimaryModel):
         default=AxisLabelsChoices.NUMBERS,
         help_text="Grid labels of Y axis (vertical).",
     )
-    x_origin_seed = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)], default=1)
-    y_origin_seed = models.PositiveSmallIntegerField(validators=[MinValueValidator(0)], default=1)
+    x_origin_seed = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(0)], default=1, help_text="User defined starting value for grid labeling"
+    )
+    y_origin_seed = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(0)], default=1, help_text="User defined starting value for grid labeling"
+    )
+    x_axis_step = models.IntegerField(
+        default=1,
+        help_text="Positive or negative integer that will be used to step labeling.",
+    )
+    y_axis_step = models.IntegerField(
+        default=1,
+        help_text="Positive or negative integer that will be used to step labeling.",
+    )
 
     class Meta:
         """Metaclass attributes."""
@@ -83,6 +97,8 @@ class FloorPlan(PrimaryModel):
 
     def save(self, *args, **kwargs):
         """Override save in order to update any existing tiles."""
+        validate_not_zero(self.x_axis_step)
+        validate_not_zero(self.y_axis_step)
         if self.present_in_database:
             # Get origin_seed pre/post values
             initial_instance = self.__class__.objects.get(pk=self.pk)
