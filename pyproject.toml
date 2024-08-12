@@ -32,7 +32,6 @@ python = ">=3.8,<3.12"
 nautobot = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
-bandit = "*"
 coverage = "*"
 django-debug-toolbar = "*"
 invoke = "*"
