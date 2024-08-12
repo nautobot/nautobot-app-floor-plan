@@ -2,7 +2,6 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
-
 from nautobot.extras.plugins import PluginTemplateExtension
 
 

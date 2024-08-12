@@ -1,9 +1,8 @@
 """Test FloorPlan."""
 
 from django.core.exceptions import ValidationError
-
-from nautobot.dcim.models import Rack, RackGroup
 from nautobot.core.testing import TestCase
+from nautobot.dcim.models import Rack, RackGroup
 
 from nautobot_floor_plan import models
 from nautobot_floor_plan.tests import fixtures

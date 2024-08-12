@@ -1,11 +1,10 @@
 """Test floorplan forms."""
 
 from django.contrib.contenttypes.models import ContentType
-
-from nautobot.extras.models import Tag
 from nautobot.core.testing import TestCase
+from nautobot.extras.models import Tag
 
-from nautobot_floor_plan import forms, models, choices
+from nautobot_floor_plan import choices, forms, models
 from nautobot_floor_plan.tests import fixtures
 
 

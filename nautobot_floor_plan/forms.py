@@ -5,27 +5,20 @@
 """Forms for nautobot_floor_plan."""
 
 from django import forms
+from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.forms import (
-    NautobotBulkEditForm,
-    NautobotFilterForm,
-    NautobotModelForm,
-    TagsBulkEditFormMixin,
-)
-
-from nautobot.dcim.models import Location, Rack, RackGroup
-from nautobot.apps.forms import (
-    NautobotBulkEditForm,
-    NautobotFilterForm,
-    NautobotModelForm,
-    TagsBulkEditFormMixin,
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
+    NautobotBulkEditForm,
+    NautobotFilterForm,
+    NautobotModelForm,
     TagFilterField,
+    TagsBulkEditFormMixin,
     add_blank_choice,
 )
-from nautobot.apps.config import get_app_settings_or_config
+from nautobot.dcim.models import Location, Rack, RackGroup
 
-from nautobot_floor_plan import models, choices, utils
+from nautobot_floor_plan import choices, models, utils
 
 
 class FloorPlanForm(NautobotModelForm):
@@ -65,15 +58,61 @@ class FloorPlanForm(NautobotModelForm):
         """Overwrite the constructor to set initial values for select widget."""
         super().__init__(*args, **kwargs)
 
-class FloorPlanBulkEditForm(
-    TagsBulkEditFormMixin, NautobotBulkEditForm
-):  # pylint: disable=too-many-ancestors
+        if not self.instance.created:
+            self.initial["x_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_x_axis_labels")
+            self.initial["y_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_y_axis_labels")
+            self.x_letters = self.initial["x_axis_labels"] == choices.AxisLabelsChoices.LETTERS
+            self.y_letters = self.initial["y_axis_labels"] == choices.AxisLabelsChoices.LETTERS
+            self.initial["x_origin_seed"] = "A" if self.x_letters else "1"
+            self.initial["y_origin_seed"] = "A" if self.y_letters else "1"
+        else:
+            self.x_letters = self.instance.x_axis_labels == choices.AxisLabelsChoices.LETTERS
+            self.y_letters = self.instance.y_axis_labels == choices.AxisLabelsChoices.LETTERS
+
+        if self.x_letters and str(self.initial["y_origin_seed"]).isdigit():
+            self.initial["x_origin_seed"] = utils.grid_number_to_letter(self.instance.x_origin_seed)
+        if self.y_letters and str(self.initial["y_origin_seed"]).isdigit():
+            self.initial["y_origin_seed"] = utils.grid_number_to_letter(self.instance.y_origin_seed)
+
+    def _clean_origin_seed(self, field_name, axis):
+        """Common clean method for origin_seed fields."""
+        value = self.cleaned_data.get(field_name)
+        if not value:
+            return 1
+
+        self.x_letters = self.cleaned_data.get("x_axis_labels") == choices.AxisLabelsChoices.LETTERS
+        self.y_letters = self.cleaned_data.get("y_axis_labels") == choices.AxisLabelsChoices.LETTERS
+
+        if self.x_letters and field_name == "x_origin_seed" or self.y_letters and field_name == "y_origin_seed":
+            if not str(value).isupper():
+                self.add_error(field_name, f"{axis} origin start should use capital letters.")
+                return 0
+            return utils.grid_letter_to_number(value)
+
+        if not str(value).isdigit():
+            self.add_error(field_name, f"{axis} origin start should use numbers.")
+            return 0
+        return int(value)
+
+    def clean_x_origin_seed(self):
+        """Validate input and convert y_origin to an integer."""
+        return self._clean_origin_seed("x_origin_seed", "X")
+
+    def clean_y_origin_seed(self):
+        """Validate input and convert y_origin to an integer."""
+        return self._clean_origin_seed("y_origin_seed", "Y")
+
+
+class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pylint: disable=too-many-ancestors
     """FloorPlan bulk edit form."""
 
-    pk = forms.ModelMultipleChoiceField(
-        queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput
-    )
-    description = forms.CharField(required=False)
+    pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)
+    x_size = forms.IntegerField(min_value=1, required=False)
+    y_size = forms.IntegerField(min_value=1, required=False)
+    tile_width = forms.IntegerField(min_value=1, required=False)
+    tile_depth = forms.IntegerField(min_value=1, required=False)
+    x_axis_labels = forms.ChoiceField(choices=add_blank_choice(choices.AxisLabelsChoices), required=False)
+    y_axis_labels = forms.ChoiceField(choices=add_blank_choice(choices.AxisLabelsChoices), required=False)
 
     class Meta:
         """Meta attributes."""

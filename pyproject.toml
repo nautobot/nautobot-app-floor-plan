@@ -81,7 +81,9 @@ good-names = """_,i,j,k,x,y"""
 
 [tool.pylint.messages_control]
 disable = """,
-    line-too-long
+    line-too-long,
+    too-few-public-methods,
+    too-many-ancestors
 """
 
 [tool.pylint.miscellaneous]
@@ -104,7 +106,6 @@ target-version = "py38"
 select = [
     "D",  # pydocstyle
     "F", "E", "W",  # flake8
-    "PL",  # pylint
     "S",  # bandit
     "I",  # isort
 ]

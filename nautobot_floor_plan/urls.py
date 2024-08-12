@@ -1,10 +1,14 @@
 """Django urlpatterns declaration for nautobot_floor_plan app."""
 
+from django.templatetags.static import static
+from django.urls import path
+from django.views.generic import RedirectView
 from nautobot.apps.urls import NautobotUIViewSetRouter
 from nautobot.extras.views import ObjectChangeLogView, ObjectNotesView
 
 from nautobot_floor_plan import models, views
 
+app_name = "floor_plan"
 router = NautobotUIViewSetRouter()
 router.register("floor-plans", views.FloorPlanUIViewSet)
 router.register("floor-plan-tiles", views.FloorPlanTileUIViewSet)
