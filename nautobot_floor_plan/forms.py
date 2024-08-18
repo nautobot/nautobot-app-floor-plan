@@ -30,23 +30,23 @@ class FloorPlanForm(NautobotModelForm):
     x_origin_seed = forms.CharField(
         label="X Axis Seed",
         help_text="The first value to begin X Axis at.",
-        required=False,
+        required=True,
     )
     y_origin_seed = forms.CharField(
         label="Y Axis Seed",
         help_text="The first value to begin Y Axis at.",
-        required=False,
+        required=True,
     )
     x_axis_step = forms.IntegerField(
         label="X Axis Step",
         help_text="A positive or negative integer, excluding zero",
-        required=False,
+        required=True,
         validators=[utils.validate_not_zero],
     )
     y_axis_step = forms.IntegerField(
         label="Y Axis Step",
         help_text="A positive or negative integer, excluding zero",
-        required=False,
+        required=True,
         validators=[utils.validate_not_zero],
     )
 
