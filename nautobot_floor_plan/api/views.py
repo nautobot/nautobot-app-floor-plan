@@ -4,9 +4,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from drf_spectacular.utils import extend_schema
-from rest_framework.decorators import action
-
 from nautobot.apps.api import NautobotModelViewSet
+from rest_framework.decorators import action
 
 from nautobot_floor_plan import filters, models
 from nautobot_floor_plan.api import serializers
