@@ -9,9 +9,7 @@ from nautobot.apps.models import PrimaryModel, StatusField, extras_features
 
 from nautobot_floor_plan.choices import AllocationTypeChoices, AxisLabelsChoices, RackOrientationChoices
 from nautobot_floor_plan.svg import FloorPlanSVG
-
 from nautobot_floor_plan.utils import validate_not_zero
-
 
 logger = logging.getLogger(__name__)
 
