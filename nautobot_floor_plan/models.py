@@ -5,12 +5,9 @@ import logging
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
+from nautobot.apps.models import PrimaryModel, StatusField, extras_features
 
-from nautobot.apps.models import extras_features
-from nautobot.apps.models import PrimaryModel
-from nautobot.apps.models import StatusField
-
-from nautobot_floor_plan.choices import RackOrientationChoices, AxisLabelsChoices, AllocationTypeChoices
+from nautobot_floor_plan.choices import AllocationTypeChoices, AxisLabelsChoices, RackOrientationChoices
 from nautobot_floor_plan.svg import FloorPlanSVG
 
 from nautobot_floor_plan.utils import validate_not_zero

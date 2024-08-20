@@ -1,12 +1,10 @@
 """Test FloorPlan Filter."""
 
 from django.test import TestCase
-
 from nautobot.dcim.models import Rack, RackGroup
 from nautobot.extras.models import Tag
 
-from nautobot_floor_plan import filters
-from nautobot_floor_plan import models
+from nautobot_floor_plan import filters, models
 from nautobot_floor_plan.tests import fixtures
 
 

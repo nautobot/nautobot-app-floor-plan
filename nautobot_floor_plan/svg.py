@@ -2,17 +2,15 @@
 
 import logging
 import os
-import svgwrite
 
+import svgwrite
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.http import urlencode
-
 from nautobot.core.templatetags.helpers import fgcolor
 
-from nautobot_floor_plan.choices import RackOrientationChoices, AxisLabelsChoices, AllocationTypeChoices
+from nautobot_floor_plan.choices import AllocationTypeChoices, AxisLabelsChoices, RackOrientationChoices
 from nautobot_floor_plan.utils import grid_number_to_letter
-
 
 logger = logging.getLogger(__name__)
 

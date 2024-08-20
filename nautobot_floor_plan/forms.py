@@ -5,21 +5,20 @@
 """Forms for nautobot_floor_plan."""
 
 from django import forms
-
-from nautobot.dcim.models import Location, Rack, RackGroup
+from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.forms import (
+    DynamicModelChoiceField,
+    DynamicModelMultipleChoiceField,
     NautobotBulkEditForm,
     NautobotFilterForm,
     NautobotModelForm,
-    TagsBulkEditFormMixin,
-    DynamicModelChoiceField,
-    DynamicModelMultipleChoiceField,
     TagFilterField,
+    TagsBulkEditFormMixin,
     add_blank_choice,
 )
-from nautobot.apps.config import get_app_settings_or_config
+from nautobot.dcim.models import Location, Rack, RackGroup
 
-from nautobot_floor_plan import models, choices, utils
+from nautobot_floor_plan import choices, models, utils
 
 
 class FloorPlanForm(NautobotModelForm):
@@ -118,7 +117,7 @@ class FloorPlanForm(NautobotModelForm):
         return self._clean_origin_seed("y_origin_seed", "Y")
 
 
-class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
+class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pylint: disable=too-many-ancestors
     """FloorPlan bulk edit form."""
 
     pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)

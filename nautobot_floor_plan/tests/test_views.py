@@ -2,7 +2,7 @@
 
 from nautobot.apps.testing import ViewTestCases
 
-from nautobot_floor_plan import models, choices
+from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.tests import fixtures
 
 

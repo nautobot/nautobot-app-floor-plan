@@ -2,14 +2,14 @@
 
 from nautobot.apps.views import (
     NautobotUIViewSet,
-    ObjectListViewMixin,
+    ObjectChangeLogViewMixin,
+    ObjectDestroyViewMixin,
     ObjectDetailViewMixin,
     ObjectEditViewMixin,
-    ObjectDestroyViewMixin,
-    ObjectChangeLogViewMixin,
+    ObjectListViewMixin,
     ObjectNotesViewMixin,
+    ObjectView,
 )
-from nautobot.apps.views import ObjectView
 from nautobot.dcim.models import Location
 
 from nautobot_floor_plan import filters, forms, models, tables

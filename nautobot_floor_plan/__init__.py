@@ -5,9 +5,9 @@ from importlib import metadata
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.signals import post_migrate
-
 from nautobot.apps import NautobotAppConfig
 from nautobot.apps.config import get_app_settings_or_config
+
 from nautobot_floor_plan.choices import AxisLabelsChoices
 
 __version__ = metadata.version(__name__)

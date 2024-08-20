@@ -1,5 +1,4 @@
 from django.db import migrations
-
 from nautobot.extras.utils import fixup_null_statuses
 
 
