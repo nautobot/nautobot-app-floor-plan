@@ -1,6 +1,7 @@
 """Extensions to Nautobot core models' filtering functionality."""
 
 import django_filters
+from nautobot.apps.filters import RelatedMembershipBooleanFilter
 from nautobot.extras.plugins import PluginFilterExtension
 
 from nautobot_floor_plan import models
@@ -19,6 +20,17 @@ class RackFilterExtension(PluginFilterExtension):
         ),
     }
 
+class UniqueRackFilterExtension(PluginFilterExtension):
+    """Add a filter to ensure a Rack is only an option if it isn't installed."""
+
+    model = "dcim.rack"
+
+    filterset_fields = {
+        "nautobot_floor_plan_unique_rack": RelatedMembershipBooleanFilter(
+            field_name="floor_plan_tile",
+            label="Floor plan",
+        ),
+    }
 
 class RackGroupFilterExtension(PluginFilterExtension):
     """Add a filter to the RackGroupFilterSet in Nautobot core."""
@@ -34,4 +46,4 @@ class RackGroupFilterExtension(PluginFilterExtension):
     }
 
 
-filter_extensions = [RackFilterExtension, RackGroupFilterExtension]
+filter_extensions = [RackFilterExtension, RackGroupFilterExtension, UniqueRackFilterExtension]
