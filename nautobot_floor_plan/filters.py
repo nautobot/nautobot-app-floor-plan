@@ -7,7 +7,9 @@ from nautobot.dcim.models import Location, Rack, RackGroup
 from nautobot_floor_plan import models
 
 
-class FloorPlanFilterSet(NautobotFilterSet):
+class FloorPlanFilterSet(
+    NautobotFilterSet, NameSearchFilterSet
+):  # pylint: disable=too-many-ancestors
     """Filter for FloorPlan."""
 
     q = SearchFilter(
