@@ -136,9 +136,9 @@ class FloorPlanTileForm(NautobotModelForm):
 
     floor_plan = DynamicModelChoiceField(queryset=models.FloorPlan.objects.all())
     rack = DynamicModelChoiceField(
-    queryset=Rack.objects.all(),
-    required=False,
-    query_params={"nautobot_floor_plan_floor_plan": "$floor_plan", "nautobot_floor_plan_unique_rack": False, "rack_group": "$rack_group"},
+        queryset=Rack.objects.all(),
+        required=False,
+        query_params={"nautobot_floor_plan_floor_plan": "$floor_plan", "nautobot_floor_plan_has_floor_plan_tile": False, "rack_group": "$rack_group"},
     )
     rack_group = DynamicModelChoiceField(
         queryset=RackGroup.objects.all(),

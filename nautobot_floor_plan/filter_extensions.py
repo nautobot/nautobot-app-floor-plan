@@ -26,7 +26,7 @@ class UniqueRackFilterExtension(PluginFilterExtension):
     model = "dcim.rack"
 
     filterset_fields = {
-        "nautobot_floor_plan_unique_rack": RelatedMembershipBooleanFilter(
+        "nautobot_floor_plan_has_floor_plan_tile": RelatedMembershipBooleanFilter(
             field_name="floor_plan_tile",
             label="Floor plan",
         ),
