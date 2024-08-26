@@ -18,19 +18,12 @@ class RackFilterExtension(PluginFilterExtension):
             field_name="location__floor_plan",
             label="Floor plan",
         ),
-    }
-
-class UniqueRackFilterExtension(PluginFilterExtension):
-    """Add a filter to ensure a Rack is only an option if it isn't installed."""
-
-    model = "dcim.rack"
-
-    filterset_fields = {
         "nautobot_floor_plan_has_floor_plan_tile": RelatedMembershipBooleanFilter(
             field_name="floor_plan_tile",
-            label="Floor plan",
+            label="Floor Plan Tile",
         ),
     }
+
 
 class RackGroupFilterExtension(PluginFilterExtension):
     """Add a filter to the RackGroupFilterSet in Nautobot core."""
@@ -46,4 +39,4 @@ class RackGroupFilterExtension(PluginFilterExtension):
     }
 
 
-filter_extensions = [RackFilterExtension, RackGroupFilterExtension, UniqueRackFilterExtension]
+filter_extensions = [RackFilterExtension, RackGroupFilterExtension]
