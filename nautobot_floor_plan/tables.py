@@ -5,6 +5,7 @@ from nautobot.apps.tables import BaseTable, ButtonsColumn, TagColumn, ToggleColu
 from nautobot.core.templatetags.helpers import hyperlinked_object
 
 from nautobot_floor_plan import models
+from nautobot_floor_plan.templatetags.seed_helpers import grid_location_conversion
 
 
 class FloorPlanTable(BaseTable):
@@ -55,6 +56,8 @@ class FloorPlanTileTable(BaseTable):
     floor_plan_tile = tables.Column(verbose_name="Tile", empty_values=[])
     floor_plan = tables.Column(linkify=True)
     location = tables.Column(accessor="floor_plan__location", linkify=True)
+    x_origin = tables.Column()
+    y_origin = tables.Column()
     rack = tables.Column(linkify=True)
     tags = TagColumn()
     actions = ButtonsColumn(models.FloorPlanTile)
@@ -62,6 +65,14 @@ class FloorPlanTileTable(BaseTable):
     def render_floor_plan_tile(self, record):
         """Render a link to the detail view for the FloorPlanTile record itself."""
         return hyperlinked_object(record)
+
+    def render_x_origin(self, record):
+        """Render x_origin in letters if requried."""
+        return grid_location_conversion(record, "x")
+
+    def render_y_origin(self, record):
+        """Render y_origin in letters if requried."""
+        return grid_location_conversion(record, "y")
 
     class Meta(BaseTable.Meta):
         """Meta attributes."""
