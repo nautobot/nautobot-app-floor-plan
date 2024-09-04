@@ -73,6 +73,7 @@ no-docstring-rgx = "^(_|test_|Meta$)"
 
 [tool.pylint.messages_control]
 disable = """,
+    invalid-name,
     line-too-long,
     too-few-public-methods,
     too-many-ancestors
