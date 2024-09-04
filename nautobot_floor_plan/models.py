@@ -7,11 +7,10 @@ from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from nautobot.apps.models import PrimaryModel, StatusField, extras_features
 
-# from nautobot.apps.models import extras_features
-# If you want to use the extras_features decorator please reference the following documentation
-# https://docs.nautobot.com/projects/core/en/latest/plugins/development/#using-the-extras_features-decorator-for-graphql
-# Then based on your reading you may decide to put the following decorator before the declaration of your class
-# @extras_features("custom_fields", "custom_validators", "relationships", "graphql")
+from nautobot_floor_plan.choices import AllocationTypeChoices, AxisLabelsChoices, RackOrientationChoices
+from nautobot_floor_plan.svg import FloorPlanSVG
+
+logger = logging.getLogger(__name__)
 
 
 @extras_features(

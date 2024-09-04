@@ -5,12 +5,18 @@
 """Forms for nautobot_floor_plan."""
 
 from django import forms
+from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.forms import (
+    DynamicModelChoiceField,
+    DynamicModelMultipleChoiceField,
     NautobotBulkEditForm,
     NautobotFilterForm,
     NautobotModelForm,
+    TagFilterField,
     TagsBulkEditFormMixin,
+    add_blank_choice,
 )
+from nautobot.dcim.models import Location, Rack, RackGroup
 
 from nautobot_floor_plan import choices, models, utils
 
@@ -35,18 +41,7 @@ class FloorPlanForm(NautobotModelForm):
         """Meta attributes."""
 
         model = models.FloorPlan
-        fields = [
-            "location",
-            "x_size",
-            "y_size",
-            "tile_width",
-            "tile_depth",
-            "x_axis_labels",
-            "x_origin_seed",
-            "y_axis_labels",
-            "y_origin_seed",
-            "tags",
-        ]
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to set initial values for select widget."""
@@ -97,15 +92,16 @@ class FloorPlanForm(NautobotModelForm):
         return self._clean_origin_seed("y_origin_seed", "Y")
 
 
-class FloorPlanBulkEditForm(
-    TagsBulkEditFormMixin, NautobotBulkEditForm
-):  # pylint: disable=too-many-ancestors
+class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pylint: disable=too-many-ancestors
     """FloorPlan bulk edit form."""
 
-    pk = forms.ModelMultipleChoiceField(
-        queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput
-    )
-    description = forms.CharField(required=False)
+    pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)
+    x_size = forms.IntegerField(min_value=1, required=False)
+    y_size = forms.IntegerField(min_value=1, required=False)
+    tile_width = forms.IntegerField(min_value=1, required=False)
+    tile_depth = forms.IntegerField(min_value=1, required=False)
+    x_axis_labels = forms.ChoiceField(choices=add_blank_choice(choices.AxisLabelsChoices), required=False)
+    y_axis_labels = forms.ChoiceField(choices=add_blank_choice(choices.AxisLabelsChoices), required=False)
 
     class Meta:
         """Meta attributes."""
@@ -145,18 +141,7 @@ class FloorPlanTileForm(NautobotModelForm):
         """Meta attributes."""
 
         model = models.FloorPlanTile
-        fields = [
-            "floor_plan",
-            "x_origin",
-            "y_origin",
-            "x_size",
-            "y_size",
-            "status",
-            "rack",
-            "rack_group",
-            "rack_orientation",
-            "tags",
-        ]
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to define grid numbering style."""

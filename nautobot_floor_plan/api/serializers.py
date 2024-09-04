@@ -5,9 +5,7 @@ from nautobot.apps.api import NautobotModelSerializer, TaggedModelSerializerMixi
 from nautobot_floor_plan import models
 
 
-class FloorPlanSerializer(
-    NautobotModelSerializer, TaggedModelSerializerMixin
-):  # pylint: disable=too-many-ancestors
+class FloorPlanSerializer(NautobotModelSerializer, TaggedModelSerializerMixin):  # pylint: disable=too-many-ancestors
     """FloorPlan Serializer."""
 
     class Meta:
