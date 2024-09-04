@@ -31,6 +31,7 @@ class FloorPlanSVG:
     RACK_BORDER_OFFSET = 8
     RACK_ORIENTATION_OFFSET = 14
     RACKGROUP_TEXT_OFFSET = 12
+    Y_LABEL_TEXT_OFFSET = 34
 
     def __init__(self, *, floor_plan, user, base_url):
         """
@@ -89,6 +90,8 @@ class FloorPlanSVG:
 
     def _draw_grid(self, drawing):
         """Render the grid underlying all tiles."""
+        # Setting intial value for y axis label text to 0
+        y_label_text_offset = 0
         # Vertical lines
         for x in range(0, self.floor_plan.x_size + 1):
             drawing.add(
@@ -128,11 +131,16 @@ class FloorPlanSVG:
             )
         for y in range(self.floor_plan.y_origin_seed, self.floor_plan.y_size + self.floor_plan.y_origin_seed):
             label = grid_number_to_letter(y) if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS else str(y)
+            # Adjust the starting position of the y_axis_label text if the length of the inital SEED value is greater than 1
+            if len(str(self.floor_plan.y_origin_seed)) > 1:
+                y_label_text_offset = self.Y_LABEL_TEXT_OFFSET - (6 - len(str(self.floor_plan.y_origin_seed)))
+            if len(str(self.floor_plan.y_origin_seed)) > 4:
+                y_label_text_offset = self.Y_LABEL_TEXT_OFFSET + 4
             drawing.add(
                 drawing.text(
                     label,
                     insert=(
-                        self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
+                        self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2 - y_label_text_offset,
                         (y - self.floor_plan.y_origin_seed + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
                     ),
                     class_="grid-label",
