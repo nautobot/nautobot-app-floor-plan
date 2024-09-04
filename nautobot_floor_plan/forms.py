@@ -40,13 +40,11 @@ class FloorPlanForm(NautobotModelForm):
         label="X Axis Step",
         help_text="A positive or negative integer, excluding zero",
         required=True,
-        validators=[utils.validate_not_zero],
     )
     y_axis_step = forms.IntegerField(
         label="Y Axis Step",
         help_text="A positive or negative integer, excluding zero",
         required=True,
-        validators=[utils.validate_not_zero],
     )
 
     class Meta:
