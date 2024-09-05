@@ -1,6 +1,7 @@
 """Utilities module."""
 
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 
 def grid_number_to_letter(number):
@@ -27,4 +28,8 @@ def grid_letter_to_number(letter):
 def validate_not_zero(value):
     """Prevent the usage of 0 as a value in the step form field or model attribute."""
     if value == 0:
-        raise ValidationError(("Value must be a positive or negative Integer not equal to zero"))
+        raise ValidationError(
+            _("%(value)s is not a positive or negative Integer not equal to zero"),
+            params={"value": value},
+        )
+validate_not_zero.message = "Must be a positive or negative Integer not equal to zero."

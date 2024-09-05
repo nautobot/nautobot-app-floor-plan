@@ -69,7 +69,7 @@ class FloorPlan(PrimaryModel):
         validators=[MinValueValidator(0)], default=1, help_text="User defined starting value for grid labeling"
     )
     x_axis_step = models.IntegerField(
-        validators=[validate_not_zero], default=1,help_text="Positive or negative integer that will be used to step labeling.",
+        validators=[validate_not_zero], default=1, help_text="Positive or negative integer that will be used to step labeling.",
     )
     y_axis_step = models.IntegerField(
         validators=[validate_not_zero], default=1, help_text="Positive or negative integer that will be used to step labeling."
