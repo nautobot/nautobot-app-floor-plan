@@ -69,7 +69,7 @@ class FloorPlan(PrimaryModel):
         validators=[MinValueValidator(0)], default=1, help_text="User defined starting value for grid labeling"
     )
     x_axis_step = models.IntegerField(
-        validators=[validate_not_zero], default=1, help_text="Positive or negative integer that will be used to step labeling.",
+        validators=[validate_not_zero], default=1,help_text="Positive or negative integer that will be used to step labeling.",
     )
     y_axis_step = models.IntegerField(
         validators=[validate_not_zero], default=1, help_text="Positive or negative integer that will be used to step labeling."
@@ -90,8 +90,6 @@ class FloorPlan(PrimaryModel):
 
     def save(self, *args, **kwargs):
         """Override save in order to update any existing tiles."""
-        validate_not_zero(self.x_axis_step)
-        validate_not_zero(self.y_axis_step)
         if self.present_in_database:
             # Get origin_seed pre/post values
             initial_instance = self.__class__.objects.get(pk=self.pk)
