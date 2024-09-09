@@ -24,7 +24,7 @@ class FloorPlanFilterSet(NautobotFilterSet):  # pylint: disable=too-many-ancesto
         """Meta attributes for filter."""
 
         model = models.FloorPlan
-        fields = "__all__"
+        fields = ["x_size", "y_size", "tile_width", "tile_depth", "tags"]  # pylint: disable=nb-use-fields-all
 
 
 class FloorPlanTileFilterSet(NautobotFilterSet):
@@ -59,4 +59,4 @@ class FloorPlanTileFilterSet(NautobotFilterSet):
         """Meta attributes."""
 
         model = models.FloorPlanTile
-        fields = "__all__"
+        fields = ["x_origin", "y_origin", "tags"]  # pylint: disable=nb-use-fields-all
