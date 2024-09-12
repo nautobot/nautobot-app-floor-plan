@@ -162,6 +162,18 @@ class FloorPlanTileForm(NautobotModelForm):
     x_origin = forms.CharField()
     y_origin = forms.CharField()
 
+    field_order = [
+            "floor_plan",
+            "x_origin",
+            "y_origin",
+            "x_size",
+            "y_size",
+            "status",
+            "rack",
+            "rack_group",
+            "rack_orientation",
+        ]
+
     class Meta:
         """Meta attributes."""
 
