@@ -26,7 +26,11 @@ class TestFloorPlanForm(TestCase):
                 "tile_depth": 100,
                 "tile_width": 200,
                 "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+                "x_origin_seed": 1,
+                "x_axis_step": 1,
                 "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+                "y_origin_seed": 1,
+                "y_axis_step": 1,
             }
         )
         self.assertTrue(form.is_valid())
@@ -36,6 +40,12 @@ class TestFloorPlanForm(TestCase):
         self.assertEqual(floor_plan.y_size, 2)
         self.assertEqual(floor_plan.tile_depth, 100)
         self.assertEqual(floor_plan.tile_width, 200)
+        self.assertEqual(floor_plan.x_axis_labels, choices.AxisLabelsChoices.NUMBERS)
+        self.assertEqual(floor_plan.y_axis_labels, choices.AxisLabelsChoices.NUMBERS)
+        self.assertEqual(floor_plan.x_origin_seed, 1)
+        self.assertEqual(floor_plan.y_origin_seed, 1)
+        self.assertEqual(floor_plan.x_axis_step, 1)
+        self.assertEqual(floor_plan.y_axis_step, 1)
 
     def test_valid_extra_inputs(self):
         """Test creation with additional optional input data."""
@@ -49,7 +59,11 @@ class TestFloorPlanForm(TestCase):
                 "tile_depth": 1,
                 "tile_width": 2,
                 "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+                "x_origin_seed": 1,
+                "x_axis_step": 1,
                 "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+                "y_origin_seed": 1,
+                "y_axis_step": 1,
                 "tags": [tag],
             }
         )
@@ -62,6 +76,10 @@ class TestFloorPlanForm(TestCase):
         self.assertEqual(floor_plan.tile_depth, 1)
         self.assertEqual(floor_plan.x_axis_labels, choices.AxisLabelsChoices.NUMBERS)
         self.assertEqual(floor_plan.y_axis_labels, choices.AxisLabelsChoices.NUMBERS)
+        self.assertEqual(floor_plan.x_origin_seed, 1)
+        self.assertEqual(floor_plan.y_origin_seed, 1)
+        self.assertEqual(floor_plan.x_axis_step, 1)
+        self.assertEqual(floor_plan.x_axis_step, 1)
         self.assertEqual(list(floor_plan.tags.all()), [tag])
 
     def test_invalid_required_fields(self):
@@ -69,7 +87,19 @@ class TestFloorPlanForm(TestCase):
         form = forms.FloorPlanForm(data={})
         self.assertFalse(form.is_valid())
         self.assertEqual(
-            ["location", "tile_depth", "tile_width", "x_axis_labels", "x_size", "y_axis_labels", "y_size"],
+            [
+                "location",
+                "tile_depth",
+                "tile_width",
+                "x_axis_labels",
+                "x_axis_step",
+                "x_origin_seed",
+                "x_size",
+                "y_axis_labels",
+                "y_axis_step",
+                "y_origin_seed",
+                "y_size",
+            ],
             sorted(form.errors.keys()),
         )
         for message in form.errors.values():
