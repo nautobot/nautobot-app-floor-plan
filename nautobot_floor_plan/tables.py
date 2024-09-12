@@ -32,7 +32,6 @@ class FloorPlanTable(BaseTable):
         """Render y_origin in letters if requried."""
         return seed_conversion(record, "y")
 
-
     class Meta(BaseTable.Meta):
         """Meta attributes."""
 

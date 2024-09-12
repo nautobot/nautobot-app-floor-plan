@@ -18,6 +18,7 @@ def seed_conversion(floor_plan, axis):
 
     return f"{seed}"
 
+
 @register.filter()
 def grid_location_conversion(floor_plan_tile, axis):
     """Convert FloorPlanTile coordinate to letter if necessary."""

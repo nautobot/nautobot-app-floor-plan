@@ -47,24 +47,25 @@ class FloorPlanForm(NautobotModelForm):
         required=True,
     )
 
+    field_order = [
+        "location",
+        "x_size",
+        "y_size",
+        "tile_width",
+        "tile_depth",
+        "x_axis_labels",
+        "x_origin_seed",
+        "x_axis_step",
+        "y_axis_labels",
+        "y_origin_seed",
+        "y_axis_step",
+    ]
+
     class Meta:
         """Meta attributes."""
 
         model = models.FloorPlan
-        fields = [
-            "location",
-            "x_size",
-            "y_size",
-            "tile_width",
-            "tile_depth",
-            "x_axis_labels",
-            "x_origin_seed",
-            "x_axis_step",
-            "y_axis_labels",
-            "y_origin_seed",
-            "y_axis_step",
-            "tags",
-        ]
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to set initial values for select widget."""
@@ -150,7 +151,11 @@ class FloorPlanTileForm(NautobotModelForm):
     rack = DynamicModelChoiceField(
         queryset=Rack.objects.all(),
         required=False,
-        query_params={"nautobot_floor_plan_floor_plan": "$floor_plan", "nautobot_floor_plan_has_floor_plan_tile": False, "rack_group": "$rack_group"},
+        query_params={
+            "nautobot_floor_plan_floor_plan": "$floor_plan",
+            "nautobot_floor_plan_has_floor_plan_tile": False,
+            "rack_group": "$rack_group",
+        },
     )
     rack_group = DynamicModelChoiceField(
         queryset=RackGroup.objects.all(),
@@ -160,22 +165,23 @@ class FloorPlanTileForm(NautobotModelForm):
     x_origin = forms.CharField()
     y_origin = forms.CharField()
 
+    field_order = [
+        "floor_plan",
+        "x_origin",
+        "y_origin",
+        "x_size",
+        "y_size",
+        "status",
+        "rack",
+        "rack_group",
+        "rack_orientation",
+    ]
+
     class Meta:
         """Meta attributes."""
 
         model = models.FloorPlanTile
-        fields = [
-            "floor_plan",
-            "x_origin",
-            "y_origin",
-            "x_size",
-            "y_size",
-            "status",
-            "rack",
-            "rack_group",
-            "rack_orientation",
-            "tags",
-        ]
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to define grid numbering style."""
