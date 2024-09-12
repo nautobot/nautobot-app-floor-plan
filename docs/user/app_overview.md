@@ -35,6 +35,9 @@ Included is a non-exhaustive list of capabilites beyond a standard MVC (model vi
 - Provides the ability to span multiple adjacent tiles by a single rack.
 - Provides the ability to place racks in a group that spans multiple tiles.
 - Provides custom layout size in any rectangular shape using X & Y axis.
+- Provides the abililty to choose Numbers or Letters for grid labels.
+- Provides the ability for a user to define a specific number or letter as a starting point for grid labels.
+- Provides the ability for a user to define a positive or negative integer to allow for the skipping of letters or numbers for grid labels.
 - Provides the ability to save the generated SVG from a click of a "Save SVG" link.
 
 ## Nautobot Features Used

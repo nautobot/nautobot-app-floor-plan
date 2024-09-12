@@ -29,12 +29,22 @@ class FloorPlanForm(NautobotModelForm):
     x_origin_seed = forms.CharField(
         label="X Axis Seed",
         help_text="The first value to begin X Axis at.",
-        required=False,
+        required=True,
     )
     y_origin_seed = forms.CharField(
         label="Y Axis Seed",
         help_text="The first value to begin Y Axis at.",
-        required=False,
+        required=True,
+    )
+    x_axis_step = forms.IntegerField(
+        label="X Axis Step",
+        help_text="A positive or negative integer, excluding zero",
+        required=True,
+    )
+    y_axis_step = forms.IntegerField(
+        label="Y Axis Step",
+        help_text="A positive or negative integer, excluding zero",
+        required=True,
     )
 
     class Meta:
@@ -49,8 +59,10 @@ class FloorPlanForm(NautobotModelForm):
             "tile_depth",
             "x_axis_labels",
             "x_origin_seed",
+            "x_axis_step",
             "y_axis_labels",
             "y_origin_seed",
+            "y_axis_step",
             "tags",
         ]
 
