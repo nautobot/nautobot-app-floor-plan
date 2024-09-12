@@ -37,6 +37,18 @@ class FloorPlanForm(NautobotModelForm):
         required=False,
     )
 
+    field_order = [
+        "location",
+        "x_size",
+        "y_size",
+        "tile_width",
+        "tile_depth",
+        "x_axis_labels",
+        "x_origin_seed",
+        "y_axis_labels",
+        "y_origin_seed",
+    ]
+
     class Meta:
         """Meta attributes."""
 
