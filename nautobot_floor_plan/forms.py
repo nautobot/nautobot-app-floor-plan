@@ -67,7 +67,6 @@ class FloorPlanForm(NautobotModelForm):
         model = models.FloorPlan
         fields = "__all__"
 
-
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to set initial values for select widget."""
         super().__init__(*args, **kwargs)
@@ -152,7 +151,11 @@ class FloorPlanTileForm(NautobotModelForm):
     rack = DynamicModelChoiceField(
         queryset=Rack.objects.all(),
         required=False,
-        query_params={"nautobot_floor_plan_floor_plan": "$floor_plan", "nautobot_floor_plan_has_floor_plan_tile": False, "rack_group": "$rack_group"},
+        query_params={
+            "nautobot_floor_plan_floor_plan": "$floor_plan",
+            "nautobot_floor_plan_has_floor_plan_tile": False,
+            "rack_group": "$rack_group",
+        },
     )
     rack_group = DynamicModelChoiceField(
         queryset=RackGroup.objects.all(),
@@ -163,16 +166,16 @@ class FloorPlanTileForm(NautobotModelForm):
     y_origin = forms.CharField()
 
     field_order = [
-            "floor_plan",
-            "x_origin",
-            "y_origin",
-            "x_size",
-            "y_size",
-            "status",
-            "rack",
-            "rack_group",
-            "rack_orientation",
-        ]
+        "floor_plan",
+        "x_origin",
+        "y_origin",
+        "x_size",
+        "y_size",
+        "status",
+        "rack",
+        "rack_group",
+        "rack_orientation",
+    ]
 
     class Meta:
         """Meta attributes."""

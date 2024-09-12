@@ -32,4 +32,6 @@ def validate_not_zero(value):
             _("%(value)s is not a positive or negative Integer not equal to zero"),
             params={"value": value},
         )
+
+
 validate_not_zero.message = "Must be a positive or negative Integer not equal to zero."
