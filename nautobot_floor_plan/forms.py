@@ -182,7 +182,7 @@ class FloorPlanTileForm(NautobotModelForm):
 
         model = models.FloorPlanTile
         fields = "__all__"
-        exclude = ["allocation_type", "on_group_tile"]
+        exclude = ["allocation_type", "on_group_tile"] # pylint: disable=modelform-uses-exclude
 
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to define grid numbering style."""
