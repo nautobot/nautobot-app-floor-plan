@@ -181,7 +181,8 @@ class FloorPlanTileForm(NautobotModelForm):
         """Meta attributes."""
 
         model = models.FloorPlanTile
-        exclude = ["allocation_type", "on_group_tile"] # pylint: disable=modelform-uses-exclude
+        fields = "__all__"
+        exclude = ["allocation_type", "on_group_tile"]
 
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to define grid numbering style."""
