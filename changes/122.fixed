@@ -1,0 +1,1 @@
+Excluded internal `allocation_type` and `on_group_tile` fields from Floor Plan Tile add/edit form.
