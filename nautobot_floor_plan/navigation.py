@@ -1,6 +1,6 @@
 """Menu items."""
 
-from nautobot.apps.ui import NavMenuGroup, NavMenuItem, NavMenuTab, NavMenuAddButton, NavMenuImportButton
+from nautobot.apps.ui import NavMenuAddButton, NavMenuGroup, NavMenuItem, NavMenuTab
 
 menu_items = (
     NavMenuTab(
@@ -17,10 +17,6 @@ menu_items = (
                         buttons=(
                             NavMenuAddButton(
                                 link="plugins:nautobot_floor_plan:floorplan_add",
-                                permissions=["nautobot_floor_plan.add_floorplan"],
-                            ),
-                            NavMenuImportButton(
-                                link="plugins:nautobot_floor_plan:floorplan_import",
                                 permissions=["nautobot_floor_plan.add_floorplan"],
                             ),
                         ),

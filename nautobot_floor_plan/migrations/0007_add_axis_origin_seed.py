@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("nautobot_floor_plan", "0006_alter_floorplantile_status"),
     ]

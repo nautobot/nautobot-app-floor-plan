@@ -5,6 +5,7 @@ from nautobot.apps.tables import BaseTable, ButtonsColumn, TagColumn, ToggleColu
 from nautobot.core.templatetags.helpers import hyperlinked_object
 
 from nautobot_floor_plan import models
+from nautobot_floor_plan.templatetags.seed_helpers import grid_location_conversion, seed_conversion
 
 
 class FloorPlanTable(BaseTable):
@@ -14,12 +15,22 @@ class FloorPlanTable(BaseTable):
     pk = ToggleColumn()
     floor_plan = tables.Column(empty_values=[])
     location = tables.Column(linkify=True)
+    x_origin_seed = tables.Column()
+    y_origin_seed = tables.Column()
     tags = TagColumn()
     actions = ButtonsColumn(models.FloorPlan)
 
     def render_floor_plan(self, record):
         """Render a link to the detail view for the FloorPlan record itself."""
         return hyperlinked_object(record)
+
+    def render_x_origin_seed(self, record):
+        """Render x_origin in letters if requried."""
+        return seed_conversion(record, "x")
+
+    def render_y_origin_seed(self, record):
+        """Render y_origin in letters if requried."""
+        return seed_conversion(record, "y")
 
     class Meta(BaseTable.Meta):
         """Meta attributes."""
@@ -33,7 +44,9 @@ class FloorPlanTable(BaseTable):
             "x_size",
             "y_size",
             "x_origin_seed",
+            "x_axis_step",
             "y_origin_seed",
+            "y_axis_step",
             "tile_width",
             "tile_depth",
             "tags",
@@ -43,6 +56,14 @@ class FloorPlanTable(BaseTable):
             "pk",
             "floor_plan",
             "location",
+            "x_size",
+            "y_size",
+            "x_origin_seed",
+            "x_axis_step",
+            "y_origin_seed",
+            "y_axis_step",
+            "tile_width",
+            "tile_depth",
             "tags",
             "actions",
         )
@@ -55,6 +76,8 @@ class FloorPlanTileTable(BaseTable):
     floor_plan_tile = tables.Column(verbose_name="Tile", empty_values=[])
     floor_plan = tables.Column(linkify=True)
     location = tables.Column(accessor="floor_plan__location", linkify=True)
+    x_origin = tables.Column()
+    y_origin = tables.Column()
     rack = tables.Column(linkify=True)
     tags = TagColumn()
     actions = ButtonsColumn(models.FloorPlanTile)
@@ -62,6 +85,14 @@ class FloorPlanTileTable(BaseTable):
     def render_floor_plan_tile(self, record):
         """Render a link to the detail view for the FloorPlanTile record itself."""
         return hyperlinked_object(record)
+
+    def render_x_origin(self, record):
+        """Render x_origin in letters if requried."""
+        return grid_location_conversion(record, "x")
+
+    def render_y_origin(self, record):
+        """Render y_origin in letters if requried."""
+        return grid_location_conversion(record, "y")
 
     class Meta(BaseTable.Meta):
         """Meta attributes."""
@@ -76,8 +107,6 @@ class FloorPlanTileTable(BaseTable):
             "y_origin",
             "x_size",
             "y_size",
-            "x_origin_seed",
-            "y_origin_seed",
             "rack",
             "rack_group",
             "rack_orientation",
@@ -92,8 +121,6 @@ class FloorPlanTileTable(BaseTable):
             "location",
             "x_origin",
             "y_origin",
-            "x_origin_seed",
-            "y_origin_seed",
             "x_size",
             "y_size",
             "rack",

@@ -2,17 +2,15 @@
 
 import logging
 import os
-import svgwrite
 
+import svgwrite
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.http import urlencode
-
 from nautobot.core.templatetags.helpers import fgcolor
 
-from nautobot_floor_plan.choices import RackOrientationChoices, AxisLabelsChoices, AllocationTypeChoices
+from nautobot_floor_plan.choices import AllocationTypeChoices, AxisLabelsChoices, RackOrientationChoices
 from nautobot_floor_plan.utils import grid_number_to_letter
-
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +31,7 @@ class FloorPlanSVG:
     RACK_BORDER_OFFSET = 8
     RACK_ORIENTATION_OFFSET = 14
     RACKGROUP_TEXT_OFFSET = 12
+    Y_LABEL_TEXT_OFFSET = 34
 
     def __init__(self, *, floor_plan, user, base_url):
         """
@@ -89,8 +88,20 @@ class FloorPlanSVG:
 
         return drawing
 
+    def _label_text(self, label_text_out, step, seed, label_text_in):
+        """Change label based off defined increment or decrement step."""
+        if label_text_out == seed:
+            return label_text_out
+        label_text_out = label_text_in + step
+        return label_text_out
+
     def _draw_grid(self, drawing):
         """Render the grid underlying all tiles."""
+        # Set inital values for x and y axis label location
+        x_label_text = 0
+        y_label_text = 0
+        # Setting intial value for y axis label text to 0
+        y_label_text_offset = 0
         # Vertical lines
         for x in range(0, self.floor_plan.x_size + 1):
             drawing.add(
@@ -117,7 +128,14 @@ class FloorPlanSVG:
             )
         # Axis labels
         for x in range(self.floor_plan.x_origin_seed, self.floor_plan.x_size + self.floor_plan.x_origin_seed):
-            label = grid_number_to_letter(x) if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS else str(x)
+            x_label_text = self._label_text(x, self.floor_plan.x_axis_step, self.floor_plan.x_origin_seed, x_label_text)
+            if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS and x_label_text == 0:
+                x_label_text = 26
+            label = (
+                grid_number_to_letter(x_label_text)
+                if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS
+                else str(x_label_text)
+            )
             drawing.add(
                 drawing.text(
                     label,
@@ -129,12 +147,24 @@ class FloorPlanSVG:
                 )
             )
         for y in range(self.floor_plan.y_origin_seed, self.floor_plan.y_size + self.floor_plan.y_origin_seed):
-            label = grid_number_to_letter(y) if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS else str(y)
+            y_label_text = self._label_text(y, self.floor_plan.y_axis_step, self.floor_plan.y_origin_seed, y_label_text)
+            if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS and y_label_text == 0:
+                y_label_text = 26
+            label = (
+                grid_number_to_letter(y_label_text)
+                if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS
+                else str(y_label_text)
+            )
+            # Adjust the starting position of the y_axis_label text if the length of the inital SEED value is greater than 1
+            if len(str(self.floor_plan.y_origin_seed)) > 1:
+                y_label_text_offset = self.Y_LABEL_TEXT_OFFSET - (6 - len(str(self.floor_plan.y_origin_seed)))
+            if len(str(self.floor_plan.y_origin_seed)) > 4:
+                y_label_text_offset = self.Y_LABEL_TEXT_OFFSET + 4
             drawing.add(
                 drawing.text(
                     label,
                     insert=(
-                        self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
+                        self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2 - y_label_text_offset,
                         (y - self.floor_plan.y_origin_seed + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
                     ),
                     class_="grid-label",

@@ -5,21 +5,20 @@
 """Forms for nautobot_floor_plan."""
 
 from django import forms
-
-from nautobot.dcim.models import Location, Rack, RackGroup
+from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.forms import (
+    DynamicModelChoiceField,
+    DynamicModelMultipleChoiceField,
     NautobotBulkEditForm,
     NautobotFilterForm,
     NautobotModelForm,
-    TagsBulkEditFormMixin,
-    DynamicModelChoiceField,
-    DynamicModelMultipleChoiceField,
     TagFilterField,
+    TagsBulkEditFormMixin,
     add_blank_choice,
 )
-from nautobot.apps.config import get_app_settings_or_config
+from nautobot.dcim.models import Location, Rack, RackGroup
 
-from nautobot_floor_plan import models, choices, utils
+from nautobot_floor_plan import choices, models, utils
 
 
 class FloorPlanForm(NautobotModelForm):
@@ -30,30 +29,43 @@ class FloorPlanForm(NautobotModelForm):
     x_origin_seed = forms.CharField(
         label="X Axis Seed",
         help_text="The first value to begin X Axis at.",
-        required=False,
+        required=True,
     )
     y_origin_seed = forms.CharField(
         label="Y Axis Seed",
         help_text="The first value to begin Y Axis at.",
-        required=False,
+        required=True,
     )
+    x_axis_step = forms.IntegerField(
+        label="X Axis Step",
+        help_text="A positive or negative integer, excluding zero",
+        required=True,
+    )
+    y_axis_step = forms.IntegerField(
+        label="Y Axis Step",
+        help_text="A positive or negative integer, excluding zero",
+        required=True,
+    )
+
+    field_order = [
+        "location",
+        "x_size",
+        "y_size",
+        "tile_width",
+        "tile_depth",
+        "x_axis_labels",
+        "x_origin_seed",
+        "x_axis_step",
+        "y_axis_labels",
+        "y_origin_seed",
+        "y_axis_step",
+    ]
 
     class Meta:
         """Meta attributes."""
 
         model = models.FloorPlan
-        fields = [
-            "location",
-            "x_size",
-            "y_size",
-            "tile_width",
-            "tile_depth",
-            "x_axis_labels",
-            "x_origin_seed",
-            "y_axis_labels",
-            "y_origin_seed",
-            "tags",
-        ]
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to set initial values for select widget."""
@@ -104,7 +116,7 @@ class FloorPlanForm(NautobotModelForm):
         return self._clean_origin_seed("y_origin_seed", "Y")
 
 
-class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):
+class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pylint: disable=too-many-ancestors
     """FloorPlan bulk edit form."""
 
     pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)
@@ -139,7 +151,11 @@ class FloorPlanTileForm(NautobotModelForm):
     rack = DynamicModelChoiceField(
         queryset=Rack.objects.all(),
         required=False,
-        query_params={"nautobot_floor_plan_floor_plan": "$floor_plan", "rack_group": "$rack_group"},
+        query_params={
+            "nautobot_floor_plan_floor_plan": "$floor_plan",
+            "nautobot_floor_plan_has_floor_plan_tile": False,
+            "rack_group": "$rack_group",
+        },
     )
     rack_group = DynamicModelChoiceField(
         queryset=RackGroup.objects.all(),
@@ -149,22 +165,24 @@ class FloorPlanTileForm(NautobotModelForm):
     x_origin = forms.CharField()
     y_origin = forms.CharField()
 
+    field_order = [
+        "floor_plan",
+        "x_origin",
+        "y_origin",
+        "x_size",
+        "y_size",
+        "status",
+        "rack",
+        "rack_group",
+        "rack_orientation",
+    ]
+
     class Meta:
         """Meta attributes."""
 
         model = models.FloorPlanTile
-        fields = [
-            "floor_plan",
-            "x_origin",
-            "y_origin",
-            "x_size",
-            "y_size",
-            "status",
-            "rack",
-            "rack_group",
-            "rack_orientation",
-            "tags",
-        ]
+        fields = "__all__"
+        exclude = ["allocation_type", "on_group_tile"] # pylint: disable=modelform-uses-exclude
 
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to define grid numbering style."""
