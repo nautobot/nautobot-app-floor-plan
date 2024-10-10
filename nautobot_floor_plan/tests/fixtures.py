@@ -1,4 +1,5 @@
 """Create fixtures for tests."""
+
 from nautobot_floor_plan.models import FloorPlan
 
 

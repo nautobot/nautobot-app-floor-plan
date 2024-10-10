@@ -1,4 +1,5 @@
 """Unit tests for nautobot_floor_plan."""
+
 from nautobot.apps.testing import APIViewTestCases
 
 from nautobot_floor_plan import models
