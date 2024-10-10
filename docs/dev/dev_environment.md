@@ -122,7 +122,7 @@ Each command can be executed with `invoke <command>`. All commands support the a
 
 #### Testing
 
-```shell
+```
   ruff             Run ruff to perform code formatting and/or linting.
   pylint           Run pylint code analysis.
   tests            Run all tests for this app.
