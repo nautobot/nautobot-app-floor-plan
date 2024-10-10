@@ -1,16 +1,6 @@
-"""Views for FloorPlan."""
+"""Views for nautobot_floor_plan."""
 
-from nautobot.apps.views import (
-    NautobotUIViewSet,
-    ObjectChangeLogViewMixin,
-    ObjectDestroyViewMixin,
-    ObjectDetailViewMixin,
-    ObjectEditViewMixin,
-    ObjectListViewMixin,
-    ObjectNotesViewMixin,
-    ObjectView,
-)
-from nautobot.dcim.models import Location
+from nautobot.apps.views import NautobotUIViewSet
 
 from nautobot_floor_plan import filters, forms, models, tables
 from nautobot_floor_plan.api import serializers

@@ -41,25 +41,5 @@ class FloorPlanConfig(NautobotAppConfig):
     caching_config = {}
     docs_view_name = "plugins:nautobot_floor_plan:docs"
 
-    def validate_config_options(self):
-        """Validates app configuration options."""
-        x_axis_labels = get_app_settings_or_config("nautobot_floor_plan", "default_x_axis_labels")
-        y_axis_labels = get_app_settings_or_config("nautobot_floor_plan", "default_y_axis_labels")
-        valid_choices = AxisLabelsChoices.values()
-        if x_axis_labels not in valid_choices or y_axis_labels not in valid_choices:
-            msg = f"nautobot_floor_plan improperly configured. Valid config options for default_x_axis_labels or default_y_axis_labels are: {', '.join(valid_choices)}, plugin config is: default_x_axis_labels: {x_axis_labels}, default_y_axis_labels: {y_axis_labels}"
-            raise ImproperlyConfigured(msg)
-
-    def ready(self):
-        """Callback after app is loaded."""
-        super().ready()
-        from .signals import (  # pylint: disable=import-outside-toplevel
-            post_migrate_create__add_statuses,
-        )
-
-        post_migrate.connect(post_migrate_create__add_statuses, sender=self)
-
-        self.validate_config_options()
-
 
 config = FloorPlanConfig  # pylint:disable=invalid-name
