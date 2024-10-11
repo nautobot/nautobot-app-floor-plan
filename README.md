@@ -4,7 +4,7 @@
   <img src="https://raw.githubusercontent.com/nautobot/nautobot-app-floor-plan/develop/docs/images/icon-nautobot-floor-plan.png" class="logo" height="200px">
   <br>
   <a href="https://github.com/nautobot/nautobot-app-floor-plan/actions"><img src="https://github.com/nautobot/nautobot-app-floor-plan/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://docs.nautobot.com/projects/floor-plan/en/latest/"><img src="https://readthedocs.org/projects/nautobot-app-floor-plan/badge/"></a>
+  <a href="https://docs.nautobot.com/projects/floor-plan/en/latest/"><img src="https://readthedocs.org/projects/nautobot-plugin-floor-plan/badge/"></a>
   <a href="https://pypi.org/project/nautobot-floor-plan/"><img src="https://img.shields.io/pypi/v/nautobot-floor-plan"></a>
   <a href="https://pypi.org/project/nautobot-floor-plan/"><img src="https://img.shields.io/pypi/dm/nautobot-floor-plan"></a>
   <br>

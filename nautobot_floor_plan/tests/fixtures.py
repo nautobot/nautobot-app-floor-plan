@@ -1,6 +1,10 @@
 """Create fixtures for tests."""
 
-from nautobot_floor_plan.models import FloorPlan
+from django.contrib.contenttypes.models import ContentType
+from nautobot.dcim.models import Location, LocationType, Rack, RackGroup
+from nautobot.extras.models import Status
+
+from nautobot_floor_plan.models import FloorPlan, FloorPlanTile
 
 
 def create_prerequisites(floor_count=4):

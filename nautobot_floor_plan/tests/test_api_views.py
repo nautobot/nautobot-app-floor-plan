@@ -1,7 +1,5 @@
 """Unit tests for nautobot_floor_plan."""
 
-from nautobot.apps.testing import APIViewTestCases
-
 from django.contrib.contenttypes.models import ContentType
 from nautobot.apps.testing import APIViewTestCases
 from nautobot.dcim.models import Rack, RackGroup
