@@ -1,6 +1,5 @@
 """Views for nautobot_floor_plan."""
 
-
 from nautobot.apps.views import (
     NautobotUIViewSet,
     ObjectChangeLogViewMixin,
