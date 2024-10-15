@@ -1,4 +1,4 @@
-"""Views for nautobot_floor_plan."""
+"""Views for FloorPlan."""
 
 from nautobot.apps.views import (
     NautobotUIViewSet,
