@@ -1,4 +1,4 @@
-"""Fixtures for testing this app."""
+"""Create fixtures for tests."""
 
 from django.contrib.contenttypes.models import ContentType
 from nautobot.dcim.models import Location, LocationType, Rack, RackGroup
