@@ -10,7 +10,7 @@ from nautobot.core.settings_funcs import parse_redis_connection
 # Debug
 #
 
-DEBUG = is_truthy(os.getenv("NAUTOBOT_DEBUG", False))
+DEBUG = is_truthy(os.getenv("NAUTOBOT_DEBUG", False))  # noqa: F405
 _TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
 
 if DEBUG and not _TESTING:

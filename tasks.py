@@ -220,13 +220,6 @@ def stop(context):
     docker_compose(context, "down")
 
 
-@task
-def destroy(context):
-    """Destroy all containers and volumes."""
-    print("Destroying Nautobot...")
-    docker_compose(context, "down --volumes")
-
-
 @task(
     aliases=("down",),
     help={
