@@ -684,7 +684,7 @@ def check_migrations(context):
 def unittest(
     context,
     keepdb=False,
-    label="nautobot_device_lifecycle_mgmt",
+    label="nautobot_floor_plan",
     failfast=False,
     buffer=True,
     pattern="",
