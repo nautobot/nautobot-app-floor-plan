@@ -1,1 +1,2 @@
 Remove --config option from make-migrations check.
+Update to cookiecutter-nautobot-app ltm-1.6
