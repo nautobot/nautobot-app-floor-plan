@@ -129,9 +129,12 @@ class FloorPlanSVG:
         # Axis labels
         for x in range(self.floor_plan.x_origin_seed, self.floor_plan.x_size + self.floor_plan.x_origin_seed):
             x_label_text = self._label_text(x, self.floor_plan.x_axis_step, self.floor_plan.x_origin_seed, x_label_text)
-            if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS and x_label_text < 0:
-                if abs(self.floor_plan.x_axis_step) > 1:
+            if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS and x_label_text <= 0:
+                if self.floor_plan.x_axis_step < 0 and x_label_text == 0:
+                    x_label_text = 702
+                else:
                     x_label_text = 702 - abs(self.floor_plan.x_axis_step)
+            print(x_label_text)
             label = (
                 grid_number_to_letter(x_label_text)
                 if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS
@@ -149,8 +152,10 @@ class FloorPlanSVG:
             )
         for y in range(self.floor_plan.y_origin_seed, self.floor_plan.y_size + self.floor_plan.y_origin_seed):
             y_label_text = self._label_text(y, self.floor_plan.y_axis_step, self.floor_plan.y_origin_seed, y_label_text)
-            if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS and y_label_text == 0:
-                if abs(self.floor_plan.y_axis_step) > 1:
+            if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS and y_label_text <= 0:
+                if self.floor_plan.y_axis_step < 0 and y_label_text == 0:
+                    y_label_text = 702
+                else:
                     y_label_text = 702 - abs(self.floor_plan.y_axis_step)
             label = (
                 grid_number_to_letter(y_label_text)
