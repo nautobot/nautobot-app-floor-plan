@@ -29,56 +29,51 @@ def axis_init_label_conversion(axis_origin, axis_location, step, letters):
     """Returns the correct label position, converting to letters if `letters` is True."""
     if letters:
         axis_location = grid_letter_to_number(axis_location)
+    # Calculate the converted location based on origin, step, and location
     converted_location = axis_origin + (int(axis_location) - int(axis_origin)) * step
-
-    # Check if we need to convert the position to a letter
+    # Check if we need wrap around due to letters being chosen
     if letters:
-        # Special case for 0 --> 'Z'
-        if converted_location == 0:
-            return grid_number_to_letter(26)
-        return grid_number_to_letter(converted_location)
-
-    # Return as-is for numeric values
+        # Set wrap around value of ZZZ
+        total_cells = 18278
+        # Adjust for wrap-around when working with letters A or ZZZ
+        if converted_location < 1:
+            converted_location = total_cells + converted_location
+        elif converted_location > total_cells:
+            converted_location -= total_cells
+        result_label = grid_number_to_letter(converted_location)
+        return result_label
     return converted_location
 
 
-def axis_clean_label_conversion(axis_origin, axis_location, step, letters):
-    """Convert the visible grid label back to the database-stored numeric index, handling negative steps with letter wrapping logic."""
-    original_location = 0
-    max_steps = 100  # safety limit for steps to prevent infinite loops
-    # Step 1: Convert letters to numbers if needed
+def axis_clean_label_conversion(axis_origin, axis_label, step, letters):
+    """Returns the correct database label position."""
+    total_cells = 18278
+    # Convert letters to numbers if needed
     if letters:
-        axis_location = grid_letter_to_number(axis_location)
-        # Step 2: Calculate the distance between origin and location with step handling
-        if step < 0 and (axis_location > axis_origin):
-            # Initialize step count and position trackers
-            current_position = axis_origin
-            steps_taken = 0
-            # Move towards the target position with wrapping logic
-            while current_position != axis_location:
-                current_position += step
-                print(f"current_position {current_position}")
-                print(f"axis_location {axis_location}")
-                steps_taken += 1
-                # Wrap around if below 1 (A in alphabet grid)
-                if current_position < 1:
-                    current_position += 26  # Wrap to 'Z' (26)
-                    print(f'We had to wrap around {current_position}')
+        axis_label = grid_letter_to_number(axis_label)
 
-                # Final position in the grid, counting total steps taken
-                print(f'Steps Taken {steps_taken}')
-                original_location = axis_origin + steps_taken
-                print(f'axis_origin {axis_origin}')
-                print(f"letters original_location {original_location}")
-                if steps_taken >= max_steps:
-                    raise ValueError("Infinite loop detected: check step size and wrapping logic.")
-            return original_location
-   
-    original_location = axis_origin + int(
-        (int(axis_location) - int(axis_origin)) / step
-    )
-    print(f"numbers original_location {original_location}")
-    return str(original_location) if not letters else original_location
+    # Reverse the init conversion logic to determine the numeric position
+    position_difference = int(axis_label) - int(axis_origin)
+
+    if step < 0:
+        # Adjust for wrap-around when working with letters A or ZZZ
+        if int(axis_label) > int(axis_origin):
+            position_difference -= total_cells
+    else:
+        if int(axis_label) < int(axis_origin):
+            position_difference += total_cells
+
+    # Calculate the original location using the step
+    original_location = axis_origin + (position_difference // step)
+
+    # Ensure original location stays within bounds for letters
+    if letters:
+        if original_location < 1:
+            original_location += total_cells
+        elif original_location > total_cells:
+            original_location -= total_cells
+    return str(original_location)
+
 
 def validate_not_zero(value):
     """Prevent the usage of 0 as a value in the step form field or model attribute."""
@@ -87,5 +82,6 @@ def validate_not_zero(value):
             _("%(value)s is not a positive or negative Integer not equal to zero"),
             params={"value": value},
         )
+
 
 validate_not_zero.message = "Must be a positive or negative Integer not equal to zero."

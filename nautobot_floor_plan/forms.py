@@ -102,7 +102,7 @@ class FloorPlanForm(NautobotModelForm):
                 return 0
             return utils.grid_letter_to_number(value)
 
-        if not str(value).replace('-', '').isnumeric():
+        if not str(value).replace("-", "").isnumeric():
             self.add_error(field_name, f"{axis} origin start should use numbers.")
             return 0
         return int(value)
@@ -197,13 +197,34 @@ class FloorPlanTileForm(NautobotModelForm):
 
         if self.instance.x_origin or self.instance.y_origin:
             if self.x_letters:
-                self.initial["x_origin"] = utils.grid_number_to_letter(self.instance.x_origin)
+                self.initial["x_origin"] = utils.axis_init_label_conversion(
+                    fp_obj.x_origin_seed,
+                    utils.grid_number_to_letter(self.instance.x_origin),
+                    fp_obj.x_axis_step,
+                    self.x_letters,
+                )
+            else:
+                self.initial["x_origin"] = utils.axis_init_label_conversion(
+                    fp_obj.x_origin_seed, self.initial["x_origin"], fp_obj.x_axis_step, self.x_letters
+                )
             if self.y_letters:
-                self.initial["y_origin"] = utils.grid_number_to_letter(self.instance.y_origin)
-        if self.initial['x_origin']:
-            self.initial['x_origin'] = utils.axis_init_label_conversion(fp_obj.x_origin_seed, self.initial["x_origin"], fp_obj.x_axis_step, self.x_letters)
-        if self.initial['y_origin']:
-            self.initial['y_origin'] = utils.axis_init_label_conversion(fp_obj.y_origin_seed, self.initial["y_origin"], fp_obj.y_axis_step, self.y_letters)
+                self.initial["y_origin"] = utils.axis_init_label_conversion(
+                    fp_obj.y_origin_seed,
+                    utils.grid_number_to_letter(self.instance.y_origin),
+                    fp_obj.y_axis_step,
+                    self.y_letters,
+                )
+            else:
+                self.initial["y_origin"] = utils.axis_init_label_conversion(
+                    fp_obj.y_origin_seed, self.initial["y_origin"], fp_obj.y_axis_step, self.y_letters
+                )
+        elif self.initial.get("x_origin") and self.initial.get("y_origin"):
+            self.initial["x_origin"] = utils.axis_init_label_conversion(
+                fp_obj.x_origin_seed, self.initial["x_origin"], fp_obj.x_axis_step, self.x_letters
+            )
+            self.initial["y_origin"] = utils.axis_init_label_conversion(
+                fp_obj.y_origin_seed, self.initial["y_origin"], fp_obj.y_axis_step, self.y_letters
+            )
 
     def letter_validator(self, field, value, axis):
         """Validate that origin uses combination of letters."""
@@ -214,7 +235,7 @@ class FloorPlanTileForm(NautobotModelForm):
 
     def number_validator(self, field, value, axis):
         """Validate that origin uses combination of positive or negative numbers."""
-        if not str(value).replace('-', '').isnumeric():
+        if not str(value).replace("-", "").isnumeric():
             self.add_error(field, f"{axis} origin should use numbers.")
             return False
         return True
@@ -225,14 +246,13 @@ class FloorPlanTileForm(NautobotModelForm):
         fp_id = self.initial.get("floor_plan") or self.data.get("floor_plan")
         if not fp_id:
             return 0
-        
+
         fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
         value = self.cleaned_data.get(field_name)
 
         # Determine if letters are being used for x or y axis labels
-        using_letters = (field_name == "x_origin" and self.x_letters) or \
-                        (field_name == "y_origin" and self.y_letters)
-        
+        using_letters = (field_name == "x_origin" and self.x_letters) or (field_name == "y_origin" and self.y_letters)
+
         # Perform validation based on the type (letters or numbers)
         validator = self.letter_validator if using_letters else self.number_validator
         if not validator(field_name, value, axis):
@@ -245,7 +265,6 @@ class FloorPlanTileForm(NautobotModelForm):
             origin_seed, step, use_letters = fp_obj.y_origin_seed, fp_obj.y_axis_step, self.y_letters
 
         # Convert and return the label position using the specified conversion function
-        print(field_name)
         cleaned_value = utils.axis_clean_label_conversion(origin_seed, value, step, use_letters)
         return int(cleaned_value) if not using_letters else cleaned_value
 
