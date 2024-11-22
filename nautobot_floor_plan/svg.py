@@ -88,19 +88,19 @@ class FloorPlanSVG:
 
         return drawing
 
-    def _label_text(self, label_text_out, step, seed, label_text_in, letters):
+    # TODO change step and seed to floor_plan instead to reduce items in function
+    def _label_text(self, label_text_out, floor_plan, label_text_in, letters):
         """Change label based off defined increment or decrement step."""
-        print(f"Label_text_in {label_text_in}")
-        if label_text_out == seed:
+        if label_text_out == floor_plan["seed"]:
             return label_text_out
-        label_text_out = label_text_in + step
+        label_text_out = label_text_in + floor_plan["step"]
         if label_text_out <= 0 and letters:
             # Special case for zero or negative values: wrap to max allowed value (ZZZ = 18278)
-            if step < 0:
+            if floor_plan["step"] < 0:
                 if label_text_in == 0:
                     label_text_out = 18278
                 else:
-                    label_text_out = 18278 + (label_text_in + step)
+                    label_text_out = 18278 + (label_text_in + floor_plan["step"])
         return label_text_out
 
     def _draw_grid(self, drawing):
@@ -138,11 +138,10 @@ class FloorPlanSVG:
             )
         # Axis labels
         for x in range(self.floor_plan.x_origin_seed, self.floor_plan.x_size + self.floor_plan.x_origin_seed):
+            floor_plan = {"seed": self.floor_plan.x_origin_seed, "step": self.floor_plan.x_axis_step}
             if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS:
                 x_letters = True
-            x_label_text = self._label_text(
-                x, self.floor_plan.x_axis_step, self.floor_plan.x_origin_seed, x_label_text, x_letters
-            )
+            x_label_text = self._label_text(x, floor_plan, x_label_text, x_letters)
             label = (
                 grid_number_to_letter(x_label_text)
                 if self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS
@@ -159,11 +158,10 @@ class FloorPlanSVG:
                 )
             )
         for y in range(self.floor_plan.y_origin_seed, self.floor_plan.y_size + self.floor_plan.y_origin_seed):
+            floor_plan = {"seed": self.floor_plan.y_origin_seed, "step": self.floor_plan.y_axis_step}
             if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS:
                 y_letters = True
-            y_label_text = self._label_text(
-                y, self.floor_plan.y_axis_step, self.floor_plan.y_origin_seed, y_label_text, y_letters
-            )
+            y_label_text = self._label_text(y, floor_plan, y_label_text, y_letters)
             label = (
                 grid_number_to_letter(y_label_text)
                 if self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS
