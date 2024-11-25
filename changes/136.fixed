@@ -1,0 +1,1 @@
+Fixed grid labels on Y-Axis, by checking the length of all labels to determine correct offset.
