@@ -4,9 +4,8 @@ from django.templatetags.static import static
 from django.urls import path
 from django.views.generic import RedirectView
 from nautobot.apps.urls import NautobotUIViewSetRouter
-from nautobot.extras.views import ObjectChangeLogView, ObjectNotesView
 
-from nautobot_floor_plan import models, views
+from nautobot_floor_plan import views
 
 app_name = "floor_plan"
 router = NautobotUIViewSetRouter()
