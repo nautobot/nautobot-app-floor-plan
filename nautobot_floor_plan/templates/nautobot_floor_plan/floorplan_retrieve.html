@@ -59,11 +59,11 @@
                 <td>{{ object.y_axis_step }}</td>
             </tr>
             <tr>
-                <td>Tiles</td>
+                <td>Tile(s)</td>
                 <td><a href="{% url 'plugins:nautobot_floor_plan:floorplantile_list' %}?floor_plan={{ object.pk }}">{{ object.tiles.count }}</a></td>
             </tr>
             <tr>
-                <td>Child Floor Plans</td>
+                <td>Child Floor Plan(s)</td>
                 <td><a href="{% url 'dcim:location' object.location.pk %}">{{ object.location|count_children_floor_plans }}</a></td>
             </tr>
         </table>

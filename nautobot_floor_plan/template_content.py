@@ -54,49 +54,28 @@ class LocationFloorPlanTab(PluginTemplateExtension):  # pylint: disable=abstract
 
         # Check if the location has children locations with floor plans
         has_child_floor_plans = location.children.filter(floor_plan__isnull=False).exists()
+        floor_plan_tab = {
+            "title": "Floor Plan",
+            "url": reverse(
+                "plugins:nautobot_floor_plan:location_floor_plan_tab",
+                kwargs={"pk": location.pk},
+            ),
+        }
 
-        # If location has no children and a parent
-        if location.parent and not location.children.exists():
+        child_tab = {
+            "title": "Child Floor Plan(s)",
+            "url": reverse("plugins:nautobot_floor_plan:location_child_floor_plan_tab", kwargs={"pk": location.pk}),
+        }
+        # If location has no children
+        if not location.children.exists():
             if has_floor_plan:
-                tabs.append(
-                    {
-                        "title": "Floor Plan",
-                        "url": reverse(
-                            "plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": location.pk}
-                        ),
-                    }
-                )
-            return tabs
+                return [floor_plan_tab]
         # If location has children with floor plans
         if has_child_floor_plans:
             if has_floor_plan:
-                tabs.append(
-                    {
-                        "title": "Floor Plan",
-                        "url": reverse(
-                            "plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": location.pk}
-                        ),
-                    }
-                )
-            tabs.append(
-                {
-                    "title": "Child Floor Plan(s)",
-                    "url": reverse(
-                        "plugins:nautobot_floor_plan:location_child_floor_plan_tab", kwargs={"pk": location.pk}
-                    ),
-                }
-            )
+                tabs.append(floor_plan_tab)
+            tabs.append(child_tab)
             return tabs
-        # If location has a floor plan but no children
-        if has_floor_plan:
-            tabs.append(
-                {
-                    "title": "Floor Plan",
-                    "url": reverse("plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": location.pk}),
-                }
-            )
-
-        return tabs
 
 
 template_extensions = (LocationFloorPlanTab,)

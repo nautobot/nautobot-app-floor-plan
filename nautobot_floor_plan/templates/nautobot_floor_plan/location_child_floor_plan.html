@@ -7,9 +7,7 @@
     <div class="panel-heading">
         <strong>Child Floor Plans</strong>
         <div class="pull-right noprint">
-            {% if request.user.is_authenticated %}
-                {% table_config_button_small children_table %}
-            {% endif %}
+            {% table_config_button_small children_table %}
         </div>
     </div>
     {% include 'inc/table.html' with table=children_table %}
