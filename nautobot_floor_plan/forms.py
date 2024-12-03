@@ -196,34 +196,24 @@ class FloorPlanTileForm(NautobotModelForm):
             self.y_letters = fp_obj.y_axis_labels == choices.AxisLabelsChoices.LETTERS
 
         if self.instance.x_origin or self.instance.y_origin:
-            if self.x_letters:
-                self.initial["x_origin"] = utils.axis_init_label_conversion(
-                    fp_obj.x_origin_seed,
-                    utils.grid_number_to_letter(self.instance.x_origin),
-                    fp_obj.x_axis_step,
-                    self.x_letters,
-                )
-            else:
-                self.initial["x_origin"] = utils.axis_init_label_conversion(
-                    fp_obj.x_origin_seed, self.initial["x_origin"], fp_obj.x_axis_step, self.x_letters
-                )
-            if self.y_letters:
-                self.initial["y_origin"] = utils.axis_init_label_conversion(
-                    fp_obj.y_origin_seed,
-                    utils.grid_number_to_letter(self.instance.y_origin),
-                    fp_obj.y_axis_step,
-                    self.y_letters,
-                )
-            else:
-                self.initial["y_origin"] = utils.axis_init_label_conversion(
-                    fp_obj.y_origin_seed, self.initial["y_origin"], fp_obj.y_axis_step, self.y_letters
-                )
-        elif self.initial.get("x_origin") and self.initial.get("y_origin"):
             self.initial["x_origin"] = utils.axis_init_label_conversion(
-                fp_obj.x_origin_seed, self.initial["x_origin"], fp_obj.x_axis_step, self.x_letters
+                fp_obj.x_origin_seed,
+                utils.grid_number_to_letter(self.instance.x_origin) if self.x_letters else self.initial.get("x_origin"),
+                fp_obj.x_axis_step,
+                self.x_letters,
             )
             self.initial["y_origin"] = utils.axis_init_label_conversion(
-                fp_obj.y_origin_seed, self.initial["y_origin"], fp_obj.y_axis_step, self.y_letters
+                fp_obj.y_origin_seed,
+                utils.grid_number_to_letter(self.instance.y_origin) if self.y_letters else self.initial.get("y_origin"),
+                fp_obj.y_axis_step,
+                self.y_letters,
+            )
+        elif self.initial.get("x_origin") and self.initial.get("y_origin"):
+            self.initial["x_origin"] = utils.axis_init_label_conversion(
+                fp_obj.x_origin_seed, self.initial.get("x_origin"), fp_obj.x_axis_step, self.x_letters
+            )
+            self.initial["y_origin"] = utils.axis_init_label_conversion(
+                fp_obj.y_origin_seed, self.initial.get("y_origin"), fp_obj.y_axis_step, self.y_letters
             )
 
     def letter_validator(self, field, value, axis):

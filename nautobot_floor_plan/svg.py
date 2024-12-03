@@ -88,14 +88,14 @@ class FloorPlanSVG:
 
         return drawing
 
-    def _label_text(self, label_text_out, floor_plan, label_text_in, letters):
+    def _label_text(self, label_text_out, floor_plan, label_text_in, is_letters):
         """Change label based off defined increment or decrement step."""
         if label_text_out == floor_plan["seed"]:
             return label_text_out
         label_text_out = label_text_in + floor_plan["step"]
 
         # Handle negative values and wrapping
-        if letters and label_text_out <= 0:
+        if is_letters and label_text_out <= 0:
             label_text_out = 18278 if label_text_in == 0 else 18278 + (label_text_in + floor_plan["step"])
 
         return label_text_out
