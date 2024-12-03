@@ -51,7 +51,6 @@ class LocationFloorPlanTab(PluginTemplateExtension):  # pylint: disable=abstract
 
         # Determine conditions
         has_floor_plan = getattr(location, "floor_plan", None) is not None
-        has_children = location.children.exists()
         has_child_floor_plans = location.children.filter(floor_plan__isnull=False).exists()
 
         # Add "Floor Plan" tab if applicable
@@ -64,7 +63,7 @@ class LocationFloorPlanTab(PluginTemplateExtension):  # pylint: disable=abstract
             )
 
         # Add "Child Floor Plan(s)" tab if applicable
-        if has_children and has_child_floor_plans:
+        if has_child_floor_plans:
             tabs.append(
                 {
                     "title": "Child Floor Plan(s)",
