@@ -69,13 +69,15 @@ class LocationFloorPlanTab(PluginTemplateExtension):  # pylint: disable=abstract
         # If location has no children
         if not location.children.exists():
             if has_floor_plan:
-                return [floor_plan_tab]
+                tabs.append(floor_plan_tab)
+            return tabs
         # If location has children with floor plans
         if has_child_floor_plans:
             if has_floor_plan:
                 tabs.append(floor_plan_tab)
             tabs.append(child_tab)
             return tabs
+        return tabs
 
 
 template_extensions = (LocationFloorPlanTab,)
