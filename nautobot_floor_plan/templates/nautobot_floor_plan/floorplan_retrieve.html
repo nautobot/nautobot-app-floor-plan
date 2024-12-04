@@ -64,7 +64,7 @@
             </tr>
             <tr>
                 <td>Child Floor Plan(s)</td>
-                <td><a href="{% url 'dcim:location' object.location.pk %}">{{ object.location|count_children_floor_plans }}</a></td>
+                <td><a href="{% url 'plugins:nautobot_floor_plan:floorplan_list'%}?parent_location={{ object.location.pk }}">{{ object.location|count_children_floor_plans }}</a></td>
             </tr>
         </table>
     </div>

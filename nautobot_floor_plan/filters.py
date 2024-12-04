@@ -20,6 +20,13 @@ class FloorPlanFilterSet(NautobotFilterSet):  # pylint: disable=too-many-ancesto
         label="Location (name or ID)",
     )
 
+    parent_location = NaturalKeyOrPKMultipleChoiceFilter(
+        queryset=Location.objects.all(),
+        label="Parent Location",
+        field_name="location__parent",
+        to_field_name="pk",
+    )
+
     class Meta:
         """Meta attributes for filter."""
 

@@ -19,6 +19,7 @@ class TestFloorPlanFilterSet(TestCase):
         """Setup test data for FloorPlan Model."""
         data = fixtures.create_prerequisites()
         cls.floors = data["floors"]
+        cls.building = data["building"]
         fixtures.create_floor_plans(cls.floors)
 
     def test_q_search_location_name(self):
@@ -57,6 +58,13 @@ class TestFloorPlanFilterSet(TestCase):
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
         params = {"y_size": [11]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 0)
+
+    def test_filter_by_parent_location(self):
+        """Test filtering by parent location."""
+        params = {
+            "parent_location": self.building.pk,
+        }
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 4)
 
 
 class TestFloorPlanTileFilterSet(TestCase):
