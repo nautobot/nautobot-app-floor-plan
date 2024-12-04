@@ -26,11 +26,11 @@ Included is a non-exhaustive list of capabilites beyond a standard MVC (model vi
 - Provides visualization of tenant and tenant groups for racks on a floor map.
 - Provides easy navigation from floor map to rack and subsequently device from Rack.
 - Provides the ability to assign Racks to coordinates / tiles.
-    - From the Floor Plan UI.
-    - From the Rack Object UI.
-    - From the API.
+  - From the Floor Plan UI.
+  - From the Rack Object UI.
+  - From the API.
 - Provides ability to map status to color for many use cases.
-    - Leveraging this you can depict hot / cold aisle.
+  - Leveraging this you can depict hot / cold aisle.
 - Provides the ability to set the direction of the Rack and show up.
 - Provides the ability to span multiple adjacent tiles by a single rack.
 - Provides the ability to place racks in a group that spans multiple tiles.
@@ -47,7 +47,10 @@ This App:
 - Adds a "Location Floor Plans" menu item to Nautobot's "Organization" menu.
 - Adds two new database models, "Floor Plan" and "Floor Plan Tile".
 - Adds UI and REST API endpoints for performing standard create/retrieve/update/delete (CRUD) operations on these models.
-- Extends the detail view of Nautobot Locations to include an "Add/Remove Floor Plan" button and (when a Floor Plan is defined) a "Floor Plan" tab to display and interact with the rendered floor plan.
+- Extends the detail view of Nautobot Locations
+  - By including "Add/Remove Floor Plan" button
+  - When a Floor Plan is defined a "Floor Plan" tab to display and interact with the rendered floor plan will be present.
+  - When a Child location has a Floor Plan defined a "Child Floor Plan(s) tab to display the Child or Children locations will be present.
 
 ### Extras
 
