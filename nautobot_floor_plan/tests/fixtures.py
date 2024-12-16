@@ -34,6 +34,7 @@ def create_prerequisites(floor_count=4):
         "status": active_status,
         "floors": floors,
         "location": location,
+        "building": building,
     }
 
 

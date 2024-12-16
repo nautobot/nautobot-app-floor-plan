@@ -1,0 +1,1 @@
+Changed floor_plan column on FloorPlanTable to orderable=False to fix bug

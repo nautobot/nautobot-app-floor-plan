@@ -13,7 +13,7 @@ class FloorPlanTable(BaseTable):
     """Table for list view."""
 
     pk = ToggleColumn()
-    floor_plan = tables.Column(empty_values=[])
+    floor_plan = tables.Column(empty_values=[], orderable=False)
     location = tables.Column(linkify=True)
     x_origin_seed = tables.Column()
     y_origin_seed = tables.Column()

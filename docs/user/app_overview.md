@@ -47,7 +47,10 @@ This App:
 - Adds a "Location Floor Plans" menu item to Nautobot's "Organization" menu.
 - Adds two new database models, "Floor Plan" and "Floor Plan Tile".
 - Adds UI and REST API endpoints for performing standard create/retrieve/update/delete (CRUD) operations on these models.
-- Extends the detail view of Nautobot Locations to include an "Add/Remove Floor Plan" button and (when a Floor Plan is defined) a "Floor Plan" tab to display and interact with the rendered floor plan.
+- Extends the detail view of Nautobot Locations.
+    - Includes an "Add/Remove Floor Plan" button.
+    - When a Floor Plan is defined a "Floor Plan" tab to display and interact with the rendered floor plan will be present.
+    - When a Location has children with a Floor Plan defined a "Child Floor Plan(s) tab is added to display the Child or Children locations.
 
 ### Extras
 
