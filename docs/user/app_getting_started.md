@@ -51,3 +51,5 @@ When a Rack is assigned to a tile, the display of the tile will additionally inc
 By repeating this process as many times as desired, you can populate the Floor Plan in detail to indicate the Status of each Tile as well as the position, Status, and space usage of your Racks:
 
 ![Populated floor plan](../images/floor-plan-populated.png)
+
+Once tiles have been added to a Floor Plan, the Floor Plan can no longer be resized. This is to prevent the resizing of a Floor Plan that could leave a Tile outside the bounds of the new dimensions. All the tiles would need to be removed or the Floor Plan would need to be deleted and recreated to change the dimensions.

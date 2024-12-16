@@ -35,6 +35,7 @@ Included is a non-exhaustive list of capabilities beyond a standard MVC (model v
 - Provides the ability to span multiple adjacent tiles by a single rack.
 - Provides the ability to place racks in a group that spans multiple tiles.
 - Provides custom layout size in any rectangular shape using X & Y axis.
+- Provides the ability to resize the Floor Plan until Tiles have been placed. Once a Tile has been placed the Floor Plan cannot be resized until the Tiles have been removed.
 - Provides the ability to choose Numbers or Letters for grid labels.
 - Provides the ability for a user to define a specific number or letter as a starting point for grid labels.
 - Provides the ability for a user to define a positive or negative integer to allow for the skipping of letters or numbers for grid labels.
