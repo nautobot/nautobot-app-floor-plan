@@ -92,6 +92,11 @@ class FloorPlan(PrimaryModel):
         """Get SVG representation of this FloorPlan."""
         return FloorPlanSVG(floor_plan=self, user=user, base_url=base_url).render()
 
+    def clean(self):
+        """Validate the floor plan dimensions and other constraints."""
+        super().clean()
+        self.validate_no_resizing_with_tiles()
+
     def save(self, *args, **kwargs):
         """Override save in order to update any existing tiles."""
         if self.present_in_database:
@@ -127,6 +132,19 @@ class FloorPlan(PrimaryModel):
             tile.y_origin += y_delta
 
         return tiles
+
+    def validate_no_resizing_with_tiles(self):
+        """Prevent resizing the floor plan dimensions if tiles have been placed."""
+        if self.tiles.exists():
+            # Check for original instance
+            original = self.__class__.objects.filter(pk=self.pk).first()
+            if original:
+                # Don't allow resize if tile is placed
+                if self.x_size != original.x_size or self.y_size != original.y_size:
+                    raise ValidationError(
+                        "Cannot resize a FloorPlan after tiles have been placed. "
+                        f"FloorPlan must maintain original size: ({original.x_size}, {original.y_size}), "
+                    )
 
 
 @extras_features(

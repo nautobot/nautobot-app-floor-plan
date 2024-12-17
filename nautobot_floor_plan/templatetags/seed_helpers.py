@@ -29,3 +29,10 @@ def grid_location_conversion(floor_plan_tile, axis):
         grid = utils.grid_number_to_letter(grid)
 
     return f"{grid}"
+
+
+@register.filter()
+def count_children_floor_plans(location):
+    """Returns count of Children with FloorPlans for a given location."""
+    count = location.children.filter(floor_plan__isnull=False).count()
+    return count

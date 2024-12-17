@@ -1,4 +1,4 @@
-"""Fixtures for testing this app."""
+"""Create fixtures for tests."""
 
 from django.contrib.contenttypes.models import ContentType
 from nautobot.dcim.models import Location, LocationType, Rack, RackGroup
@@ -34,6 +34,7 @@ def create_prerequisites(floor_count=4):
         "status": active_status,
         "floors": floors,
         "location": location,
+        "building": building,
     }
 
 
