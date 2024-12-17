@@ -40,7 +40,7 @@ After clicking "Create", you will be presented with a new floor plan render:
 
 You can click the "+" icon in the corner of any rectangle in the grid to define information about this Tile in the Floor Plan. (If you've defined a large floor plan, or have a small display, you may find it useful to use your mouse wheel to zoom in first. You can also click and drag when zoomed in to pan around the grid.) This will bring you to a simple create/edit form for describing the Tile.
 
-You can assign a Status to each tile, and optionally assign a Rack or RackGroup as well as specifying the orientation of the Rack relative to the Floor Plan. You can also specify the size of a Tile if you want it to cover multiple "spaces" in the Floor Plan - this can be useful to document larger-than-usual Racks, or to mark entire sections of the Floor Plan as "Reserved" or "Unavailable". 
+You can assign a Status to each tile, and optionally assign a Rack or RackGroup as well as specifying the orientation of the Rack relative to the Floor Plan. You can also specify the size of a Tile if you want it to cover multiple "spaces" in the Floor Plan - this can be useful to document larger-than-usual Racks, or to mark entire sections of the Floor Plan as "Reserved" or "Unavailable".
 
 You can place racks within the Status or RackGroup tiles that are covering multiple spaces. When placing a Rack onto a RackGroup tile, the rack must be added to the appropriate RackGroup. RackGroup and Status tiles that cover multiple "spaces" can be increased or reduced in size as long as they don't overlap with other Status or RackGroup tiles.
 
@@ -51,3 +51,5 @@ When a Rack is assigned to a tile, the display of the tile will additionally inc
 By repeating this process as many times as desired, you can populate the Floor Plan in detail to indicate the Status of each Tile as well as the position, Status, and space usage of your Racks:
 
 ![Populated floor plan](../images/floor-plan-populated.png)
+
+Once tiles have been added to a Floor Plan, the Floor Plan can no longer be resized. This is to prevent the resizing of a Floor Plan that could leave a Tile outside the bounds of the new dimensions. All the tiles would need to be removed or the Floor Plan would need to be deleted and recreated to change the dimensions.

@@ -113,6 +113,32 @@ class TestFloorPlan(TestCase):
                 location=self.floors[1], x_size=100, y_size=100, x_axis_step=0, y_axis_step=2
             ).validated_save()
 
+    def test_resize_x_floor_plan_with_tiles(self):
+        """Test that a FloorPlan cannot be resized after tiles are placed."""
+        floor_plan = models.FloorPlan.objects.create(
+            location=self.floors[0], x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1
+        )
+        tile = models.FloorPlanTile(floor_plan=floor_plan, x_origin=1, y_origin=1, status=self.status)
+        tile.validated_save()
+
+        # Attempt to resize the FloorPlan
+        floor_plan.x_size = 5
+        with self.assertRaises(ValidationError):
+            floor_plan.validated_save()
+
+    def test_resize_y_floor_plan_with_tiles(self):
+        """Test that a FloorPlan cannot be resized after tiles are placed."""
+        floor_plan = models.FloorPlan.objects.create(
+            location=self.floors[0], x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1
+        )
+        tile = models.FloorPlanTile(floor_plan=floor_plan, x_origin=1, y_origin=1, status=self.status)
+        tile.validated_save()
+
+        # Attempt to resize the FloorPlan
+        floor_plan.y_size = 4
+        with self.assertRaises(ValidationError):
+            floor_plan.validated_save()
+
 
 class TestFloorPlanTile(TestCase):
     """Test FloorPlanTile model."""
