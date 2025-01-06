@@ -2,7 +2,7 @@
 
 from django import template
 
-from nautobot_floor_plan import choices, utils
+from nautobot_floor_plan import choices, label_converters, utils
 
 register = template.Library()
 
@@ -36,3 +36,53 @@ def count_children_floor_plans(location):
     """Returns count of Children with FloorPlans for a given location."""
     count = location.children.filter(floor_plan__isnull=False).count()
     return count
+
+
+@register.filter()
+def get_fieldset_field(form, field_name):
+    """Retrieve a field from the form using a dynamic field name."""
+    try:
+        return form[field_name]
+    except KeyError:
+        return None
+
+
+@register.filter
+def render_origin_seed(obj, axis):
+    """Render custom seed info for the specified axis if it exists, otherwise display the default seed."""
+    custom_label = obj.custom_labels.filter(axis=axis.upper()).first()
+    if custom_label:
+        try:
+            converter = label_converters.LabelConverterFactory.get_converter(custom_label.label_type)
+            # Convert and display the custom label start
+            numeric_value = converter.to_numeric(custom_label.start_label)
+            display_label = converter.from_numeric(numeric_value)
+
+            # Preserve prefix for numalpha labels
+            if custom_label.label_type == choices.CustomAxisLabelsChoices.NUMALPHA:
+                prefix, _ = utils.extract_prefix_and_letter(custom_label.start_label)
+                _, letters = utils.extract_prefix_and_letter(display_label)
+                return f"{prefix}{letters}"
+            return display_label
+        except ValueError:
+            return custom_label.start_label
+        # Fall back to default seed
+    return seed_conversion(obj, axis.lower())
+
+
+@register.filter
+def render_axis_label(obj, axis):
+    """Render custom label for the specified axis if it exists, otherwise display the default label."""
+    custom_label = obj.custom_labels.filter(axis=axis.upper()).first()
+    if custom_label:
+        return custom_label.label_type
+    return getattr(obj, f"{axis.lower()}_axis_labels")
+
+
+@register.filter
+def render_axis_step(obj, axis):
+    """Render custom step for the specified axis if it exists, otherwise display the default step."""
+    custom_label = obj.custom_labels.filter(axis=axis.upper()).first()
+    if custom_label:
+        return custom_label.step
+    return getattr(obj, f"{axis.lower()}_axis_step")

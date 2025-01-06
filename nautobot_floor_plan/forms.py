@@ -19,21 +19,19 @@ from nautobot.apps.forms import (
 from nautobot.dcim.models import Location, Rack, RackGroup
 
 from nautobot_floor_plan import choices, models, utils
+from nautobot_floor_plan.custom_validators import RangeValidator
+from nautobot_floor_plan.label_converters import LabelToPositionConverter, PositionToLabelConverter
 
 
 class FloorPlanForm(NautobotModelForm):
-    """FloorPlan creation/edit form."""
+    """FloorPlan creation/edit form with support for custom axis label ranges."""
 
     location = DynamicModelChoiceField(queryset=Location.objects.all())
 
+    # X Axis Fields
     x_origin_seed = forms.CharField(
         label="X Axis Seed",
         help_text="The first value to begin X Axis at.",
-        required=True,
-    )
-    y_origin_seed = forms.CharField(
-        label="Y Axis Seed",
-        help_text="The first value to begin Y Axis at.",
         required=True,
     )
     x_axis_step = forms.IntegerField(
@@ -41,25 +39,79 @@ class FloorPlanForm(NautobotModelForm):
         help_text="A positive or negative integer, excluding zero",
         required=True,
     )
+    x_custom_ranges = forms.JSONField(
+        label="Custom Ranges for X Axis",
+        required=False,
+        help_text=(
+            "Enter custom label ranges in JSON format. <br>"
+            "Distance between start and end cannot exceed the size of the floor plan. <br>"
+            "Examples:<br>"
+            '[{"start": "02A", "end": "02Z", "step": 1, "increment_letter": true, "label_type": "numalpha"}, <br>'
+            '[{"start": "A", "end": "Z", "step": 1, "increment_letter": true, "label_type": "letters"}, <br>'
+            '{"start": "A01", "end": "A15", "step": 1, "label_type": "alphanumeric"}, <br>'
+            '{"start": "01", "end": "15", "step": 1, "label_type": "numbers"}, <br>'
+            '{"start": "I", "end": "X", "step": 1, "label_type": "roman"}, <br>'
+            '{"start": "α", "end": "ω", "step": 1, "label_type": "greek"},<br>'
+            '{"start": "1", "end": "15", "step": 1, "label_type": "hex"}, <br>'
+            '{"start": "1", "end": "15", "step": 1, "label_type": "binary"}]'
+        ),
+    )
+
+    # Y Axis Fields
+    y_origin_seed = forms.CharField(
+        label="Y Axis Seed",
+        help_text="The first value to begin Y Axis at.",
+        required=True,
+    )
     y_axis_step = forms.IntegerField(
         label="Y Axis Step",
         help_text="A positive or negative integer, excluding zero",
         required=True,
     )
+    y_custom_ranges = forms.JSONField(
+        label="Custom Ranges for Y Axis",
+        required=False,
+        help_text=(
+            "Enter custom label ranges in JSON format. <br>"
+            "Distance between start and end cannot exceed the size of the floor plan. <br>"
+            "Examples:<br>"
+            '[{"start": "02A", "end": "02Z", "step": 1, "increment_letter": true, "label_type": "numalpha"}, <br>'
+            '[{"start": "A", "end": "Z", "step": 1, "increment_letter": true, "label_type": "letters"}, <br>'
+            '{"start": "A01", "end": "A15", "step": 1, "label_type": "alphanumeric"}, <br>'
+            '{"start": "01", "end": "15", "step": 1, "label_type": "numbers"}, <br>'
+            '{"start": "I", "end": "X", "step": 1, "label_type": "roman"}, <br>'
+            '{"start": "α", "end": "ω", "step": 1, "label_type": "greek"},<br>'
+            '{"start": "1", "end": "15", "step": 1, "label_type": "hex"}, <br>'
+            '{"start": "1", "end": "15", "step": 1, "label_type": "binary"}]'
+        ),
+    )
+    is_tile_movable = forms.BooleanField(
+        required=False,
+        label="Movable Tiles",
+        help_text="If true tiles can be edited and moved once placed on the Floorplan.",
+    )
 
-    field_order = [
-        "location",
-        "x_size",
-        "y_size",
-        "tile_width",
-        "tile_depth",
-        "x_axis_labels",
-        "x_origin_seed",
-        "x_axis_step",
-        "y_axis_labels",
-        "y_origin_seed",
-        "y_axis_step",
-    ]
+    fieldsets = (
+        ("Floor Plan", ("location", "x_size", "y_size", "tile_width", "tile_depth", "is_tile_movable")),
+        (
+            "X Axis Settings",
+            {
+                "tabs": (
+                    ("Default Labels", ("x_axis_labels", "x_origin_seed", "x_axis_step")),
+                    ("Custom Labels", ("x_custom_ranges",)),
+                ),
+            },
+        ),
+        (
+            "Y Axis Settings",
+            {
+                "tabs": (
+                    ("Default Labels", ("y_axis_labels", "y_origin_seed", "y_axis_step")),
+                    ("Custom Labels", ("y_custom_ranges",)),
+                ),
+            },
+        ),
+    )
 
     class Meta:
         """Meta attributes."""
@@ -68,9 +120,10 @@ class FloorPlanForm(NautobotModelForm):
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
-        """Overwrite the constructor to set initial values for select widget."""
+        """Overwrite the constructor to set initial values and handle custom ranges."""
         super().__init__(*args, **kwargs)
 
+        # Set initial values for select widget
         if not self.instance.created:
             self.initial["x_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_x_axis_labels")
             self.initial["y_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_y_axis_labels")
@@ -87,33 +140,159 @@ class FloorPlanForm(NautobotModelForm):
         if self.y_letters and str(self.initial["y_origin_seed"]).isdigit():
             self.initial["y_origin_seed"] = utils.grid_number_to_letter(self.instance.y_origin_seed)
 
+        # Load existing custom ranges
+        if self.instance.pk:
+            x_ranges = list(
+                self.instance.custom_labels.filter(axis="X")
+                .values("start_label", "end_label", "step", "increment_letter", "label_type", "order")
+                .order_by("order")
+            )
+            y_ranges = list(
+                self.instance.custom_labels.filter(axis="Y")
+                .values("start_label", "end_label", "step", "increment_letter", "label_type", "order")
+                .order_by("order")
+            )
+
+            # Set the properties based on whether custom ranges exist
+            self.has_x_custom_labels = bool(x_ranges)
+            self.has_y_custom_labels = bool(y_ranges)
+
+            if x_ranges:
+                self.initial["x_custom_ranges"] = [
+                    {
+                        "start": r["start_label"],
+                        "end": r["end_label"],
+                        "step": r["step"],
+                        "increment_letter": r["increment_letter"],
+                        "label_type": r["label_type"],
+                    }
+                    for r in x_ranges
+                ]
+            if y_ranges:
+                self.initial["y_custom_ranges"] = [
+                    {
+                        "start": r["start_label"],
+                        "end": r["end_label"],
+                        "step": r["step"],
+                        "increment_letter": r["increment_letter"],
+                        "label_type": r["label_type"],
+                    }
+                    for r in y_ranges
+                ]
+
     def _clean_origin_seed(self, field_name, axis):
-        """Common clean method for origin_seed fields."""
+        """Clean method for origin seed fields."""
         value = self.cleaned_data.get(field_name)
         if not value:
-            return 1
+            return value
 
-        self.x_letters = self.cleaned_data.get("x_axis_labels") == choices.AxisLabelsChoices.LETTERS
-        self.y_letters = self.cleaned_data.get("y_axis_labels") == choices.AxisLabelsChoices.LETTERS
+        # Determine if using letters based on axis labels
+        using_letters = (
+            self.cleaned_data.get("x_axis_labels") == choices.AxisLabelsChoices.LETTERS
+            if axis == "X"
+            else self.cleaned_data.get("y_axis_labels") == choices.AxisLabelsChoices.LETTERS
+        )
 
-        if self.x_letters and field_name == "x_origin_seed" or self.y_letters and field_name == "y_origin_seed":
-            if not str(value).isupper():
-                self.add_error(field_name, f"{axis} origin start should use capital letters.")
-                return 0
+        # Validate format based on axis label type
+        if using_letters:
+            if not value.isalpha():
+                raise forms.ValidationError(f"{axis} origin seed should be letters when using letter labels.")
+            if not value.isupper():
+                raise forms.ValidationError(f"{axis} origin seed should be uppercase letters.")
+            # Convert letter to corresponding number
             return utils.grid_letter_to_number(value)
-
-        if not str(value).replace("-", "").isnumeric():
-            self.add_error(field_name, f"{axis} origin start should use numbers.")
-            return 0
-        return int(value)
+        try:
+            return int(value)
+        except ValueError as e:
+            raise forms.ValidationError(f"{axis} origin seed should be a number when using numeric labels.") from e
 
     def clean_x_origin_seed(self):
-        """Validate input and convert y_origin to an integer."""
+        """Validate the X origin seed."""
         return self._clean_origin_seed("x_origin_seed", "X")
 
     def clean_y_origin_seed(self):
-        """Validate input and convert y_origin to an integer."""
+        """Validate the Y origin seed."""
         return self._clean_origin_seed("y_origin_seed", "Y")
+
+    def save(self, commit=True):
+        """Save the FloorPlan instance along with custom ranges."""
+        instance = super().save(commit=False)
+        x_ranges = self.cleaned_data.get("x_custom_ranges", [])
+        y_ranges = self.cleaned_data.get("y_custom_ranges", [])
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+
+            # Clear existing custom ranges
+            models.FloorPlanCustomAxisLabel.objects.filter(floor_plan=instance).delete()
+
+            # Save X axis custom ranges
+            if x_ranges:
+                self.create_custom_axis_labels(x_ranges, instance, axis="X")
+            # Save Y axis custom ranges
+            if y_ranges:
+                self.create_custom_axis_labels(y_ranges, instance, axis="Y")
+
+        return instance
+
+    def create_custom_axis_labels(self, ranges, instance, axis):
+        """Helper function to create custom axis labels."""
+        labels = []
+        for idx, custom_range in enumerate(ranges):
+            labels.append(
+                models.FloorPlanCustomAxisLabel(
+                    floor_plan=instance,
+                    axis=axis,
+                    start_label=custom_range["start"],
+                    end_label=custom_range["end"],
+                    step=custom_range.get("step", 1),
+                    label_type=custom_range["label_type"],
+                    increment_letter=custom_range.get("increment_letter", True),
+                    order=idx,  # Assign order based on index
+                )
+            )
+        models.FloorPlanCustomAxisLabel.objects.bulk_create(labels)
+
+    def _validate_custom_ranges(self, field_name):
+        """Validate custom label ranges."""
+        custom_ranges = self.cleaned_data.get(field_name, [])
+        if not custom_ranges:
+            return []
+
+        is_x_axis = field_name == "x_custom_ranges"
+        max_size = self.cleaned_data.get("x_size" if is_x_axis else "y_size")
+        validator = RangeValidator(max_size)
+
+        # First validate each individual range
+        for label_range in custom_ranges:
+            validator.validate_required_keys(label_range)
+
+            start = label_range["start"]
+            end = label_range["end"]
+            label_type = label_range["label_type"]
+
+            validator.validate_label_type(label_type)
+            if label_type == choices.CustomAxisLabelsChoices.NUMBERS and label_range.get("increment_letter"):
+                validator.validate_increment_letter_for_numbers(label_range.get("increment_letter"))
+            if label_type in [choices.CustomAxisLabelsChoices.HEX, choices.CustomAxisLabelsChoices.BINARY]:
+                validator.validate_numeric_range(start, end, current_range=label_range)
+            else:
+                validator.validate_custom_range(start, end, label_type, current_range=label_range)
+            validator.validate_increment_letter(label_range, label_type)
+
+        # Then validate that ranges don't overlap
+        validator.validate_multiple_ranges(custom_ranges)
+
+        return custom_ranges
+
+    def clean_x_custom_ranges(self):
+        """Validate the X axis custom ranges."""
+        return self._validate_custom_ranges("x_custom_ranges")
+
+    def clean_y_custom_ranges(self):
+        """Validate the Y axis custom ranges."""
+        return self._validate_custom_ranges("y_custom_ranges")
 
 
 class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pylint: disable=too-many-ancestors
@@ -184,8 +363,53 @@ class FloorPlanTileForm(NautobotModelForm):
         fields = "__all__"
         exclude = ["allocation_type", "on_group_tile"]  # pylint: disable=modelform-uses-exclude
 
+    def _convert_label_to_position(self, value, axis, fp_obj):
+        """Wrapper for the LabelToPositionConverter."""
+        try:
+            converter = LabelToPositionConverter(value, axis, fp_obj)
+            absolute_position, _ = converter.convert()
+            return absolute_position, None  # Return None for the error when successful
+        except ValueError as e:
+            return None, forms.ValidationError(str(e))
+
+    def _clean_custom_origin(self, field_name, axis):
+        """Clean method for custom label origins."""
+        fp_obj = self.fields["floor_plan"].queryset.get(id=self.data.get("floor_plan"))
+        value = self.cleaned_data.get(field_name)
+
+        try:
+            position, error = self._convert_label_to_position(value, axis, fp_obj)
+            if error:
+                raise error
+
+            # Validate against floor plan size
+            max_size = fp_obj.x_size if axis == "X" else fp_obj.y_size
+            if position > max_size:
+                raise forms.ValidationError(
+                    f"Position {value} (absolute: {position}) exceeds floor plan {axis} size of {max_size}"
+                )
+
+            return position
+
+        except ValueError as e:
+            raise forms.ValidationError(f"Invalid {axis}-axis value: {str(e)}")
+
+    def clean_x_origin(self):
+        """Clean method for x_origin field."""
+        fp_obj = self.fields["floor_plan"].queryset.get(id=self.data.get("floor_plan"))
+        if fp_obj.custom_labels.filter(axis="X").exists():
+            return self._clean_custom_origin("x_origin", "X")
+        return self._clean_origin("x_origin", "X")
+
+    def clean_y_origin(self):
+        """Clean method for y_origin field."""
+        fp_obj = self.fields["floor_plan"].queryset.get(id=self.data.get("floor_plan"))
+        if fp_obj.custom_labels.filter(axis="Y").exists():
+            return self._clean_custom_origin("y_origin", "Y")
+        return self._clean_origin("y_origin", "Y")
+
     def __init__(self, *args, **kwargs):
-        """Overwrite the constructor to define grid numbering style."""
+        """Initialize the form and handle custom label conversions."""
         super().__init__(*args, **kwargs)
         self.x_letters = False
         self.y_letters = False
@@ -195,26 +419,33 @@ class FloorPlanTileForm(NautobotModelForm):
             self.x_letters = fp_obj.x_axis_labels == choices.AxisLabelsChoices.LETTERS
             self.y_letters = fp_obj.y_axis_labels == choices.AxisLabelsChoices.LETTERS
 
-        if self.instance.x_origin or self.instance.y_origin:
-            self.initial["x_origin"] = utils.axis_init_label_conversion(
-                fp_obj.x_origin_seed,
-                utils.grid_number_to_letter(self.instance.x_origin) if self.x_letters else self.initial.get("x_origin"),
-                fp_obj.x_axis_step,
-                self.x_letters,
-            )
-            self.initial["y_origin"] = utils.axis_init_label_conversion(
-                fp_obj.y_origin_seed,
-                utils.grid_number_to_letter(self.instance.y_origin) if self.y_letters else self.initial.get("y_origin"),
-                fp_obj.y_axis_step,
-                self.y_letters,
-            )
-        elif self.initial.get("x_origin") and self.initial.get("y_origin"):
-            self.initial["x_origin"] = utils.axis_init_label_conversion(
-                fp_obj.x_origin_seed, self.initial.get("x_origin"), fp_obj.x_axis_step, self.x_letters
-            )
-            self.initial["y_origin"] = utils.axis_init_label_conversion(
-                fp_obj.y_origin_seed, self.initial.get("y_origin"), fp_obj.y_axis_step, self.y_letters
-            )
+            if self.instance.x_origin or self.instance.y_origin:
+                if fp_obj.custom_labels.filter(axis="X").exists():
+                    converter = PositionToLabelConverter(self.instance.x_origin, "X", fp_obj)
+                    if label := converter.convert():
+                        self.initial["x_origin"] = label
+                else:
+                    self.initial["x_origin"] = utils.axis_init_label_conversion(
+                        fp_obj.x_origin_seed,
+                        utils.grid_number_to_letter(self.instance.x_origin)
+                        if self.x_letters
+                        else self.initial.get("x_origin"),
+                        fp_obj.x_axis_step,
+                        self.x_letters,
+                    )
+                if fp_obj.custom_labels.filter(axis="Y").exists():
+                    converter = PositionToLabelConverter(self.instance.y_origin, "Y", fp_obj)
+                    if label := converter.convert():
+                        self.initial["y_origin"] = label
+                else:
+                    self.initial["y_origin"] = utils.axis_init_label_conversion(
+                        fp_obj.y_origin_seed,
+                        utils.grid_number_to_letter(self.instance.y_origin)
+                        if self.y_letters
+                        else self.initial.get("y_origin"),
+                        fp_obj.y_axis_step,
+                        self.y_letters,
+                    )
 
     def letter_validator(self, field, value, axis):
         """Validate that origin uses combination of letters."""
@@ -257,11 +488,3 @@ class FloorPlanTileForm(NautobotModelForm):
         # Convert and return the label position using the specified conversion function
         cleaned_value = utils.axis_clean_label_conversion(origin_seed, value, step, use_letters)
         return int(cleaned_value) if not using_letters else cleaned_value
-
-    def clean_x_origin(self):
-        """Validate input and convert x_origin to an integer."""
-        return self._clean_origin("x_origin", "X")
-
-    def clean_y_origin(self):
-        """Validate input and convert y_origin to an integer."""
-        return self._clean_origin("y_origin", "Y")

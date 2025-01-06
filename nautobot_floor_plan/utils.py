@@ -25,6 +25,34 @@ def grid_letter_to_number(letter):
     return number
 
 
+def extract_prefix_and_letter(label):
+    """Helper function to split a label into prefix and letter parts."""
+    prefix = ""
+    letters = label
+
+    for i, char in enumerate(label):
+        if char.isalpha():
+            prefix = label[:i]
+            letters = label[i:]
+            break
+
+    return prefix, letters
+
+
+def extract_prefix_and_number(label):
+    """Helper function to split a label into prefix and number parts."""
+    prefix = ""
+    numbers = label
+
+    for i, char in enumerate(label):
+        if char.isdigit():
+            prefix = label[:i]
+            numbers = label[i:]
+            break
+
+    return prefix, numbers
+
+
 def axis_init_label_conversion(axis_origin, axis_location, step, is_letters):
     """Returns the correct label position, converting to letters if `letters` is True."""
     if is_letters:
@@ -45,8 +73,18 @@ def axis_init_label_conversion(axis_origin, axis_location, step, is_letters):
     return converted_location
 
 
-def axis_clean_label_conversion(axis_origin, axis_label, step, is_letters):
+def axis_clean_label_conversion(axis_origin, axis_label, step, is_letters, custom_ranges=None):
     """Returns the correct database label position."""
+    # First check if we have custom ranges that apply
+    if custom_ranges:
+        for custom_range in custom_ranges:
+            start = custom_range["start"]
+            end = custom_range["end"]
+            # If our label falls within this custom range, use it
+            if start <= axis_label <= end:
+                return axis_label  # Return the original label as-is
+
+    # If no custom range applies, use the default conversion logic
     total_cells = 18278
     # Convert letters to numbers if needed
     if is_letters:
@@ -73,6 +111,16 @@ def axis_clean_label_conversion(axis_origin, axis_label, step, is_letters):
         elif original_location > total_cells:
             original_location -= total_cells
     return str(original_location)
+
+
+def calculate_letter_range_size(custom_range, converter):
+    """Calculate the range size for letter-based labels."""
+    start_value = converter.to_numeric(custom_range.start_label)
+    end_value = converter.to_numeric(custom_range.end_label)
+    return abs(end_value - start_value) + 1
+
+
+# Depreciate in version 2.6 and remove in 2.7
 
 
 def validate_not_zero(value):
