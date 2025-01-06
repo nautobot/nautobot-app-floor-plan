@@ -418,6 +418,9 @@ class FloorPlanTileForm(NautobotModelForm):
             fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
             self.x_letters = fp_obj.x_axis_labels == choices.AxisLabelsChoices.LETTERS
             self.y_letters = fp_obj.y_axis_labels == choices.AxisLabelsChoices.LETTERS
+            if not fp_obj.is_tile_movable:
+                self.fields["x_origin"].disabled = True
+                self.fields["y_origin"].disabled = True
 
             if self.instance.x_origin or self.instance.y_origin:
                 if fp_obj.custom_labels.filter(axis="X").exists():
