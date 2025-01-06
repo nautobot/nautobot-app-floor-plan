@@ -2,7 +2,6 @@
 
 import logging
 import re
-from typing import Dict, Tuple, Type
 
 from nautobot_floor_plan.choices import CustomAxisLabelsChoices
 from nautobot_floor_plan.utils import (
@@ -310,15 +309,15 @@ class LabelConverter:
         self._increment_prefix = False
         self.current_label = None
 
-    def to_numeric(self, label: str) -> int:
+    def to_numeric(self, label):
         """Convert label to numeric value."""
         raise NotImplementedError
 
-    def from_numeric(self, number: int) -> str:
+    def from_numeric(self, number):
         """Convert numeric value to label."""
         raise NotImplementedError
 
-    def set_increment_prefix(self, increment_prefix: bool) -> None:
+    def set_increment_prefix(self, increment_prefix):
         """Set whether to increment the prefix instead of the number."""
         raise NotImplementedError
 
@@ -346,7 +345,7 @@ class NumalphaConverter(LabelConverter):
             return grid_letter_to_number(letters)
         return ord(letters[0]) - ord("A") + 1
 
-    def to_numeric(self, label: str) -> int:
+    def to_numeric(self, label):
         """Convert alphanumeric label to numeric value."""
         self._current_label = label
         if not self._start_label:
@@ -369,7 +368,7 @@ class NumalphaConverter(LabelConverter):
 
         return numeric_value
 
-    def _generate_letter_pattern(self, number: int, pattern_letters: str) -> str:
+    def _generate_letter_pattern(self, number, pattern_letters):
         """Generate the letter pattern based on the numeric value."""
         if not self._increment_prefix:
             # Use the pattern from start label
@@ -379,7 +378,7 @@ class NumalphaConverter(LabelConverter):
                 return letter * letter_length
         return grid_number_to_letter(number)
 
-    def from_numeric(self, number: int, prefix: str = "") -> str:
+    def from_numeric(self, number, prefix=""):
         """Convert numeric value to Numalpha label."""
         if number < 1:
             raise ValueError("Number must be positive")
@@ -394,7 +393,7 @@ class NumalphaConverter(LabelConverter):
         result = f"{use_prefix}{result_letters}"
         return result
 
-    def set_increment_prefix(self, increment_prefix: bool) -> None:
+    def set_increment_prefix(self, increment_prefix):
         """Set whether to increment the prefix instead of the number."""
         self._increment_prefix = increment_prefix
 
@@ -424,7 +423,7 @@ class RomanConverter(LabelConverter):
         self._current_value = None
 
     # TODO Change type hint to tuple when python 3.8 support is dropped.
-    def _convert_next_numeral(self, label: str, index: int) -> Tuple[int, int]:
+    def _convert_next_numeral(self, label, index):
         """Convert next Roman numeral and return its value and new index."""
         # Try two character combinations first
         if index + 1 < len(label):
@@ -441,7 +440,7 @@ class RomanConverter(LabelConverter):
 
         raise ValueError(f"Invalid Roman numeral character at position {index} in: {label}")
 
-    def to_numeric(self, label: str) -> int:
+    def to_numeric(self, label):
         """Convert Roman numeral to integer."""
         if not label:
             raise ValueError("Roman numeral cannot be empty")
@@ -457,7 +456,7 @@ class RomanConverter(LabelConverter):
         self._current_value = result
         return result
 
-    def from_numeric(self, number: int, prefix: str = "") -> str:
+    def from_numeric(self, number, prefix=""):
         """Convert integer to Roman numeral."""
         if not 0 < number < 4000:
             raise ValueError("Number must be between 1 and 3999")
@@ -493,7 +492,7 @@ class GreekConverter(LabelConverter):
         self._current_value = None
         self._prefix = ""
 
-    def to_numeric(self, label: str) -> int:
+    def to_numeric(self, label) -> int:
         """Convert Greek letter to numeric value."""
         if not label:
             raise ValueError("Greek letter cannot be empty")
@@ -523,7 +522,7 @@ class GreekConverter(LabelConverter):
         except ValueError as e:
             raise ValueError(f"Invalid Greek letter: {label}") from e
 
-    def from_numeric(self, number: int, prefix: str = "") -> str:
+    def from_numeric(self, number, prefix=""):
         """Convert numeric value to Greek letter."""
         if number < 1 or number > len(self.GREEK_LETTERS):
             raise ValueError(f"Number must be between 1 and {len(self.GREEK_LETTERS)}")
@@ -546,12 +545,12 @@ class GreekConverter(LabelConverter):
 class BinaryConverter(LabelConverter):
     """Binary number conversion."""
 
-    def __init__(self, min_digits: int = 4):
+    def __init__(self, min_digits=4):
         """Initialize the converter with a minimum digit width."""
         super().__init__()
         self.min_digits = min_digits
 
-    def to_numeric(self, label: str) -> int:
+    def to_numeric(self, label) -> int:
         """Convert a label to a numeric value."""
         try:
             # If the label starts with '0b', interpret as binary
@@ -562,7 +561,7 @@ class BinaryConverter(LabelConverter):
         except ValueError as e:
             raise ValueError(f"Label must be an integer or binary value, received: {label}") from e
 
-    def from_numeric(self, number: int, prefix: str = "") -> str:
+    def from_numeric(self, number, prefix=""):
         """Convert a numeric value to a binary string with a '0b' prefix."""
         if number < 0:
             raise ValueError("Binary conversion requires positive numbers")
@@ -581,12 +580,12 @@ class BinaryConverter(LabelConverter):
 class HexConverter(LabelConverter):
     """Hexadecimal number conversion."""
 
-    def __init__(self, min_digits: int = 4):
+    def __init__(self, min_digits=4):
         """Initialize the converter with a minimum digit width."""
         super().__init__()
         self.min_digits = min_digits
 
-    def to_numeric(self, label: str) -> int:
+    def to_numeric(self, label) -> int:
         """Convert a label to a numeric value."""
         try:
             # If the label starts with '0x', interpret as hex
@@ -597,7 +596,7 @@ class HexConverter(LabelConverter):
         except ValueError as e:
             raise ValueError(f"Label must be an integer or hex value, received: {label}") from e
 
-    def from_numeric(self, number: int, prefix: str = "") -> str:
+    def from_numeric(self, number, prefix=""):
         """Convert numeric value to hex string."""
         if number < 0:
             raise ValueError("Hex conversion requires positive numbers")
@@ -625,7 +624,7 @@ class AlphanumericConverter(LabelConverter):
         self._is_number_only = False
         self._increment_prefix = False
 
-    def to_numeric(self, label: str) -> int:
+    def to_numeric(self, label) -> int:
         """Convert alphanumeric or numeric label to numeric value."""
         if self._is_number_only:
             if not label.isdigit():
@@ -646,7 +645,7 @@ class AlphanumericConverter(LabelConverter):
             return sum((ord(c) - ord("A") + 1) * (26**i) for i, c in enumerate(reversed(prefix)))
         return int(number)
 
-    def from_numeric(self, number: int, prefix: str = "") -> str:
+    def from_numeric(self, number, prefix=""):
         """Convert numeric value to alphanumeric or numeric label."""
         if number < 1:
             raise ValueError("Number must be positive")
@@ -660,21 +659,21 @@ class AlphanumericConverter(LabelConverter):
 
         return f"{self._prefix}{number:02d}" if self._use_leading_zeros else f"{self._prefix}{number}"
 
-    def _generate_prefix(self, number: int) -> str:
+    def _generate_prefix(self, number):
         """Generate alphabetic prefix for a given numeric value."""
         if number < 1:
             raise ValueError("Number must be positive")
         return grid_number_to_letter(number)
 
-    def set_increment_prefix(self, increment_prefix: bool) -> None:
+    def set_increment_prefix(self, increment_prefix):
         """Set whether to increment the prefix instead of the number."""
         self._increment_prefix = increment_prefix
 
-    def set_number_only_mode(self, is_number_only: bool) -> None:
+    def set_number_only_mode(self, is_number_only):
         """Set whether the converter should handle pure numbers."""
         self._is_number_only = is_number_only
 
-    def set_prefix(self, prefix: str) -> None:
+    def set_prefix(self, prefix):
         """Set the prefix for the label converter."""
         if not re.match(r"^[A-Z]+$", prefix):
             raise ValueError("Prefix must be a non-empty string of uppercase letters")
@@ -684,7 +683,7 @@ class AlphanumericConverter(LabelConverter):
 class LabelConverterFactory:
     """Factory for creating label converters."""
 
-    _converters: Dict[str, Type[LabelConverter]] = {
+    _converters = {
         CustomAxisLabelsChoices.ROMAN: RomanConverter,
         CustomAxisLabelsChoices.GREEK: GreekConverter,
         CustomAxisLabelsChoices.BINARY: BinaryConverter,
@@ -696,7 +695,7 @@ class LabelConverterFactory:
     }
 
     @classmethod
-    def get_converter(cls, label_type: str) -> LabelConverter:
+    def get_converter(cls, label_type):
         """Get the appropriate converter for the label type."""
         converter_class = cls._converters.get(label_type)
         if not converter_class:
