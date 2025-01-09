@@ -2,7 +2,8 @@
 
 from django import template
 
-from nautobot_floor_plan import choices, label_converters, utils
+from nautobot_floor_plan import choices
+from nautobot_floor_plan.utils import label_converters, utils
 
 register = template.Library()
 

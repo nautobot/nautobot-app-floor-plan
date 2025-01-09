@@ -13,9 +13,9 @@ from nautobot_floor_plan.choices import (
     CustomAxisLabelsChoices,
     RackOrientationChoices,
 )
-from nautobot_floor_plan.custom_validators import ValidateNotZero
-from nautobot_floor_plan.label_generator import FloorPlanLabelGenerator
 from nautobot_floor_plan.svg import FloorPlanSVG
+from nautobot_floor_plan.utils.custom_validators import ValidateNotZero
+from nautobot_floor_plan.utils.label_generator import FloorPlanLabelGenerator
 
 logger = logging.getLogger(__name__)
 

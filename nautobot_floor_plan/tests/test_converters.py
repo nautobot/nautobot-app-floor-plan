@@ -2,8 +2,9 @@
 
 from nautobot.core.testing import TestCase
 
-from nautobot_floor_plan import choices, forms, label_converters, utils
+from nautobot_floor_plan import choices, forms
 from nautobot_floor_plan.tests import fixtures
+from nautobot_floor_plan.utils import label_converters, utils
 
 
 class TestLabelConverters(TestCase):

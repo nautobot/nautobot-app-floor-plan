@@ -3,7 +3,7 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
-import nautobot_floor_plan.custom_validators
+import nautobot_floor_plan.utils.custom_validators
 
 
 class Migration(migrations.Migration):
@@ -20,7 +20,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="floorplan",
             name="x_axis_step",
-            field=models.IntegerField(default=1, validators=[nautobot_floor_plan.custom_validators.ValidateNotZero(0)]),
+            field=models.IntegerField(
+                default=1, validators=[nautobot_floor_plan.utils.custom_validators.ValidateNotZero(0)]
+            ),
         ),
         migrations.AlterField(
             model_name="floorplan",
@@ -30,7 +32,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="floorplan",
             name="y_axis_step",
-            field=models.IntegerField(default=1, validators=[nautobot_floor_plan.custom_validators.ValidateNotZero(0)]),
+            field=models.IntegerField(
+                default=1, validators=[nautobot_floor_plan.utils.custom_validators.ValidateNotZero(0)]
+            ),
         ),
         migrations.AddField(
             model_name="floorplan",
@@ -48,7 +52,7 @@ class Migration(migrations.Migration):
                 (
                     "step",
                     models.IntegerField(
-                        default=1, validators=[nautobot_floor_plan.custom_validators.ValidateNotZero(0)]
+                        default=1, validators=[nautobot_floor_plan.utils.custom_validators.ValidateNotZero(0)]
                     ),
                 ),
                 ("increment_letter", models.BooleanField(default=True)),

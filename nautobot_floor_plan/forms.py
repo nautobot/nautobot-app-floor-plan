@@ -18,13 +18,20 @@ from nautobot.apps.forms import (
 )
 from nautobot.dcim.models import Location, Rack, RackGroup
 
-from nautobot_floor_plan import choices, models, utils
-from nautobot_floor_plan.custom_validators import RangeValidator
-from nautobot_floor_plan.label_converters import LabelToPositionConverter, PositionToLabelConverter
+from nautobot_floor_plan import choices, models
+from nautobot_floor_plan.utils import utils
+from nautobot_floor_plan.utils.custom_validators import RangeValidator
+from nautobot_floor_plan.utils.label_converters import LabelToPositionConverter, PositionToLabelConverter
 
 
 class FloorPlanForm(NautobotModelForm):
     """FloorPlan creation/edit form with support for custom axis label ranges."""
+
+    CUSTOM_RANGES_HELP_TEXT = (
+        "Enter custom label ranges in JSON format. <br>"
+        "Distance between start and end cannot exceed the size of the floor plan. <br>"
+        "Examples: <a href='#' data-toggle='modal' data-target='#exampleModal'>Click here for examples</a>."
+    )
 
     location = DynamicModelChoiceField(queryset=Location.objects.all())
 
@@ -42,19 +49,7 @@ class FloorPlanForm(NautobotModelForm):
     x_custom_ranges = forms.JSONField(
         label="Custom Ranges for X Axis",
         required=False,
-        help_text=(
-            "Enter custom label ranges in JSON format. <br>"
-            "Distance between start and end cannot exceed the size of the floor plan. <br>"
-            "Examples:<br>"
-            '[{"start": "02A", "end": "02Z", "step": 1, "increment_letter": true, "label_type": "numalpha"}, <br>'
-            '[{"start": "A", "end": "Z", "step": 1, "increment_letter": true, "label_type": "letters"}, <br>'
-            '{"start": "A01", "end": "A15", "step": 1, "label_type": "alphanumeric"}, <br>'
-            '{"start": "01", "end": "15", "step": 1, "label_type": "numbers"}, <br>'
-            '{"start": "I", "end": "X", "step": 1, "label_type": "roman"}, <br>'
-            '{"start": "α", "end": "ω", "step": 1, "label_type": "greek"},<br>'
-            '{"start": "1", "end": "15", "step": 1, "label_type": "hex"}, <br>'
-            '{"start": "1", "end": "15", "step": 1, "label_type": "binary"}]'
-        ),
+        help_text=CUSTOM_RANGES_HELP_TEXT,
     )
 
     # Y Axis Fields
@@ -71,19 +66,7 @@ class FloorPlanForm(NautobotModelForm):
     y_custom_ranges = forms.JSONField(
         label="Custom Ranges for Y Axis",
         required=False,
-        help_text=(
-            "Enter custom label ranges in JSON format. <br>"
-            "Distance between start and end cannot exceed the size of the floor plan. <br>"
-            "Examples:<br>"
-            '[{"start": "02A", "end": "02Z", "step": 1, "increment_letter": true, "label_type": "numalpha"}, <br>'
-            '[{"start": "A", "end": "Z", "step": 1, "increment_letter": true, "label_type": "letters"}, <br>'
-            '{"start": "A01", "end": "A15", "step": 1, "label_type": "alphanumeric"}, <br>'
-            '{"start": "01", "end": "15", "step": 1, "label_type": "numbers"}, <br>'
-            '{"start": "I", "end": "X", "step": 1, "label_type": "roman"}, <br>'
-            '{"start": "α", "end": "ω", "step": 1, "label_type": "greek"},<br>'
-            '{"start": "1", "end": "15", "step": 1, "label_type": "hex"}, <br>'
-            '{"start": "1", "end": "15", "step": 1, "label_type": "binary"}]'
-        ),
+        help_text=CUSTOM_RANGES_HELP_TEXT,
     )
     is_tile_movable = forms.BooleanField(
         required=False,

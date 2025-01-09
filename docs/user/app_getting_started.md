@@ -67,6 +67,7 @@ Default settings allow you to configure labels, seeds, and steps for each axis o
 
 The **Custom Labels** tab provides options to configure a custom label range using the following parameters: `start`, `end`, `step`, `increment_letter`, and `label_type`.
 
+![Custom Label Examples](../images/custom-label-examples.png)
 ![Add Floor Plan form part 3](../images/add-tile-axis-numalpha.png)
 ![Add Floor Plan form part 4](../images/add-tile-axis-roman.png)
 

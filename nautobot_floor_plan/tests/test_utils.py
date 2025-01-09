@@ -2,7 +2,7 @@
 
 import unittest
 
-from nautobot_floor_plan import utils
+from nautobot_floor_plan.utils import utils
 
 
 class TestUtils(unittest.TestCase):

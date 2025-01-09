@@ -3,8 +3,8 @@
 from nautobot.core.testing import TestCase
 
 from nautobot_floor_plan import models
-from nautobot_floor_plan.custom_validators import RangeValidator
 from nautobot_floor_plan.tests import fixtures
+from nautobot_floor_plan.utils.custom_validators import RangeValidator
 
 
 class TestNumericLabelGenerator(TestCase):

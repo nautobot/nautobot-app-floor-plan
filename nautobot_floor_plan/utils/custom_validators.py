@@ -6,8 +6,9 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 
-from nautobot_floor_plan import choices, utils
-from nautobot_floor_plan.label_converters import LabelConverterFactory
+from nautobot_floor_plan import choices
+from nautobot_floor_plan.utils import utils
+from nautobot_floor_plan.utils.label_converters import LabelConverterFactory
 
 
 class RangeValidator:

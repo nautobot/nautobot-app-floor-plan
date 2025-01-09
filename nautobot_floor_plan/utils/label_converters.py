@@ -4,7 +4,7 @@ import logging
 import re
 
 from nautobot_floor_plan.choices import CustomAxisLabelsChoices
-from nautobot_floor_plan.utils import (
+from nautobot_floor_plan.utils.utils import (
     extract_prefix_and_letter,
     extract_prefix_and_number,
     grid_letter_to_number,
