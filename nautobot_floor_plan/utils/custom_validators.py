@@ -30,7 +30,7 @@ class RangeValidator:
         if label_type not in dict(choices.CustomAxisLabelsChoices.CHOICES):
             raise forms.ValidationError(
                 f"Invalid label type '{label_type}' ."
-                f"Valid types are: {', '.join(dict(choices.CustomAxisLabelsChoices.CHOICES).keys())}"
+                f"Valid types are: {', '.join(choices.CustomAxisLabelsChoices.values())}"
             )
 
     @dataclass
