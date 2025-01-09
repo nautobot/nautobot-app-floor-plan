@@ -5,14 +5,12 @@ from django.urls import path
 from django.views.generic import RedirectView
 from nautobot.apps.urls import NautobotUIViewSetRouter
 
-
 from nautobot_floor_plan import views
-
 
 router = NautobotUIViewSetRouter()
 
-router.register("floorplan", views.FloorPlanUIViewSet)
-
+router.register("floor-plans", views.FloorPlanUIViewSet)
+router.register("floor-plan-tiles", views.FloorPlanTileUIViewSet)
 
 urlpatterns = [
     path("locations/<uuid:pk>/floor_plan/", views.LocationFloorPlanTab.as_view(), name="location_floor_plan_tab"),
