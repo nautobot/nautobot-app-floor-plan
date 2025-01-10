@@ -129,6 +129,62 @@ class TestFloorPlanForm(TestCase):
         self.assertIn("tabs", y_axis_settings)
         self.assertEqual(len(y_axis_settings["tabs"]), 2)
 
+    def test_seed_step_reset_with_custom_labels(self):
+        """Test resetting of seed and step when custom labels are configured."""
+
+        initial_form = forms.FloorPlanForm(
+            data={
+                "location": self.floors[0].pk,
+                "x_size": 10,
+                "y_size": 10,
+                "tile_depth": 100,
+                "tile_width": 200,
+                "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+                "x_origin_seed": 4,
+                "x_axis_step": 2,
+                "x_custom_ranges": {},
+                "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+                "y_origin_seed": 3,
+                "y_axis_step": -1,
+                "y_custom_ranges": {},
+            }
+        )
+
+        self.assertTrue(initial_form.is_valid())
+        initial_form.save()
+
+        floor_plan = models.FloorPlan.objects.get(location=self.floors[0])
+
+        models.FloorPlanCustomAxisLabel.objects.create(
+            floor_plan=floor_plan,
+            axis="X",
+            label_type=choices.CustomAxisLabelsChoices.BINARY,
+            start_label="1",
+            end_label="10",
+            step=1,
+            increment_letter=True,
+            order=1,
+        )
+
+        self.assertEqual(floor_plan.y_origin_seed, 3)
+        self.assertEqual(floor_plan.y_axis_step, -1)
+
+        models.FloorPlanCustomAxisLabel.objects.create(
+            floor_plan=floor_plan,
+            axis="Y",
+            label_type=choices.CustomAxisLabelsChoices.HEX,
+            start_label="3",
+            end_label="12",
+            step=1,
+            increment_letter=True,
+            order=1,
+        )
+
+        self.assertEqual(floor_plan.x_origin_seed, 1)
+        self.assertEqual(floor_plan.y_origin_seed, 1)
+        self.assertEqual(floor_plan.x_axis_step, 1)
+        self.assertEqual(floor_plan.y_axis_step, 1)
+
     def test_custom_ranges_validation(self):
         """Test validation of custom range inputs."""
         test_cases = [
