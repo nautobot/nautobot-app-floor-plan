@@ -43,6 +43,9 @@ PLUGINS_CONFIG = {
             "FloorPlanTile": [
                 {"name": "Active", "color": "4caf50"},
             ],
+        },
+        "x_size_limit": 100,
+        "y_size_limit": 100,
     }
 }
 ```
@@ -74,6 +77,8 @@ The app behavior can be controlled with the following list of settings:
 | default_x_axis_labels | "letters" | "numbers" | Label style for the floor plan grid. Can use `numbers` or `letters` in order. This setting will set the default selected value in the create form. |
 | default_y_axis_labels | "numbers" | "numbers" | Label style for the floor plan grid. Can use `numbers` or `letters` in order. This setting will set the default selected value in the create form. |
 | default_statuses| "name": "Active", "color": "4caf50"| See Note Below | A list of name and color key value pairs for the FloorPlanTile model|
+| x_size_limit | 100 | None | An integer that sets the maximum allowable "x_size" for a Floor Plan. If set to None, there is no limit.|
+| y_size_limit | 100 | None | An integer that sets the maximum allowable "y_size" for a Floor Plan. If set to None, there is no limit.|
 
 !!! note
     Defaults for statuses are as follows:

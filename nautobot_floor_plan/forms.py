@@ -115,6 +115,26 @@ class FloorPlanForm(NautobotModelForm):
         """Validate input and convert y_origin to an integer."""
         return self._clean_origin_seed("y_origin_seed", "Y")
 
+    def clean(self):
+        """Custom clean method to validate floor plan dimensions."""
+        cleaned_data = super().clean()
+        x_size = self.cleaned_data.get("x_size")
+        y_size = self.cleaned_data.get("y_size")
+
+        # Get the configured limits
+        x_size_limit = get_app_settings_or_config("nautobot_floor_plan", "x_size_limit")
+        y_size_limit = get_app_settings_or_config("nautobot_floor_plan", "y_size_limit")
+
+        # Validate X size only if a limit is set
+        if x_size_limit is not None and x_size is not None and x_size > x_size_limit:
+            self.add_error("x_size", f"X size cannot exceed {x_size_limit}.")
+
+        # Validate Y size only if a limit is set
+        if y_size_limit is not None and y_size is not None and y_size > y_size_limit:
+            self.add_error("y_size", f"Y size cannot exceed {y_size_limit}.")
+
+        return cleaned_data
+
 
 class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pylint: disable=too-many-ancestors
     """FloorPlan bulk edit form."""
