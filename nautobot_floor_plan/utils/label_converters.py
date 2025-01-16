@@ -647,7 +647,7 @@ class AlphanumericConverter(LabelConverter):
 
     def from_numeric(self, number, prefix=""):
         """Convert numeric value to alphanumeric or numeric label."""
-        if number < 1:
+        if number < 0:
             raise ValueError("Number must be positive")
 
         if self._is_number_only:
