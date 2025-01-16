@@ -3,7 +3,7 @@
 from django import template
 
 from nautobot_floor_plan import choices
-from nautobot_floor_plan.utils import label_converters, utils
+from nautobot_floor_plan.utils import general, label_converters
 
 register = template.Library()
 
@@ -15,7 +15,7 @@ def seed_conversion(floor_plan, axis):
     seed = getattr(floor_plan, f"{axis}_origin_seed")
 
     if letters == choices.AxisLabelsChoices.LETTERS:
-        seed = utils.grid_number_to_letter(seed)
+        seed = general.grid_number_to_letter(seed)
 
     return f"{seed}"
 
@@ -27,7 +27,7 @@ def grid_location_conversion(floor_plan_tile, axis):
     grid = getattr(floor_plan_tile, f"{axis}_origin")
 
     if letters == choices.AxisLabelsChoices.LETTERS:
-        grid = utils.grid_number_to_letter(grid)
+        grid = general.grid_number_to_letter(grid)
 
     return f"{grid}"
 
@@ -56,13 +56,12 @@ def render_origin_seed(obj, axis):
         try:
             converter = label_converters.LabelConverterFactory.get_converter(custom_label.label_type)
             # Convert and display the custom label start
-            numeric_value = converter.to_numeric(custom_label.start_label)
-            display_label = converter.from_numeric(numeric_value)
+            display_label = converter.from_numeric(int(custom_label.start_label))
 
             # Preserve prefix for numalpha labels
             if custom_label.label_type == choices.CustomAxisLabelsChoices.NUMALPHA:
-                prefix, _ = utils.extract_prefix_and_letter(custom_label.start_label)
-                _, letters = utils.extract_prefix_and_letter(display_label)
+                prefix, _ = general.extract_prefix_and_letter(custom_label.start_label)
+                _, letters = general.extract_prefix_and_letter(display_label)
                 return f"{prefix}{letters}"
             return display_label
         except ValueError:

@@ -4,7 +4,7 @@ import logging
 import re
 
 from nautobot_floor_plan.choices import CustomAxisLabelsChoices
-from nautobot_floor_plan.utils.utils import (
+from nautobot_floor_plan.utils.general import (
     extract_prefix_and_letter,
     extract_prefix_and_number,
     grid_letter_to_number,
@@ -422,7 +422,6 @@ class RomanConverter(LabelConverter):
         super().__init__()
         self._current_value = None
 
-    # TODO Change type hint to tuple when python 3.8 support is dropped.
     def _convert_next_numeral(self, label, index):
         """Convert next Roman numeral and return its value and new index."""
         # Try two character combinations first

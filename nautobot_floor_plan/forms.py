@@ -19,7 +19,7 @@ from nautobot.apps.forms import (
 from nautobot.dcim.models import Location, Rack, RackGroup
 
 from nautobot_floor_plan import choices, models
-from nautobot_floor_plan.utils import utils
+from nautobot_floor_plan.utils import general
 from nautobot_floor_plan.utils.custom_validators import RangeValidator
 from nautobot_floor_plan.utils.label_converters import LabelToPositionConverter, PositionToLabelConverter
 
@@ -119,9 +119,9 @@ class FloorPlanForm(NautobotModelForm):
             self.y_letters = self.instance.y_axis_labels == choices.AxisLabelsChoices.LETTERS
 
         if self.x_letters and str(self.initial["y_origin_seed"]).isdigit():
-            self.initial["x_origin_seed"] = utils.grid_number_to_letter(self.instance.x_origin_seed)
+            self.initial["x_origin_seed"] = general.grid_number_to_letter(self.instance.x_origin_seed)
         if self.y_letters and str(self.initial["y_origin_seed"]).isdigit():
-            self.initial["y_origin_seed"] = utils.grid_number_to_letter(self.instance.y_origin_seed)
+            self.initial["y_origin_seed"] = general.grid_number_to_letter(self.instance.y_origin_seed)
 
         # Load existing custom ranges
         if self.instance.pk:
@@ -183,7 +183,7 @@ class FloorPlanForm(NautobotModelForm):
             if not value.isupper():
                 raise forms.ValidationError(f"{axis} origin seed should be uppercase letters.")
             # Convert letter to corresponding number
-            return utils.grid_letter_to_number(value)
+            return general.grid_letter_to_number(value)
         try:
             return int(value)
         except ValueError as e:
@@ -202,6 +202,15 @@ class FloorPlanForm(NautobotModelForm):
         instance = super().save(commit=False)
         x_ranges = self.cleaned_data.get("x_custom_ranges", [])
         y_ranges = self.cleaned_data.get("y_custom_ranges", [])
+
+        # Set increment_letter defaults
+        for label_range in x_ranges:
+            if label_range.get("increment_letter", True) and label_range["label_type"] == "numbers":
+                label_range["increment_letter"] = False
+
+        for label_range in y_ranges:
+            if label_range.get("increment_letter", True) and label_range["label_type"] == "numbers":
+                label_range["increment_letter"] = False
 
         if commit:
             instance.save()
@@ -357,7 +366,7 @@ class FloorPlanTileForm(NautobotModelForm):
 
     def _clean_custom_origin(self, field_name, axis):
         """Clean method for custom label origins."""
-        fp_obj = self.fields["floor_plan"].queryset.get(id=self.data.get("floor_plan"))
+        fp_obj = self.cleaned_data.get("floor_plan")
         value = self.cleaned_data.get(field_name)
 
         try:
@@ -379,14 +388,14 @@ class FloorPlanTileForm(NautobotModelForm):
 
     def clean_x_origin(self):
         """Clean method for x_origin field."""
-        fp_obj = self.fields["floor_plan"].queryset.get(id=self.data.get("floor_plan"))
+        fp_obj = self.cleaned_data.get("floor_plan")
         if fp_obj.custom_labels.filter(axis="X").exists():
             return self._clean_custom_origin("x_origin", "X")
         return self._clean_origin("x_origin", "X")
 
     def clean_y_origin(self):
         """Clean method for y_origin field."""
-        fp_obj = self.fields["floor_plan"].queryset.get(id=self.data.get("floor_plan"))
+        fp_obj = self.cleaned_data.get("floor_plan")
         if fp_obj.custom_labels.filter(axis="Y").exists():
             return self._clean_custom_origin("y_origin", "Y")
         return self._clean_origin("y_origin", "Y")
@@ -411,9 +420,9 @@ class FloorPlanTileForm(NautobotModelForm):
                     if label := converter.convert():
                         self.initial["x_origin"] = label
                 else:
-                    self.initial["x_origin"] = utils.axis_init_label_conversion(
+                    self.initial["x_origin"] = general.axis_init_label_conversion(
                         fp_obj.x_origin_seed,
-                        utils.grid_number_to_letter(self.instance.x_origin)
+                        general.grid_number_to_letter(self.instance.x_origin)
                         if self.x_letters
                         else self.initial.get("x_origin"),
                         fp_obj.x_axis_step,
@@ -424,9 +433,9 @@ class FloorPlanTileForm(NautobotModelForm):
                     if label := converter.convert():
                         self.initial["y_origin"] = label
                 else:
-                    self.initial["y_origin"] = utils.axis_init_label_conversion(
+                    self.initial["y_origin"] = general.axis_init_label_conversion(
                         fp_obj.y_origin_seed,
-                        utils.grid_number_to_letter(self.instance.y_origin)
+                        general.grid_number_to_letter(self.instance.y_origin)
                         if self.y_letters
                         else self.initial.get("y_origin"),
                         fp_obj.y_axis_step,
@@ -472,5 +481,5 @@ class FloorPlanTileForm(NautobotModelForm):
             origin_seed, step, use_letters = fp_obj.y_origin_seed, fp_obj.y_axis_step, self.y_letters
 
         # Convert and return the label position using the specified conversion function
-        cleaned_value = utils.axis_clean_label_conversion(origin_seed, value, step, use_letters)
+        cleaned_value = general.axis_clean_label_conversion(origin_seed, value, step, use_letters)
         return int(cleaned_value) if not using_letters else cleaned_value

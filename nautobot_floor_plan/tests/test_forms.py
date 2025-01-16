@@ -185,6 +185,40 @@ class TestFloorPlanForm(TestCase):
         self.assertEqual(floor_plan.x_axis_step, 1)
         self.assertEqual(floor_plan.y_axis_step, 1)
 
+    def test_increment_letter_default_false_for_numbers(self):
+        """Test setting increment_letter to False when label_type is numbers."""
+
+        initial_form = forms.FloorPlanForm(
+            data={
+                "location": self.floors[0].pk,
+                "x_size": 10,
+                "y_size": 10,
+                "tile_depth": 100,
+                "tile_width": 200,
+                "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+                "x_origin_seed": 4,
+                "x_axis_step": 2,
+                "x_custom_ranges": [
+                    {"start": "01", "end": "05", "step": 1, "label_type": "numbers"},
+                ],
+                "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+                "y_origin_seed": 3,
+                "y_axis_step": -1,
+                "y_custom_ranges": [],
+            }
+        )
+
+        self.assertTrue(initial_form.is_valid())
+        initial_form.save()
+
+        floor_plan = models.FloorPlan.objects.get(location=self.floors[0])
+
+        # Retrieve the custom label created
+        custom_label = models.FloorPlanCustomAxisLabel.objects.get(floor_plan=floor_plan, axis="X")
+
+        # Assert that increment_letter is False for numeric labels
+        self.assertEqual(custom_label.increment_letter, False)
+
     def test_custom_ranges_validation(self):
         """Test validation of custom range inputs."""
         test_cases = [
@@ -385,6 +419,7 @@ class TestFloorPlanForm(TestCase):
             {
                 "x_custom_ranges": '[{"start": "01", "end": "05", "step": 1, "increment_letter": true, "label_type": "numbers"}]',
                 "valid": False,
+                "error": "increment_letter must be False when using numeric labels",
             },
         ]
 

@@ -19,8 +19,8 @@ class FloorPlanTable(BaseTable):
     pk = ToggleColumn()
     floor_plan = tables.Column(empty_values=[], orderable=False)
     location = tables.Column(linkify=True)
-    x_origin_seed = tables.Column(accessor="x_origin_seed", verbose_name="X Origin Seed")
-    y_origin_seed = tables.Column(accessor="y_origin_seed", verbose_name="Y Origin Seed")
+    x_origin_seed = tables.Column(verbose_name="X Origin Seed")
+    y_origin_seed = tables.Column(verbose_name="Y Origin Seed")
     tags = TagColumn()
     actions = ButtonsColumn(models.FloorPlan)
 

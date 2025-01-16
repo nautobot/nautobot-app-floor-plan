@@ -2,7 +2,7 @@
 
 import unittest
 
-from nautobot_floor_plan.utils import utils
+from nautobot_floor_plan.utils import general
 
 
 class TestUtils(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestUtils(unittest.TestCase):
 
         for num, expected in test_cases:
             with self.subTest(num=num):
-                self.assertEqual(utils.grid_number_to_letter(num), expected)
+                self.assertEqual(general.grid_number_to_letter(num), expected)
 
     def test_gird_letter_to_number(self):
         test_cases = [
@@ -42,4 +42,4 @@ class TestUtils(unittest.TestCase):
 
         for letter, expected in test_cases:
             with self.subTest(letter=letter):
-                self.assertEqual(utils.grid_letter_to_number(letter), expected)
+                self.assertEqual(general.grid_letter_to_number(letter), expected)

@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 
 from nautobot_floor_plan import choices
-from nautobot_floor_plan.utils import utils
+from nautobot_floor_plan.utils import general
 from nautobot_floor_plan.utils.label_converters import LabelConverterFactory
 
 
@@ -84,8 +84,8 @@ class RangeValidator:
 
     def validate_numalpha_prefix(self, start, end, _):
         """Validate that numalpha prefixes match."""
-        start_prefix, _ = utils.extract_prefix_and_letter(start)
-        end_prefix, _ = utils.extract_prefix_and_letter(end)
+        start_prefix, _ = general.extract_prefix_and_letter(start)
+        end_prefix, _ = general.extract_prefix_and_letter(end)
 
         if start_prefix != end_prefix:
             raise ValidationError(
@@ -151,8 +151,8 @@ class RangeValidator:
 
     def _calculate_letter_range_size(self, start, end):
         """Calculate the size of letter-based ranges."""
-        _, start_letters = utils.extract_prefix_and_letter(start)
-        _, end_letters = utils.extract_prefix_and_letter(end)
+        _, start_letters = general.extract_prefix_and_letter(start)
+        _, end_letters = general.extract_prefix_and_letter(end)
 
         # Check if this is a letters-only range
         if self.current_range and self.current_range.get("label_type") == choices.CustomAxisLabelsChoices.LETTERS:
@@ -161,12 +161,12 @@ class RangeValidator:
 
         if self.current_range and self.current_range.get("increment_letter"):
             # For increment_letter=True, use full grid_letter_to_number conversion
-            start_pos = utils.grid_letter_to_number(start_letters)
-            end_pos = utils.grid_letter_to_number(end_letters)
+            start_pos = general.grid_letter_to_number(start_letters)
+            end_pos = general.grid_letter_to_number(end_letters)
         else:
             # For increment_letter=False, only look at first character
-            start_pos = utils.grid_letter_to_number(start_letters[0])
-            end_pos = utils.grid_letter_to_number(end_letters[0])
+            start_pos = general.grid_letter_to_number(start_letters[0])
+            end_pos = general.grid_letter_to_number(end_letters[0])
 
         step = self.get_step_from_range()
         range_size = end_pos - start_pos + 1
@@ -216,10 +216,10 @@ class RangeValidator:
         def alphanumeric_overlap(range1, range2):
             """Check overlap for alphanumeric ranges."""
             # Extract prefix and numbers using the utility function
-            prefix1, num1 = utils.extract_prefix_and_number(range1["start"])
-            _, num1_end = utils.extract_prefix_and_number(range1["end"])
-            prefix2, num2 = utils.extract_prefix_and_number(range2["start"])
-            _, num2_end = utils.extract_prefix_and_number(range2["end"])
+            prefix1, num1 = general.extract_prefix_and_number(range1["start"])
+            _, num1_end = general.extract_prefix_and_number(range1["end"])
+            prefix2, num2 = general.extract_prefix_and_number(range2["start"])
+            _, num2_end = general.extract_prefix_and_number(range2["end"])
 
             # Different prefixes can't overlap
             if prefix1 != prefix2:
@@ -237,10 +237,10 @@ class RangeValidator:
         def numalpha_overlap(range1, range2):
             """Check overlap for numalpha ranges."""
             # Extract prefix (numbers) and letters
-            prefix1, letter1_start = utils.extract_prefix_and_letter(range1["start"])
-            _, letter1_end = utils.extract_prefix_and_letter(range1["end"])
-            prefix2, letter2_start = utils.extract_prefix_and_letter(range2["start"])
-            _, letter2_end = utils.extract_prefix_and_letter(range2["end"])
+            prefix1, letter1_start = general.extract_prefix_and_letter(range1["start"])
+            _, letter1_end = general.extract_prefix_and_letter(range1["end"])
+            prefix2, letter2_start = general.extract_prefix_and_letter(range2["start"])
+            _, letter2_end = general.extract_prefix_and_letter(range2["end"])
 
             # Different numeric prefixes can't overlap
             if prefix1 != prefix2:
@@ -251,10 +251,10 @@ class RangeValidator:
             step2 = range2.get("step", 1)
 
             # Convert letters to numeric values using existing utility function
-            start1 = utils.grid_letter_to_number(letter1_start)
-            end1 = utils.grid_letter_to_number(letter1_end)
-            start2 = utils.grid_letter_to_number(letter2_start)
-            end2 = utils.grid_letter_to_number(letter2_end)
+            start1 = general.grid_letter_to_number(letter1_start)
+            end1 = general.grid_letter_to_number(letter1_end)
+            start2 = general.grid_letter_to_number(letter2_start)
+            end2 = general.grid_letter_to_number(letter2_end)
 
             # Adjust ranges based on step direction
             if step1 < 0:

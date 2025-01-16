@@ -4,7 +4,7 @@ from nautobot.core.testing import TestCase
 
 from nautobot_floor_plan import choices, forms
 from nautobot_floor_plan.tests import fixtures
-from nautobot_floor_plan.utils import label_converters, utils
+from nautobot_floor_plan.utils import general, label_converters
 
 
 class TestLabelConverters(TestCase):
@@ -53,12 +53,12 @@ class TestLabelConverters(TestCase):
             self.assertEqual(converter.to_numeric(label), expected_number)
 
             # Test conversion back to label (with prefix preservation)
-            prefix, _ = utils.extract_prefix_and_letter(label)
+            prefix, _ = general.extract_prefix_and_letter(label)
             converted_label = converter.from_numeric(expected_number, prefix=prefix)
             self.assertEqual(converted_label, label)
 
             # Test prefix extraction
-            extracted_prefix, letter = utils.extract_prefix_and_letter(label)
+            extracted_prefix, letter = general.extract_prefix_and_letter(label)
             self.assertEqual(extracted_prefix + letter, label)
 
     def test_roman_converter(self):
@@ -137,10 +137,8 @@ class TestPositionAndLabelConverters(TestCase):
                 "y_custom_ranges": "null",
             }
         )
-        if self.form.is_valid():
-            self.floor_plan = self.form.save(commit=True)  # Save the instance to the database
-        else:
-            self.fail(f"Form validation failed: {self.form.errors}")
+        self.assertTrue(self.form.is_valid(), msg=self.form.errors)
+        self.floor_plan = self.form.save(commit=True)  # Save the instance to the database
 
     def test_numeric_ranges(self):
         """Test numeric ranges with both ascending and descending steps."""
