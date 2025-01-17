@@ -21,15 +21,37 @@ def seed_conversion(floor_plan, axis):
 
 
 @register.filter()
-def grid_location_conversion(floor_plan_tile, axis):
-    """Convert FloorPlanTile coordinate to letter if necessary."""
-    letters = getattr(floor_plan_tile.floor_plan, f"{axis}_axis_labels")
-    grid = getattr(floor_plan_tile, f"{axis}_origin")
+def render_axis_origin(record, axis):
+    """
+    Generalized function to render axis origin using PositionToLabelConverter or default conversion.
 
-    if letters == choices.AxisLabelsChoices.LETTERS:
-        grid = general.grid_number_to_letter(grid)
+    Args:
+        record: The record containing the axis origin.
+        axis (str): The axis ('X' or 'Y').
 
-    return f"{grid}"
+    Returns:
+        str: The converted axis label.
+    """
+    # Determine axis-specific attributes
+    axis_seed = getattr(record.floor_plan, f"{axis.lower()}_origin_seed")
+    axis_step = getattr(record.floor_plan, f"{axis.lower()}_axis_step")
+    axis_labels_choice = getattr(record.floor_plan, f"{axis.lower()}_axis_labels")
+    origin_value = getattr(record, f"{axis.lower()}_origin")
+
+    # Check if custom labels exist for the axis
+    if record.floor_plan.custom_labels.filter(axis=axis).exists():
+        converter = label_converters.PositionToLabelConverter(origin_value, axis, record.floor_plan)
+        return converter.convert()
+
+    is_letters = axis_labels_choice == choices.AxisLabelsChoices.LETTERS
+    origin_value_str = str(origin_value)  # Convert to string for checking
+
+    if is_letters:
+        converted_location = axis_seed + (int(origin_value_str) - axis_seed) * axis_step
+        return general.letter_conversion(converted_location)  # Return the numeric value directly
+
+    # Proceed with axis_init_label_conversion if it's not a digit
+    return general.axis_init_label_conversion(axis_seed, origin_value_str, axis_step, is_letters)
 
 
 @register.filter()

@@ -53,24 +53,35 @@ def extract_prefix_and_number(label):
     return prefix, numbers
 
 
+def letter_conversion(converted_location):
+    """Returns letter conversion and handles wrap around."""
+    # Set wrap around value of ZZZ
+    total_cells = 18278  # Total cells for AAA-ZZZ
+    # Adjust for wrap-around when working with letters A or ZZZ
+    if converted_location < 1:
+        converted_location = total_cells + converted_location
+    elif converted_location > total_cells:
+        converted_location -= total_cells
+    return grid_number_to_letter(converted_location)
+
+
 def axis_init_label_conversion(axis_origin, axis_location, step, is_letters):
-    """Returns the correct label position, converting to letters if `letters` is True."""
-    if is_letters:
-        axis_location = grid_letter_to_number(axis_location)
-    # Calculate the converted location based on origin, step, and location
-    converted_location = axis_origin + (int(axis_location) - int(axis_origin)) * step
-    # Check if we need wrap around due to letters being chosen
-    if is_letters:
-        # Set wrap around value of ZZZ
-        total_cells = 18278
-        # Adjust for wrap-around when working with letters A or ZZZ
-        if converted_location < 1:
-            converted_location = total_cells + converted_location
-        elif converted_location > total_cells:
-            converted_location -= total_cells
-        result_label = grid_number_to_letter(converted_location)
-        return result_label
-    return converted_location
+    """Convert an axis location to its label based on the origin, step, and label type."""
+    try:
+        if is_letters:
+            axis_location = grid_letter_to_number(axis_location)
+
+        converted_location = axis_origin + (int(axis_location) - int(axis_origin)) * step
+
+        if is_letters:
+            return letter_conversion(converted_location)
+
+        return converted_location
+    except ValueError as e:
+        raise ValueError(
+            f"Error in axis conversion: axis_origin={axis_origin}, "
+            f"axis_location={axis_location}, step={step}, is_letters={is_letters}"
+        ) from e
 
 
 def axis_clean_label_conversion(axis_origin, axis_label, step, is_letters, custom_ranges=None):

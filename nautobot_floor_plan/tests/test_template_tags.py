@@ -5,8 +5,8 @@ from nautobot.core.testing import TestCase
 from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.templatetags.seed_helpers import (
     get_fieldset_field,
-    grid_location_conversion,
     render_axis_label,
+    render_axis_origin,
     seed_conversion,
 )
 from nautobot_floor_plan.tests import fixtures
@@ -55,19 +55,19 @@ class TestSeedHelpers(TestCase):
         # Test numeric grid
         floor_plan.x_axis_labels = choices.AxisLabelsChoices.NUMBERS
         floor_plan_tile.x_origin = 1
-        self.assertEqual(grid_location_conversion(floor_plan_tile, "x"), "1")
+        self.assertEqual(render_axis_origin(floor_plan_tile, "x"), 1)
 
         # Test letter conversion
         floor_plan.x_axis_labels = choices.AxisLabelsChoices.LETTERS
         floor_plan_tile.x_origin = 1
-        self.assertEqual(grid_location_conversion(floor_plan_tile, "x"), "A")
+        self.assertEqual(render_axis_origin(floor_plan_tile, "x"), "A")
 
         # Test larger numbers
         floor_plan_tile.x_origin = 26
-        self.assertEqual(grid_location_conversion(floor_plan_tile, "x"), "Z")
+        self.assertEqual(render_axis_origin(floor_plan_tile, "x"), "Z")
 
         floor_plan_tile.x_origin = 27
-        self.assertEqual(grid_location_conversion(floor_plan_tile, "x"), "AA")
+        self.assertEqual(render_axis_origin(floor_plan_tile, "x"), "AA")
 
     def test_get_fieldset_field(self):
         """Test retrieving fields from a form fieldset."""

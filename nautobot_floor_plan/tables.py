@@ -6,7 +6,7 @@ from nautobot.core.templatetags.helpers import hyperlinked_object
 
 from nautobot_floor_plan import models
 from nautobot_floor_plan.templatetags.seed_helpers import (
-    grid_location_conversion,
+    render_axis_origin,
     render_axis_step,
     render_origin_seed,
 )
@@ -99,12 +99,12 @@ class FloorPlanTileTable(BaseTable):
         return hyperlinked_object(record)
 
     def render_x_origin(self, record):
-        """Render x_origin in letters if requried."""
-        return grid_location_conversion(record, "x")
+        """Render x_origin using the generalized render_axis_origin method."""
+        return render_axis_origin(record, "X")
 
     def render_y_origin(self, record):
-        """Render y_origin in letters if requried."""
-        return grid_location_conversion(record, "y")
+        """Render y_origin using the generalized render_axis_origin method."""
+        return render_axis_origin(record, "Y")
 
     class Meta(BaseTable.Meta):
         """Meta attributes."""
