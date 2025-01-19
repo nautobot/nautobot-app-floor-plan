@@ -77,8 +77,8 @@ def axis_init_label_conversion(axis_origin, axis_location, step, is_letters):
             return letter_conversion(converted_location)
 
         return converted_location
-    except ValueError as e:
-        raise ValueError(
+    except ValidationError as e:
+        raise ValidationError(
             f"Error in axis conversion: axis_origin={axis_origin}, "
             f"axis_location={axis_location}, step={step}, is_letters={is_letters}"
         ) from e
@@ -122,13 +122,6 @@ def axis_clean_label_conversion(axis_origin, axis_label, step, is_letters, custo
         elif original_location > total_cells:
             original_location -= total_cells
     return str(original_location)
-
-
-def calculate_letter_range_size(custom_range, converter):
-    """Calculate the range size for letter-based labels."""
-    start_value = converter.to_numeric(custom_range.start_label)
-    end_value = converter.to_numeric(custom_range.end_label)
-    return abs(end_value - start_value) + 1
 
 
 # Depreciate in version 2.6 and remove in 2.7

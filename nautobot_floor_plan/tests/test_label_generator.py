@@ -134,6 +134,32 @@ class TestNumericLabelGenerator(TestCase):
         expected = ["E01", "D01", "C01", "B01", "A01"]
         self.assertEqual(labels[: len(expected)], expected)
 
+    def test_default_labels_generation_when_custom_range_insufficient_numbers(self):
+        """Test that default labels are generated when custom range is insufficient using numbers label."""
+        # Create a custom label range that is smaller than the requested count
+        config = [{"start": "1", "end": "3", "step": 1, "increment_letter": True, "label_type": "numbers"}]
+        self.create_custom_labels(config)
+
+        # Request more labels than the custom range provides
+        labels = self.floor_plan.generate_labels("X", 5)  # Request 5 labels
+
+        # Expected labels should include the custom range and then default labels
+        expected = ["1", "2", "3", "4", "5"]
+        self.assertEqual(labels[: len(expected)], expected)
+
+    def test_default_labels_generation_when_custom_range_insufficient_numalpha(self):
+        """Test that default labels are generated when custom range is insufficient using numalpha label."""
+        # create custom label with numalpha that is smaller than the requested count
+        config = [{"start": "02A", "end": "02C", "step": 1, "increment_letter": True, "label_type": "numalpha"}]
+        self.create_custom_labels(config)
+
+        # Request more labels than the custom range provides
+        labels = self.floor_plan.generate_labels("X", 5)  # Request 5 labels
+
+        # Expected labels should include the custom range and then default labels
+        expected = ["02A", "02B", "02C", "4", "5"]
+        self.assertEqual(labels[: len(expected)], expected)
+
 
 class TestLetterLabelGenerator(TestCase):
     """Test cases for letter-based label generation (letters and numalpha)."""
