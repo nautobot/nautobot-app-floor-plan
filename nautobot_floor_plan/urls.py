@@ -7,10 +7,11 @@ from nautobot.apps.urls import NautobotUIViewSetRouter
 
 from nautobot_floor_plan import views
 
-app_name = "floor_plan"
 router = NautobotUIViewSetRouter()
+
 router.register("floor-plans", views.FloorPlanUIViewSet)
 router.register("floor-plan-tiles", views.FloorPlanTileUIViewSet)
+
 urlpatterns = [
     path("locations/<uuid:pk>/floor_plan/", views.LocationFloorPlanTab.as_view(), name="location_floor_plan_tab"),
     path(
