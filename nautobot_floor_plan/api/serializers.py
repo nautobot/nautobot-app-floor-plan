@@ -15,6 +15,16 @@ class FloorPlanSerializer(NautobotModelSerializer, TaggedModelSerializerMixin): 
         fields = "__all__"
 
 
+class FloorPlanCustomAxisLabelSerializer(NautobotModelSerializer, TaggedModelSerializerMixin):
+    """FloorPlanCustomAxisLabel Serializer."""
+
+    class Meta:
+        """Meta attributes."""
+
+        model = models.FloorPlanCustomAxisLabel
+        fields = "__all__"
+
+
 class FloorPlanTileSerializer(NautobotModelSerializer, TaggedModelSerializerMixin):
     """FloorPlanTile Serializer."""
 

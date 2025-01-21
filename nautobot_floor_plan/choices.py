@@ -19,8 +19,32 @@ class RackOrientationChoices(ChoiceSet):
     )
 
 
+class CustomAxisLabelsChoices(ChoiceSet):
+    """Choices for custom axis label types."""
+
+    ROMAN = "roman"
+    GREEK = "greek"
+    BINARY = "binary"
+    HEX = "hex"
+    NUMALPHA = "numalpha"
+    LETTERS = "letters"
+    ALPHANUMERIC = "alphanumeric"
+    NUMBERS = "numbers"
+
+    CHOICES = (
+        (ROMAN, "Roman (e.g., I, II, III)"),
+        (GREEK, "Greek (e.g., α, β, γ)"),
+        (BINARY, "Binary (e.g., 1, 10, 11)"),
+        (HEX, "Hexadecimal (e.g., 1, A, F)"),
+        (NUMALPHA, "numalpha (e.g., 02A)"),
+        (LETTERS, "Letters (e.g., A, B, C)"),
+        (ALPHANUMERIC, "Alphanumeric (e.g., A01, B02)"),
+        (NUMBERS, "Numbers (e.g. 1, 2, 3)"),
+    )
+
+
 class AxisLabelsChoices(ChoiceSet):
-    """Choices for grid numbering style."""
+    """Choices for axis labels."""
 
     NUMBERS = "numbers"
     LETTERS = "letters"
