@@ -7,9 +7,15 @@ from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from nautobot.apps.models import PrimaryModel, StatusField, extras_features
 
-from nautobot_floor_plan.choices import AllocationTypeChoices, AxisLabelsChoices, RackOrientationChoices
+from nautobot_floor_plan.choices import (
+    AllocationTypeChoices,
+    AxisLabelsChoices,
+    CustomAxisLabelsChoices,
+    RackOrientationChoices,
+)
 from nautobot_floor_plan.svg import FloorPlanSVG
-from nautobot_floor_plan.utils import validate_not_zero
+from nautobot_floor_plan.utils.custom_validators import ValidateNotZero
+from nautobot_floor_plan.utils.label_generator import FloorPlanLabelGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -51,13 +57,13 @@ class FloorPlan(PrimaryModel):
         help_text='Relative depth of each "tile" in the floor plan (cm, inches, etc.)',
     )
     x_axis_labels = models.CharField(
-        max_length=10,
+        max_length=12,
         choices=AxisLabelsChoices,
         default=AxisLabelsChoices.NUMBERS,
         help_text="Grid labels of X axis (horizontal).",
     )
     y_axis_labels = models.CharField(
-        max_length=10,
+        max_length=12,
         choices=AxisLabelsChoices,
         default=AxisLabelsChoices.NUMBERS,
         help_text="Grid labels of Y axis (vertical).",
@@ -69,15 +75,16 @@ class FloorPlan(PrimaryModel):
         validators=[MinValueValidator(0)], default=1, help_text="User defined starting value for grid labeling"
     )
     x_axis_step = models.IntegerField(
-        validators=[validate_not_zero],
+        validators=[ValidateNotZero(0)],
         default=1,
         help_text="Positive or negative integer that will be used to step labeling.",
     )
     y_axis_step = models.IntegerField(
-        validators=[validate_not_zero],
+        validators=[ValidateNotZero(0)],
         default=1,
         help_text="Positive or negative integer that will be used to step labeling.",
     )
+    is_tile_movable = models.BooleanField(default=True, help_text="Determines if Tiles can be moved once placed")
 
     class Meta:
         """Metaclass attributes."""
@@ -146,6 +153,128 @@ class FloorPlan(PrimaryModel):
                         f"FloorPlan must maintain original size: ({original.x_size}, {original.y_size}), "
                     )
 
+    def generate_labels(self, axis, count):
+        """
+        Generate labels for the specified axis.
+
+        This method creates an instance of FloorPlanLabelGenerator and uses it to generate labels
+        based on the specified axis and count. It will first check for any custom labels defined
+        for the axis and use them if available; otherwise, it will generate default labels.
+        """
+        generator = FloorPlanLabelGenerator(self)
+        return generator.generate_labels(axis, count)
+
+    def reset_seed_for_custom_labels(self):
+        """Reset seed and step values when custom labels are added."""
+        # Only proceed if there are custom labels
+        if not self.custom_labels.exists():
+            return
+
+        changed = False
+        x_has_custom = self.custom_labels.filter(axis="X").exists()
+        y_has_custom = self.custom_labels.filter(axis="Y").exists()
+
+        if x_has_custom and (self.x_origin_seed != 1 or self.x_axis_step != 1):
+            self.x_origin_seed = 1
+            self.x_axis_step = 1
+            changed = True
+
+        if y_has_custom and (self.y_origin_seed != 1 or self.y_axis_step != 1):
+            self.y_origin_seed = 1
+            self.y_axis_step = 1
+            changed = True
+
+        if changed:
+            # Get the current values before updating
+            initial_instance = self.__class__.objects.get(pk=self.pk)
+            x_initial = initial_instance.x_origin_seed
+            y_initial = initial_instance.y_origin_seed
+
+            # Update tile positions only for axes that have custom labels
+            tiles = self.update_tile_origins(
+                x_initial=x_initial if x_has_custom else self.x_origin_seed,
+                x_updated=1 if x_has_custom else self.x_origin_seed,
+                y_initial=y_initial if y_has_custom else self.y_origin_seed,
+                y_updated=1 if y_has_custom else self.y_origin_seed,
+            )
+
+            # Save without triggering another reset
+            super().save()
+
+            # Update tiles
+            for tile in tiles:
+                tile.validated_save()
+
+
+@extras_features(
+    "custom_fields",
+    "custom_validators",
+    "graphql",
+    "relationships",
+    "webhooks",
+)
+class FloorPlanCustomAxisLabel(models.Model):
+    """Model allowing for the creation of custom grid labels."""
+
+    floor_plan = models.ForeignKey(
+        to="FloorPlan",
+        on_delete=models.CASCADE,
+        related_name="custom_labels",
+    )
+    axis = models.CharField(
+        max_length=1,
+        choices=(("X", "X Axis"), ("Y", "Y Axis")),
+    )
+    label_type = models.CharField(
+        max_length=20,
+        choices=CustomAxisLabelsChoices,
+        default=AxisLabelsChoices.LETTERS,
+        help_text="Type of labeling system to use",
+    )
+    start_label = models.CharField(
+        max_length=10,
+        help_text="Starting label for this custom label range.",
+    )
+    end_label = models.CharField(
+        max_length=10,
+        help_text="Ending label for this custom label range.",
+    )
+    step = models.IntegerField(
+        validators=[ValidateNotZero(0)],
+        default=1,
+        help_text="Positive or negative step for this label range.",
+    )
+    increment_letter = models.BooleanField(
+        default=True,
+        help_text="For letter-based labels, determines increment pattern.",
+    )
+
+    order = models.PositiveIntegerField(
+        default=0,
+        help_text="Order of the custom label range.",
+    )
+
+    class Meta:
+        """Meta attributes."""
+
+        ordering = ["floor_plan", "axis", "order"]
+
+    def save(self, *args, **kwargs):
+        """Override save to reset seed values when custom labels are added."""
+        super().save(*args, **kwargs)
+        # Reset the corresponding seed value to 1
+        self.floor_plan.reset_seed_for_custom_labels()
+
+    def clean(self):
+        """Add validation to ensure seed values are reset."""
+        super().clean()
+        # If this is a new custom label (no pk) or the axis has changed
+        if not self.pk or (self.pk and self._state.fields_cache.get("axis") != self.axis):
+            if self.axis == "X" and self.floor_plan.x_origin_seed != 1:
+                self.floor_plan.x_origin_seed = 1
+            elif self.axis == "Y" and self.floor_plan.y_origin_seed != 1:
+                self.floor_plan.y_origin_seed = 1
+
 
 @extras_features(
     "custom_fields",
@@ -157,8 +286,6 @@ class FloorPlan(PrimaryModel):
     "statuses",
     "webhooks",
 )
-# TBD: Remove after releasing pylint-nautobot v0.3.0
-# pylint: disable-next=nb-string-field-blank-null
 class FloorPlanTile(PrimaryModel):
     """Model representing a single rectangular "tile" within a FloorPlan, its status, and any Rack that it contains."""
 
