@@ -9,8 +9,7 @@ from django.utils.functional import cached_property
 from django.utils.http import urlencode
 from nautobot.core.templatetags.helpers import fgcolor
 
-from nautobot_floor_plan.choices import AllocationTypeChoices, AxisLabelsChoices, RackOrientationChoices
-from nautobot_floor_plan.utils import grid_number_to_letter
+from nautobot_floor_plan.choices import AllocationTypeChoices, RackOrientationChoices
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +27,6 @@ class FloorPlanSVG:
     RACK_TILE_INSET = 3
     RACK_FRONT_DEPTH = 15
     RACK_BUTTON_OFFSET = 5
-    RACK_BORDER_OFFSET = 8
     RACK_ORIENTATION_OFFSET = 14
     RACKGROUP_TEXT_OFFSET = 12
     Y_LABEL_TEXT_OFFSET = 34
@@ -88,39 +86,28 @@ class FloorPlanSVG:
 
         return drawing
 
-    def _label_text(self, label_text_out, floor_plan, label_text_in, is_letters):
-        """Change label based off defined increment or decrement step."""
-        if label_text_out == floor_plan["seed"]:
-            return label_text_out
-        label_text_out = label_text_in + floor_plan["step"]
-
-        # Handle negative values and wrapping
-        if is_letters and label_text_out <= 0:
-            label_text_out = 18278 if label_text_in == 0 else 18278 + (label_text_in + floor_plan["step"])
-
-        return label_text_out
-
-    def _draw_tile_link(self, drawing, axis, x_letters, y_letters):
+    def _draw_tile_link(self, drawing, axis):
+        """Draw a '+' link for adding a new tile at the specified grid position."""
         query_params = urlencode(
             {
                 "floor_plan": self.floor_plan.pk,
-                "x_origin": grid_number_to_letter(axis["x"]) if x_letters else axis["x"],
-                "y_origin": grid_number_to_letter(axis["y"]) if y_letters else axis["y"],
+                "x_origin": axis["x"],
+                "y_origin": axis["y"],
                 "return_url": self.return_url,
             }
         )
         add_url = f"{self.add_url}?{query_params}"
         add_link = drawing.add(drawing.a(href=add_url, target="_top"))
 
+        # Use grid indices for positioning
+        x_pos = axis["x_idx"]
+        y_pos = axis["y_idx"]
+
         add_link.add(
             drawing.rect(
                 (
-                    (axis["x"] - self.floor_plan.x_origin_seed + 0.5) * self.GRID_SIZE_X
-                    + self.GRID_OFFSET
-                    - (self.TEXT_LINE_HEIGHT / 2),
-                    (axis["y"] - self.floor_plan.y_origin_seed + 0.5) * self.GRID_SIZE_Y
-                    + self.GRID_OFFSET
-                    - (self.TEXT_LINE_HEIGHT / 2),
+                    (x_pos + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET - (self.TEXT_LINE_HEIGHT / 2),
+                    (y_pos + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET - (self.TEXT_LINE_HEIGHT / 2),
                 ),
                 (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
                 class_="add-tile-button",
@@ -131,8 +118,8 @@ class FloorPlanSVG:
             drawing.text(
                 "+",
                 insert=(
-                    (axis["x"] - self.floor_plan.x_origin_seed + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
-                    (axis["y"] - self.floor_plan.y_origin_seed + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
+                    (x_pos + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
+                    (y_pos + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
                 ),
                 class_="button-text",
             )
@@ -140,25 +127,13 @@ class FloorPlanSVG:
 
     def _draw_grid(self, drawing):
         """Render the grid underlying all tiles."""
-        # Set inital values for x and y axis label location
-        x_letters = self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS
-        y_letters = self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS
-        x_floor_plan = {"seed": self.floor_plan.x_origin_seed, "step": self.floor_plan.x_axis_step}
-        y_floor_plan = {"seed": self.floor_plan.y_origin_seed, "step": self.floor_plan.y_axis_step}
-        # Initial states for labels
-        x_label_text = 0
-        y_label_text = 0
-        max_y_length = max(
-            len(str(self._label_text(y, y_floor_plan, 0, y_letters)))
-            for y in range(self.floor_plan.y_origin_seed, self.floor_plan.y_size + self.floor_plan.y_origin_seed)
-        )
-        y_label_text_offset = (
-            self.Y_LABEL_TEXT_OFFSET - (6 - len(str(self.floor_plan.y_origin_seed))) if max_y_length > 1 else 0
-        )
-        if max_y_length >= 4:
-            y_label_text_offset = self.Y_LABEL_TEXT_OFFSET + 4
+        self._draw_grid_lines(drawing)
+        x_labels, y_labels = self._generate_axis_labels()
+        self._draw_axis_labels(drawing, x_labels, y_labels)
+        self._draw_tile_links(drawing, x_labels, y_labels)
 
-        # Draw grid lines
+    def _draw_grid_lines(self, drawing):
+        """Draw the vertical and horizontal grid lines."""
         for x in range(0, self.floor_plan.x_size + 1):
             drawing.add(
                 drawing.line(
@@ -182,107 +157,71 @@ class FloorPlanSVG:
                 )
             )
 
-        # Draw axis labels and links
-        for x in range(self.floor_plan.x_origin_seed, self.floor_plan.x_size + self.floor_plan.x_origin_seed):
-            x_label_text = self._label_text(x, x_floor_plan, x_label_text, x_letters)
-            label = grid_number_to_letter(x_label_text) if x_letters else str(x_label_text)
+    def _generate_axis_labels(self):
+        """Generate labels for the X and Y axes."""
+        x_labels = self.floor_plan.generate_labels("X", self.floor_plan.x_size)
+        y_labels = self.floor_plan.generate_labels("Y", self.floor_plan.y_size)
+        return x_labels, y_labels
+
+    def _draw_axis_labels(self, drawing, x_labels, y_labels):
+        """Draw labels on the X and Y axes."""
+        for idx, label in enumerate(x_labels):
             drawing.add(
                 drawing.text(
                     label,
                     insert=(
-                        (x - self.floor_plan.x_origin_seed + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
+                        (idx + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
                     ),
                     class_="grid-label",
                 )
             )
+        max_y_length = max(len(str(label)) for label in y_labels)
+        y_label_text_offset = self._calculate_y_label_offset(max_y_length)
 
-        for y in range(self.floor_plan.y_origin_seed, self.floor_plan.y_size + self.floor_plan.y_origin_seed):
-            y_label_text = self._label_text(y, y_floor_plan, y_label_text, y_letters)
-            label = grid_number_to_letter(y_label_text) if y_letters else str(y_label_text)
+        for idx, label in enumerate(y_labels):
             drawing.add(
                 drawing.text(
                     label,
                     insert=(
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2 - y_label_text_offset,
-                        (y - self.floor_plan.y_origin_seed + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
+                        (idx + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
                     ),
                     class_="grid-label",
                 )
             )
 
-        for y in range(self.floor_plan.y_origin_seed, self.floor_plan.y_size + self.floor_plan.y_origin_seed):
-            for x in range(self.floor_plan.x_origin_seed, self.floor_plan.x_size + self.floor_plan.x_origin_seed):
-                axis = {"x": x, "y": y}
-                self._draw_tile_link(drawing, axis, x_letters, y_letters)
-
-    def _draw_edit_delete_button(self, drawing, tile, button_offset, grid_offset):
-        if tile.allocation_type == AllocationTypeChoices.RACK:
-            tile_inset = 0
+    def _calculate_y_label_offset(self, max_y_length):
+        """Calculate the offset for Y-axis labels."""
+        # Add prefix length for binary (0b) and hex (0x) labels when calculating max length
+        adjusted_length = max_y_length
+        if str(self.floor_plan.y_origin_seed).startswith(("0b", "0x")):
+            adjusted_length = max_y_length + 2
+        # Base offset calculation
+        base_offset = (
+            self.Y_LABEL_TEXT_OFFSET - (6 - len(str(self.floor_plan.y_origin_seed))) if adjusted_length > 1 else 0
+        )
+        # Calculate additional offset
+        # Add 1 to additional offset for 02WW scenario
+        if adjusted_length == 4:
+            adjusted_length = adjusted_length + 1
+        if adjusted_length > 4:
+            # Add 10 for each increment of 2 beyond 4 and handle odd cases
+            additional_offset = ((adjusted_length - 4 + 1) // 2) * 10
         else:
-            tile_inset = self.TILE_INSET
+            additional_offset = 0
+        return base_offset + additional_offset
 
-        origin = (
-            (tile.x_origin - self.floor_plan.x_origin_seed) * self.GRID_SIZE_X + self.GRID_OFFSET + tile_inset,
-            (tile.y_origin - self.floor_plan.y_origin_seed) * self.GRID_SIZE_Y + self.GRID_OFFSET + tile_inset,
-        )
-
-        # Add a button for editing the tile definition
-        edit_url = reverse("plugins:nautobot_floor_plan:floorplantile_edit", kwargs={"pk": tile.pk})
-        query_params = urlencode({"return_url": self.return_url})
-        edit_url = f"{self.base_url}{edit_url}?{query_params}"
-        link = drawing.add(drawing.a(href=edit_url, target="_top"))
-        link.add(
-            drawing.rect(
-                (origin[0] + self.TILE_INSET + button_offset, origin[1] + self.TILE_INSET + grid_offset),
-                (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
-                class_="edit-tile-button",
-                rx=self.CORNER_RADIUS,
-            )
-        )
-        link.add(
-            drawing.text(
-                "✎",
-                insert=(
-                    origin[0] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + button_offset,
-                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + grid_offset,
-                ),
-                class_="button-text",
-            )
-        )
-
-        # Add a button for deleting the tile definition
-        delete_url = reverse("plugins:nautobot_floor_plan:floorplantile_delete", kwargs={"pk": tile.pk})
-        query_params = urlencode({"return_url": self.return_url})
-        delete_url = f"{self.base_url}{delete_url}?{query_params}"
-        link = drawing.add(drawing.a(href=delete_url, target="_top"))
-        link.add(
-            drawing.rect(
-                (
-                    origin[0]
-                    + tile.x_size * self.GRID_SIZE_X
-                    - self.RACK_TILE_INSET * self.TILE_INSET
-                    - self.TEXT_LINE_HEIGHT,
-                    origin[1] + self.TILE_INSET + grid_offset,
-                ),
-                (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
-                class_="delete-tile-button",
-                rx=self.CORNER_RADIUS,
-            )
-        )
-        link.add(
-            drawing.text(
-                "X",
-                insert=(
-                    origin[0]
-                    + tile.x_size * self.GRID_SIZE_X
-                    - self.RACK_TILE_INSET * self.TILE_INSET
-                    - self.TEXT_LINE_HEIGHT / 2,
-                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + grid_offset,
-                ),
-                class_="button-text",
-            )
-        )
+    def _draw_tile_links(self, drawing, x_labels, y_labels):
+        """Draw links for each tile in the grid."""
+        for y_idx, y_label in enumerate(y_labels):
+            for x_idx, x_label in enumerate(x_labels):
+                try:
+                    axis = {"x": x_label, "y": y_label, "x_idx": x_idx, "y_idx": y_idx}
+                    self._draw_tile_link(drawing, axis)
+                except (ValueError, TypeError) as e:
+                    logger.warning("Error processing grid position (%s, %s): %s", x_idx, y_idx, e)
+                    continue
 
     def _draw_tile(self, drawing, tile):
         """Render an individual FloorPlanTile to the drawing."""
@@ -319,26 +258,6 @@ class FloorPlanSVG:
                     class_="tile-status",
                 )
             )
-        # TODO Make this a user option in the future or remove. It would draw a smaller status box around a Rack tile.
-        # Tile contains a rack and is being placed on a group of rackgroup tiles or status tiles
-        # else:
-        #     origin = (
-        #         (tile.x_origin - 1) * self.GRID_SIZE_X + self.GRID_OFFSET + self.BORDER_WIDTH,
-        #         (tile.y_origin - 1) * self.GRID_SIZE_Y + self.GRID_OFFSET + self.BORDER_WIDTH,
-        #     )
-        #     # Draw the tile outline and fill it with its status color
-        #     drawing.add(
-        #         drawing.rect(
-        #             origin,
-        #             (
-        #                 self.GRID_SIZE_X * tile.x_size - self.BORDER_WIDTH * self.TILE_INSET,
-        #                 self.GRID_SIZE_Y * tile.y_size - self.RACK_BORDER_OFFSET * self.TILE_INSET,
-        #             ),
-        #             rx=self.CORNER_RADIUS,
-        #             style=f"fill: #{tile.status.color}",
-        #             class_="tile-status",
-        #         )
-        #     )
 
     def _draw_defined_rackgroup_tile(self, drawing, tile):
         """Add Status and RackGroup text to a rendered tile."""
@@ -548,6 +467,74 @@ class FloorPlanSVG:
         # Add buttons for editing and deleting the Rack tile definition
         if tile.on_group_tile is True:
             self._draw_edit_delete_button(drawing, tile, self.RACK_BUTTON_OFFSET, self.GRID_OFFSET)
+
+    def _draw_edit_delete_button(self, drawing, tile, button_offset, grid_offset):
+        if tile.allocation_type == AllocationTypeChoices.RACK:
+            tile_inset = 0
+        else:
+            tile_inset = self.TILE_INSET
+
+        origin = (
+            (tile.x_origin - self.floor_plan.x_origin_seed) * self.GRID_SIZE_X + self.GRID_OFFSET + tile_inset,
+            (tile.y_origin - self.floor_plan.y_origin_seed) * self.GRID_SIZE_Y + self.GRID_OFFSET + tile_inset,
+        )
+
+        # Add a button for editing the tile definition
+        edit_url = reverse("plugins:nautobot_floor_plan:floorplantile_edit", kwargs={"pk": tile.pk})
+        query_params = urlencode({"return_url": self.return_url})
+        edit_url = f"{self.base_url}{edit_url}?{query_params}"
+        link = drawing.add(drawing.a(href=edit_url, target="_top"))
+        link.add(
+            drawing.rect(
+                (origin[0] + self.TILE_INSET + button_offset, origin[1] + self.TILE_INSET + grid_offset),
+                (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
+                class_="edit-tile-button",
+                rx=self.CORNER_RADIUS,
+            )
+        )
+        link.add(
+            drawing.text(
+                "✎",
+                insert=(
+                    origin[0] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + button_offset,
+                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + grid_offset,
+                ),
+                class_="button-text",
+            )
+        )
+
+        # Add a button for deleting the tile definition
+        delete_url = reverse("plugins:nautobot_floor_plan:floorplantile_delete", kwargs={"pk": tile.pk})
+        query_params = urlencode({"return_url": self.return_url})
+        delete_url = f"{self.base_url}{delete_url}?{query_params}"
+        link = drawing.add(drawing.a(href=delete_url, target="_top"))
+        link.add(
+            drawing.rect(
+                (
+                    origin[0]
+                    + tile.x_size * self.GRID_SIZE_X
+                    - self.RACK_TILE_INSET * self.TILE_INSET
+                    - self.TEXT_LINE_HEIGHT,
+                    origin[1] + self.TILE_INSET + grid_offset,
+                ),
+                (self.TEXT_LINE_HEIGHT, self.TEXT_LINE_HEIGHT),
+                class_="delete-tile-button",
+                rx=self.CORNER_RADIUS,
+            )
+        )
+        link.add(
+            drawing.text(
+                "X",
+                insert=(
+                    origin[0]
+                    + tile.x_size * self.GRID_SIZE_X
+                    - self.RACK_TILE_INSET * self.TILE_INSET
+                    - self.TEXT_LINE_HEIGHT / 2,
+                    origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + grid_offset,
+                ),
+                class_="button-text",
+            )
+        )
 
     def render(self):
         """Generate an SVG document representing a FloorPlan."""

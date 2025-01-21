@@ -34,4 +34,6 @@ class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
             "y_axis_step": 1,
             "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
             "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+            "x_custom_ranges": [{}],  # Placeholder for x_custom_ranges
+            "y_custom_ranges": [{}],  # Placeholder for y_custom_ranges
         }
