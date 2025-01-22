@@ -54,6 +54,26 @@ def render_axis_origin(record, axis):
     return general.axis_init_label_conversion(axis_seed, origin_value_str, axis_step, is_letters)
 
 
+@register.simple_tag
+def render_axis_origin_tag(record, axis):
+    """
+    Template tag to render an axis origin label.
+
+    This tag generates the label for a specified axis ('X' or 'Y') of a record's floor plan.
+    It handles custom labels, letter-based conversions, and numeric conversions based on the
+    floor plan's configuration.
+
+    Args:
+        record (object): The record containing the axis origin and associated floor plan.
+        axis (str): The axis for which to render the label ('X' or 'Y').
+
+    Returns:
+        str: The converted axis label, either a custom label, letter-based label,
+             or numeric label depending on the floor plan's settings.
+    """
+    return render_axis_origin(record, axis)
+
+
 @register.filter()
 def count_children_floor_plans(location):
     """Returns count of Children with FloorPlans for a given location."""

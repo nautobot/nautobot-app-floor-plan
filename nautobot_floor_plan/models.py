@@ -14,6 +14,9 @@ from nautobot_floor_plan.choices import (
     RackOrientationChoices,
 )
 from nautobot_floor_plan.svg import FloorPlanSVG
+from nautobot_floor_plan.templatetags.seed_helpers import (
+    render_axis_origin,
+)
 from nautobot_floor_plan.utils.custom_validators import ValidateNotZero
 from nautobot_floor_plan.utils.label_generator import FloorPlanLabelGenerator
 
@@ -458,4 +461,4 @@ class FloorPlanTile(PrimaryModel):
 
     def __str__(self):
         """Stringify instance."""
-        return f"Tile {self.bounds} in {self.floor_plan}"
+        return f"Tile ({render_axis_origin(self, 'X')}, {render_axis_origin(self, 'Y')}), ({self.x_size},{self.y_size}) in {self.floor_plan}"

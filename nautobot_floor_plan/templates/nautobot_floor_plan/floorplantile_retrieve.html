@@ -1,5 +1,6 @@
 {% extends "generic/object_retrieve.html" %}
 {% load helpers %}
+{% load seed_helpers %}
 
 {% block breadcrumbs %}
     <li><a href="{% url 'dcim:location_list' %}">Locations</a></li>
@@ -23,7 +24,7 @@
                 </td>
             <tr>
                 <td>Origin</td>
-                <td>({{ object.x_origin }}, {{ object.y_origin }})</td>
+                <td>({% render_axis_origin_tag object "x" %},{% render_axis_origin_tag object "y" %})</td>
             </tr>
             <tr>
                 <td>Size (in Tiles Covered)</td>
