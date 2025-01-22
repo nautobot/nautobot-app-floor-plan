@@ -209,11 +209,11 @@ class FloorPlanForm(NautobotModelForm):
 
         # Validate X size only if a limit is set
         if x_size_limit is not None and x_size is not None and x_size > x_size_limit:
-            self.add_error("x_size", f"X size cannot exceed {x_size_limit}.")
+            self.add_error("x_size", f"X size cannot exceed {x_size_limit} as defined in nautobot_config.py.")
 
         # Validate Y size only if a limit is set
         if y_size_limit is not None and y_size is not None and y_size > y_size_limit:
-            self.add_error("y_size", f"Y size cannot exceed {y_size_limit}.")
+            self.add_error("y_size", f"Y size cannot exceed {y_size_limit} as defined in nautobot_config.py.")
 
         return cleaned_data
 

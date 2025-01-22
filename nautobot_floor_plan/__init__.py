@@ -37,6 +37,8 @@ class FloorPlanConfig(NautobotAppConfig):
                 {"name": "Planned", "color": "00bcd4"},
             ],
         },
+        "x_size_limit": None,
+        "y_size_limit": None,
     }
     caching_config = {}
     docs_view_name = "plugins:nautobot_floor_plan:docs"

@@ -128,9 +128,9 @@ PLUGINS = ["nautobot_floor_plan"]
 
 # Apps configuration settings. These settings are used by various Apps that the user may have installed.
 # Each key in the dictionary is the name of an installed App and its value is a dictionary of settings.
-PLUGINS_CONFIG = {
-    "nautobot_floor_plan": {
-        "x_size_limit": None,  # No limit by default
-        "y_size_limit": None,  # No limit by default
-    },
-}
+# PLUGINS_CONFIG = {
+#     'nautobot_floor_plan': {
+#         'foo': 'bar',
+#         'buzz': 'bazz'
+#     }
+# }
