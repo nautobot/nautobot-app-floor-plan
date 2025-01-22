@@ -675,7 +675,7 @@ class TestFloorPlanForm(TestCase):
         )
         self.assertFalse(form.is_valid())
         self.assertIn("x_size", form.errors)
-        self.assertEqual(form.errors["x_size"], ["X size cannot exceed 100."])
+        self.assertEqual(form.errors["x_size"], ["X size cannot exceed 100 as defined in nautobot_config.py."])
 
     def test_create_large_floor_plan_with_no_limit(self):
         """Test that a large floor plan can be created if limits are set to None."""
