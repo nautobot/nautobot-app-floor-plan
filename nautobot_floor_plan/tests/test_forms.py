@@ -1,5 +1,6 @@
 """Test floorplan forms."""
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from nautobot.core.testing import TestCase
 from nautobot.extras.models import Tag
@@ -650,6 +651,58 @@ class TestFloorPlanForm(TestCase):
                 self.assertFalse(is_valid, f"Form should be invalid for {test_case['x_custom_ranges']}")
                 if "error" in test_case:
                     self.assertIn(test_case["error"], str(form.errors))
+
+    def test_create_floor_plan_with_limits(self):
+        """Test that a floor plan cannot be created if it exceeds configured limits."""
+        # Set limits in the settings
+        settings.PLUGINS_CONFIG["nautobot_floor_plan"]["x_size_limit"] = 100
+        settings.PLUGINS_CONFIG["nautobot_floor_plan"]["y_size_limit"] = 100
+
+        form = forms.FloorPlanForm(
+            data={
+                "location": self.floors[0].pk,
+                "x_size": 150,
+                "y_size": 50,
+                "tile_depth": 100,
+                "tile_width": 200,
+                "x_axis_labels": "numbers",
+                "x_origin_seed": 1,
+                "x_axis_step": 1,
+                "y_axis_labels": "numbers",
+                "y_origin_seed": 1,
+                "y_axis_step": 1,
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("x_size", form.errors)
+        self.assertEqual(form.errors["x_size"], ["X size cannot exceed 100 as defined in nautobot_config.py."])
+
+    def test_create_large_floor_plan_with_no_limit(self):
+        """Test that a large floor plan can be created if limits are set to None."""
+
+        settings.PLUGINS_CONFIG["nautobot_floor_plan"]["x_size_limit"] = None
+        settings.PLUGINS_CONFIG["nautobot_floor_plan"]["y_size_limit"] = None
+
+        form = forms.FloorPlanForm(
+            data={
+                "location": self.floors[0].pk,
+                "x_size": 300,
+                "y_size": 300,
+                "tile_depth": 100,
+                "tile_width": 200,
+                "x_axis_labels": "numbers",
+                "x_origin_seed": 1,
+                "x_axis_step": 1,
+                "y_axis_labels": "numbers",
+                "y_origin_seed": 1,
+                "y_axis_step": 1,
+            }
+        )
+        self.assertTrue(form.is_valid())
+        floor_plan = form.save()
+        self.assertIsNotNone(floor_plan)
+        self.assertEqual(floor_plan.x_size, 300)
+        self.assertEqual(floor_plan.y_size, 300)
 
 
 class TestFloorPlanTileForm(TestCase):

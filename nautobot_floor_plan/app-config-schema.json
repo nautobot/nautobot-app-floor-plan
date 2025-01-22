@@ -30,6 +30,14 @@
           }
         }
       }
+    },
+    "x_size_limit": {
+      "type": ["integer", "null"],
+      "description": "Maximum allowed X size for the floor plan. Set to null for no limit."
+    },
+    "y_size_limit": {
+      "type": ["integer", "null"],
+      "description": "Maximum allowed Y size for the floor plan. Set to null for no limit."
     }
   },
   "additionalProperties": false

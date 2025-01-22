@@ -1,5 +1,6 @@
 """Test cases for template tags."""
 
+from django.template import Context, Template
 from nautobot.core.testing import TestCase
 
 from nautobot_floor_plan import choices, models
@@ -110,3 +111,22 @@ class TestSeedHelpers(TestCase):
 
             # Clean up for next test
             models.FloorPlanCustomAxisLabel.objects.all().delete()
+
+    def test_render_axis_origin_tag(self):
+        """Test render_axis_origin_tag template tag."""
+        floor_plan = models.FloorPlan.objects.create(
+            location=self.floors[0],
+            x_size=3,
+            y_size=3,
+            x_origin_seed=1,
+            y_origin_seed=1,
+            x_axis_labels=choices.AxisLabelsChoices.LETTERS,
+        )
+        floor_plan_tile = models.FloorPlanTile.objects.create(
+            floor_plan=floor_plan, x_origin=27, y_origin=1, status=self.status
+        )
+
+        template = Template('{% load seed_helpers %}{% render_axis_origin_tag floor_plan_tile "x" %}')
+        rendered = template.render(Context({"floor_plan_tile": floor_plan_tile}))
+
+        self.assertEqual(rendered.strip(), "AA")

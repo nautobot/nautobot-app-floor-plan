@@ -48,6 +48,9 @@ PLUGINS_CONFIG = {
             "FloorPlanTile": [
                 {"name": "Active", "color": "4caf50"},
             ],
+        },
+        "x_size_limit": 100,
+        "y_size_limit": 100,
     }
 }
 ```
@@ -67,6 +70,7 @@ Then restart the Nautobot services which may include:
 ```shell
 sudo systemctl restart nautobot nautobot-worker nautobot-scheduler
 ```
+
 # Nautobot Floor Plan App Configuration and Customization
 
 ## Verifying Installation
@@ -82,6 +86,8 @@ The app behavior can be customized with the following configuration settings:
 | `default_x_axis_labels` | `"letters"`                               | `"numbers"` | Defines the label style for the X-axis of the floor plan grid. Options are `numbers` or `letters`. This sets the default value in the create form. |
 | `default_y_axis_labels` | `"numbers"`                               | `"numbers"` | Defines the label style for the Y-axis of the floor plan grid. Options are `numbers` or `letters`. This sets the default value in the create form. |
 | `default_statuses`      | `{"name": "Active", "color": "4caf50"}`   | See note below | A list of name and color key-value pairs for the **FloorPlanTile** model.                                                                      |
+| x_size_limit | 100 | None | An integer that sets the maximum allowable "x_size" for a Floor Plan. If set to None, there is no limit.|
+| y_size_limit | 100 | None | An integer that sets the maximum allowable "y_size" for a Floor Plan. If set to None, there is no limit.|
 
 !!! note
     Default statuses are configured as follows:
