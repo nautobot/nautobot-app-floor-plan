@@ -35,5 +35,5 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Housekeeping
 
-- [#1](https://github.com/nautobot/nautobot-app-floor-plan/issues/1) - Rebaked from the cookie `nautobot-app-v2.4.1`.
+- [#142](https://github.com/nautobot/nautobot-app-floor-plan/pull/142) - Rebaked from the cookie `nautobot-app-v2.4.1`.
 - [#137](https://github.com/nautobot/nautobot-app-floor-plan/issues/137) - Fixed spelling errors and formatting on documentation.
