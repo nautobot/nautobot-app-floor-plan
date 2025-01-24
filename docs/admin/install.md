@@ -1,21 +1,24 @@
 # Installing the App in Nautobot
 
-Here you will find detailed instructions on how to **install** and **configure** the App within your Nautobot environment.
+This section provides detailed instructions on how to **install** and **configure** the app in your Nautobot environment.
 
 ## Prerequisites
 
-- The app is compatible with Nautobot 2.0.0 and higher.
-- Databases supported: PostgreSQL, MySQL
+- Compatible with Nautobot **2.0.0 and higher**.
+- Supported databases: **PostgreSQL** and **MySQL**.
 
 !!! note
-    Please check the [dedicated page](compatibility_matrix.md) for a full compatibility matrix and the deprecation policy.
+    For a full compatibility matrix and details about the deprecation policy, refer to the [Compatibility Matrix](compatibility_matrix.md).
 
 ## Install Guide
 
 !!! note
-    Apps can be installed from the [Python Package Index](https://pypi.org/) or locally. See the [Nautobot documentation](https://docs.nautobot.com/projects/core/en/stable/user-guide/administration/installation/app-install/) for more details. The pip package name for this app is [`nautobot-floor-plan`](https://pypi.org/project/nautobot-floor-plan/).
+    Apps can be installed from the [Python Package Index (PyPI)](https://pypi.org/) or locally. For more details, see the official [Nautobot App Installation Guide](https://docs.nautobot.com/projects/core/en/stable/user-guide/administration/installation/app-install/).  
+    The pip package name for this app is [`nautobot-floor-plan`](https://pypi.org/project/nautobot-floor-plan/).
 
-The app is available as a Python package via PyPI and can be installed with `pip`:
+### Step 1: Install the App
+
+Install the app via PyPI using `pip`:
 
 ```shell
 pip install nautobot-floor-plan
@@ -26,6 +29,8 @@ To ensure Nautobot Floor Plan is automatically re-installed during future upgrad
 ```shell
 echo nautobot-floor-plan >> local_requirements.txt
 ```
+
+### Step 2: Configure the App
 
 Once installed, the app needs to be enabled in your Nautobot configuration. The following block of code below shows the additional configuration required to be added to your `nautobot_config.py` file:
 
@@ -43,6 +48,9 @@ PLUGINS_CONFIG = {
             "FloorPlanTile": [
                 {"name": "Active", "color": "4caf50"},
             ],
+        },
+        "x_size_limit": 100,
+        "y_size_limit": 100,
     }
 }
 ```
@@ -63,29 +71,105 @@ Then restart the Nautobot services which may include:
 sudo systemctl restart nautobot nautobot-worker nautobot-scheduler
 ```
 
-If the App has been installed successfully, the Nautobot web UI should now show a new "Location Floor Plans" menu item under the "Organization" menu.
+# Nautobot Floor Plan App Configuration and Customization
 
-## App Configuration
+## Verifying Installation
 
-The app behavior can be controlled with the following list of settings:
+Once the app is successfully installed, the Nautobot web UI will display a new "Location Floor Plans" menu item under the **Organization** menu.
 
-| Key                | Example   | Default  | Description                                                                                                                                    |
-|--------------------|-----------|----------|------------------------------------------------------------------------------------------------------------------------------------------------|
-| default_x_axis_labels | "letters" | "numbers" | Label style for the floor plan grid. Can use `numbers` or `letters` in order. This setting will set the default selected value in the create form. |
-| default_y_axis_labels | "numbers" | "numbers" | Label style for the floor plan grid. Can use `numbers` or `letters` in order. This setting will set the default selected value in the create form. |
-| default_statuses| "name": "Active", "color": "4caf50"| See Note Below | A list of name and color key value pairs for the FloorPlanTile model|
+## App Configuration Details
+
+The app behavior can be customized with the following configuration settings:
+
+| Key                    | Example                                   | Default     | Description                                                                                                                                    |
+|------------------------|-------------------------------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| `default_x_axis_labels` | `"letters"`                               | `"numbers"` | Defines the label style for the X-axis of the floor plan grid. Options are `numbers` or `letters`. This sets the default value in the create form. |
+| `default_y_axis_labels` | `"numbers"`                               | `"numbers"` | Defines the label style for the Y-axis of the floor plan grid. Options are `numbers` or `letters`. This sets the default value in the create form. |
+| `default_statuses`      | `{"name": "Active", "color": "4caf50"}`   | See note below | A list of name and color key-value pairs for the **FloorPlanTile** model.                                                                      |
+| x_size_limit | 100 | None | An integer that sets the maximum allowable "x_size" for a Floor Plan. If set to None, there is no limit.|
+| y_size_limit | 100 | None | An integer that sets the maximum allowable "y_size" for a Floor Plan. If set to None, there is no limit.|
 
 !!! note
-    Defaults for statuses are as follows:
+    Default statuses are configured as follows:
 
     ```python
-            "default_statuses": {
-                "FloorPlanTile": [
-                    {"name": "Active", "color": "4caf50"},
-                    {"name": "Reserved", "color": "00bcd4"},
-                    {"name": "Decommissioning", "color": "ffc107"},
-                    {"name": "Unavailable", "color": "111111"},
-                    {"name": "Planned", "color": "00bcd4"},
-                ],
-            },
+    "default_statuses": {
+        "FloorPlanTile": [
+            {"name": "Active", "color": "4caf50"},
+            {"name": "Reserved", "color": "00bcd4"},
+            {"name": "Decommissioning", "color": "ffc107"},
+            {"name": "Unavailable", "color": "111111"},
+            {"name": "Planned", "color": "00bcd4"},
+        ],
+    }
     ```
+
+## Custom Labels
+
+The app supports custom label types, defined in `choices.py`:
+
+```python
+class CustomAxisLabelsChoices(ChoiceSet):
+    """Choices for custom axis label types."""
+
+    ROMAN = "roman"
+    GREEK = "greek"
+    BINARY = "binary"
+    HEX = "hex"
+    NUMALPHA = "numalpha"
+    LETTERS = "letters"
+    ALPHANUMERIC = "alphanumeric"
+    NUMBERS = "numbers"
+
+    CHOICES = (
+        (ROMAN, "Roman (e.g., I, II, III)"),
+        (GREEK, "Greek (e.g., α, β, γ)"),
+        (BINARY, "Binary (e.g., 1, 10, 11)"),
+        (HEX, "Hexadecimal (e.g., 1, A, F)"),
+        (NUMALPHA, "numalpha (e.g., 02A)"),
+        (LETTERS, "Letters (e.g., A, B, C)"),
+        (ALPHANUMERIC, "Alphanumeric (e.g., A01, B02)"),
+        (NUMBERS, "Numbers (e.g., 1, 2, 3)"),
+    )
+```
+
+### Adding New Custom Labels
+
+To define new custom label types:
+
+1. Add the new choice to the `CustomAxisLabelsChoices` class in `choices.py`.
+2. Implement a corresponding converter class in `label_converters.py`.
+
+#### Label Converter Base Class
+
+All label converters inherit from the base `LabelConverter` class:
+
+```python
+class LabelConverter:
+    """Base class for label conversion."""
+
+    def __init__(self):
+        """Initialize converter."""
+        self.current_label = None
+
+    def to_numeric(self, label: str) -> int:
+        """Convert label to numeric value."""
+        raise NotImplementedError
+
+    def from_numeric(self, number: int) -> str:
+        """Convert numeric value to label."""
+        raise NotImplementedError
+```
+
+The to_numeric and from_numeric methods handle:
+
+- Converting database integer values to display labels on the Floor Plan grid.
+- Converting labels back to the corresponding integer values for database storage.
+
+### Label Factory
+
+LabelConverterFactory located in label_converters.py is used to lookup the correct converter that will be used based off of the CustomAxisLabelsChoices class from choices.py to the proper converter class in label_converters.py.
+
+### Validation Logic
+
+Custom label validation is handled in custom_validators.py, ensuring that the labels meet the required format and rules before being applied to the Floor Plan.

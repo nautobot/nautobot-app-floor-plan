@@ -1,0 +1,105 @@
+{% extends 'generic/object_create.html' %}
+{% load static %}
+
+{% load form_helpers %}
+{% load seed_helpers %}
+
+{% block form %}
+<div class="panel panel-default">
+    <div class="panel-heading"><strong>Floor Plan</strong></div>
+    <div class="panel-body">
+        {% for field_name in form.fieldsets.0.1 %}
+            {% render_field form|get_fieldset_field:field_name %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading"><strong>X Axis Settings</strong></div>
+    <div class="panel-body">
+        <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" {% if not form.has_x_custom_labels and not form.errors.x_custom_ranges %}class="active"{% endif %}>
+                    <a href="#x-default" aria-controls="x-default" role="tab" data-toggle="tab">Default Labels</a>
+                </li>
+                <li role="presentation" {% if form.has_x_custom_labels or form.errors.x_custom_ranges %}class="active"{% endif %}>
+                    <a href="#x-custom" aria-controls="x-custom" role="tab" data-toggle="tab">Custom Labels</a>
+                </li>
+            </ul>
+            
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane {% if not form.has_x_custom_labels and not form.errors.x_custom_ranges %}active{% endif %}" id="x-default">
+                    {% for field in form.fieldsets.1.1.tabs.0.1 %}
+                        {% render_field form|get_fieldset_field:field %}
+                    {% endfor %}
+                </div>
+                <div role="tabpanel" class="tab-pane {% if form.has_x_custom_labels or form.errors.x_custom_ranges %}active{% endif %}" id="x-custom">
+                    {% for field in form.fieldsets.1.1.tabs.1.1 %}
+                        {% render_field form|get_fieldset_field:field %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading"><strong>Y Axis Settings</strong></div>
+    <div class="panel-body">
+        <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" {% if not form.has_y_custom_labels and not form.errors.y_custom_ranges %}class="active"{% endif %}>
+                    <a href="#y-default" aria-controls="y-default" role="tab" data-toggle="tab">Default Labels</a>
+                </li>
+                <li role="presentation" {% if form.has_y_custom_labels or form.errors.y_custom_ranges %}class="active"{% endif %}>
+                    <a href="#y-custom" aria-controls="y-custom" role="tab" data-toggle="tab">Custom Labels</a>
+                </li>
+            </ul>
+            
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane {% if not form.has_y_custom_labels and not form.errors.y_custom_ranges %}active{% endif %}" id="y-default">
+                    {% for field in form.fieldsets.2.1.tabs.0.1 %}
+                        {% render_field form|get_fieldset_field:field %}
+                    {% endfor %}
+                </div>
+                <div role="tabpanel" class="tab-pane {% if form.has_y_custom_labels or form.errors.y_custom_ranges %}active{% endif %}" id="y-custom">
+                    {% for field in form.fieldsets.2.1.tabs.1.1 %}
+                        {% render_field form|get_fieldset_field:field %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Custom Label Ranges Examples</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Here are some examples of custom label ranges:</p>
+                <ul>
+                    <li>[{"start": "02A", "end": "02Z", "step": 1, "increment_letter": true, "label_type": "numalpha"}]</li><br>
+                    <li>[{"start": "A", "end": "Z", "step": 1, "increment_letter": true, "label_type": "letters"}]</li><br>
+                    <li>[{"start": "A01", "end": "A15", "step": 1, "label_type": "alphanumeric"}]</li><br>
+                    <li>[{"start": "01", "end": "05", "step": 1, "label_type": "numbers"}, {"start": "11", "end": "15", "step": 1, "label_type": "numbers"}]</li><br>
+                    <li>[{"start": "I", "end": "X", "step": 1, "label_type": "roman"}]</li><br>
+                    <li>[{"start": "α", "end": "ω", "step": 1, "label_type": "greek"}]</li><br>
+                    <li>[{"start": "1", "end": "15", "step": 1, "label_type": "hex"}]</li><br>
+                    <li>[{"start": "1", "end": "15", "step": 1, "label_type": "binary"}]</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'inc/extras_features_edit_form_fields.html' %}
+{% endblock %}
