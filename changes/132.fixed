@@ -1,1 +1,0 @@
-Changed Floor Plans to disable being resized if a tile has been placed to prevent phantom tiles outside of the original size.
