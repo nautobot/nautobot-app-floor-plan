@@ -151,7 +151,8 @@ After clicking **Create**, you will be presented with a newly rendered floor pla
 
 ### Adding Tiles to the Floor Plan
 
-To add information to a tile, click the **"+"** icon in the corner of any rectangle in the grid.  
+To add information to a tile, click the **"+"** icon in the corner of any rectangle in the grid.
+  
 - If you've defined a large floor plan or have a small display, you can use your mouse wheel to zoom in for a better view.  
 - While zoomed in, click and drag to pan around the grid.  
 
@@ -161,29 +162,36 @@ Clicking a tile's **"+"** icon will open a simple create/edit form for describin
 
 ### Tile Options
 
-For each tile, you can:  
+For each tile, you can:
+
 - **Assign a Status**: Choose from the predefined Statuses (e.g., "Active", "Reserved").  
 - **Assign a Rack or RackGroup**: Specify the rack or rack group associated with the tile.  
 - **Specify Rack Orientation**: Define the orientation of the rack relative to the floor plan.  
 - **Adjust Tile Size**: Expand a tile to cover multiple spaces.  
   - Useful for documenting larger-than-usual racks or marking sections of the floor plan as "Reserved" or "Unavailable."
 
+!!! note
+    Once a Rack has been placed on a **Floor Plan Tile** you cannot update the **Location** of the Rack until it has been removed from the Floor Plan or the Floor Plan has been deleted.
+
 ### Working with RackGroup and Status Tiles
 
-When tiles cover multiple spaces:  
+When tiles cover multiple spaces:
+
 - You can place racks within these tiles.  
 - For RackGroup tiles, racks must be added to the appropriate RackGroup.  
 - Tile size can be increased or decreased, as long as they do not overlap with other tiles.
 
 ### Additional Tile Information
 
-When a rack is assigned to a tile, the display of the tile will also include:  
+When a rack is assigned to a tile, the display of the tile will also include:
+
 - **Tenant Information**: The tenant and tenant group associated with the rack.  
 
 ![Populated floor plan](../images/floor-plan-populated.png)
 
 ### Resizing the Floor Plan
 
-Once tiles have been added, the floor plan can no longer be resized.  
+Once tiles have been added, the floor plan can no longer be resized.
+
 - This restriction prevents resizing that could place tiles outside the new dimensions.  
 - To change the floor plan's dimensions, you must: Remove all tiles, or Delete and recreate the floor plan.

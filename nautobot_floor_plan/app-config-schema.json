@@ -12,6 +12,18 @@
       "type": "string",
       "default": "numbers"
     },
+    "x_size_limit": {
+      "type": ["integer", "null"],
+      "description": "Maximum allowed X size for the floor plan. Set to null for no limit."
+    },
+    "y_size_limit": {
+      "type": ["integer", "null"],
+      "description": "Maximum allowed Y size for the floor plan. Set to null for no limit."
+    },
+    "enable_rack_validation_middleware": {
+      "type": "boolean",
+      "default": true
+    },
     "default_statuses": {
       "type": "object",
       "properties": {
@@ -30,14 +42,6 @@
           }
         }
       }
-    },
-    "x_size_limit": {
-      "type": ["integer", "null"],
-      "description": "Maximum allowed X size for the floor plan. Set to null for no limit."
-    },
-    "y_size_limit": {
-      "type": ["integer", "null"],
-      "description": "Maximum allowed Y size for the floor plan. Set to null for no limit."
     }
   },
   "additionalProperties": false

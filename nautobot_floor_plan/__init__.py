@@ -28,6 +28,9 @@ class FloorPlanConfig(NautobotAppConfig):
     default_settings = {
         "default_x_axis_labels": AxisLabelsChoices.NUMBERS,
         "default_y_axis_labels": AxisLabelsChoices.NUMBERS,
+        "x_size_limit": None,
+        "y_size_limit": None,
+        "enable_rack_validation_middleware": True,
         "default_statuses": {
             "FloorPlanTile": [
                 {"name": "Active", "color": "4caf50"},
@@ -37,8 +40,6 @@ class FloorPlanConfig(NautobotAppConfig):
                 {"name": "Planned", "color": "00bcd4"},
             ],
         },
-        "x_size_limit": None,
-        "y_size_limit": None,
     }
     caching_config = {}
     docs_view_name = "plugins:nautobot_floor_plan:docs"
@@ -56,10 +57,12 @@ class FloorPlanConfig(NautobotAppConfig):
         """Callback after app is loaded."""
         super().ready()
         from .signals import (  # pylint: disable=import-outside-toplevel
+            load_middleware,
             post_migrate_create__add_statuses,
         )
 
         post_migrate.connect(post_migrate_create__add_statuses, sender=self)
+        load_middleware()
 
         self.validate_config_options()
 
