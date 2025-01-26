@@ -28,4 +28,4 @@ def post_migrate_create__add_statuses(sender, *, apps=global_apps, **kwargs):
 def load_middleware():
     """Dynamically load the RackLocationValidationMiddleware if enabled in plugin settings."""
     if PLUGIN_SETTINGS.get("enable_rack_validation_middleware"):
-        settings.MIDDLEWARE.append("nautobot_floor_plan.middleware.RackLocationValidationMiddleware")
+        settings.MIDDLEWARE.append("nautobot_floor_plan.utils.middleware.RackLocationValidationMiddleware")
