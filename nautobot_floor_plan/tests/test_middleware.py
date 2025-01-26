@@ -8,9 +8,9 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from nautobot.dcim.models import Rack
 
-from nautobot_floor_plan.middleware import RackLocationValidationMiddleware
 from nautobot_floor_plan.models import FloorPlan, FloorPlanTile
 from nautobot_floor_plan.tests import fixtures
+from nautobot_floor_plan.utils.middleware import RackLocationValidationMiddleware
 
 
 class RackLocationValidationMiddlewareTest(TestCase):
