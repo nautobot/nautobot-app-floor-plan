@@ -354,7 +354,6 @@ class RackValidator(CustomValidator):
 
         # Skip validation if the Rack is new
         if rack.present_in_database:
-
             # Get the original instance of the rack
             original_instance = Rack.objects.get(pk=rack.pk)
 
