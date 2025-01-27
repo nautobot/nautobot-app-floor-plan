@@ -87,7 +87,6 @@ The app behavior can be customized with the following configuration settings:
 | `default_y_axis_labels` | `"numbers"`                               | `"numbers"` | Defines the label style for the Y-axis of the floor plan grid. Options are `numbers` or `letters`. This sets the default value in the create form. |
 | x_size_limit | 100 | None | An integer that sets the maximum allowable "x_size" for a Floor Plan. If set to None, there is no limit.|
 | y_size_limit | 100 | None | An integer that sets the maximum allowable "y_size" for a Floor Plan. If set to None, there is no limit.|
-|enable_rack_validation_middleware| True | True| Boolean value that loads Floor Plan rack movement validation into Django Middleware.|
 | `default_statuses`      | `{"name": "Active", "color": "4caf50"}`   | See note below | A list of name and color key-value pairs for the **FloorPlanTile** model.                                                                      |
 
 !!! note

@@ -5,8 +5,10 @@ from dataclasses import dataclass
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
+from nautobot.apps.models import CustomValidator
+from nautobot.dcim.models import Rack
 
-from nautobot_floor_plan import choices
+from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.utils import general
 from nautobot_floor_plan.utils.label_converters import LabelConverterFactory
 
@@ -334,3 +336,34 @@ class ValidateNotZero(BaseValidator):
                 self.message,
                 code=self.code,
             )
+
+
+class RackValidator(CustomValidator):
+    """Custom Validator to verify a Rack is not installed on a Floor Plan before allowing the changing of Location."""
+
+    model = "dcim.rack"
+
+    def clean(self):
+        """
+        Validate that the Rack's location is not changed if it is installed on a Floor Plan.
+
+        Raises:
+            ValidationError: If the Rack is installed on a Floor Plan and its location is being changed.
+        """
+        rack = self.context["object"]
+
+        # Skip validation if the Rack is new
+        if rack.present_in_database:
+
+            # Get the original instance of the rack
+            original_instance = Rack.objects.get(pk=rack.pk)
+
+            # Check if the location is being changed
+            if (
+                original_instance.location_id != rack.location_id
+                and models.FloorPlanTile.objects.filter(rack=rack).exists()
+            ):
+                self.validation_error({"location": "Cannot move Rack as it is currently installed in a FloorPlan."})
+
+
+custom_validators = [RackValidator]

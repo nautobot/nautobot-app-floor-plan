@@ -22,6 +22,7 @@ class FloorPlanConfig(NautobotAppConfig):
     author = "Network to Code, LLC"
     description = "Nautobot App for representing rack positions on per-location floor plan grids."
     base_url = "floor-plan"
+    custom_validators = "utils.custom_validators.custom_validators"
     required_settings = []
     min_version = "2.0.0"
     max_version = "2.9999"
@@ -30,7 +31,6 @@ class FloorPlanConfig(NautobotAppConfig):
         "default_y_axis_labels": AxisLabelsChoices.NUMBERS,
         "x_size_limit": None,
         "y_size_limit": None,
-        "enable_rack_validation_middleware": True,
         "default_statuses": {
             "FloorPlanTile": [
                 {"name": "Active", "color": "4caf50"},
@@ -56,13 +56,12 @@ class FloorPlanConfig(NautobotAppConfig):
     def ready(self):
         """Callback after app is loaded."""
         super().ready()
+
         from .signals import (  # pylint: disable=import-outside-toplevel
-            load_middleware,
             post_migrate_create__add_statuses,
         )
 
         post_migrate.connect(post_migrate_create__add_statuses, sender=self)
-        load_middleware()
 
         self.validate_config_options()
 

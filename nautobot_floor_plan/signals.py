@@ -23,9 +23,3 @@ def post_migrate_create__add_statuses(sender, *, apps=global_apps, **kwargs):
             if ct_model not in ct_status.content_types.all():
                 ct_status.content_types.add(ct_model)
                 ct_status.save()
-
-
-def load_middleware():
-    """Dynamically load the RackLocationValidationMiddleware if enabled in plugin settings."""
-    if PLUGIN_SETTINGS.get("enable_rack_validation_middleware"):
-        settings.MIDDLEWARE.append("nautobot_floor_plan.utils.middleware.RackLocationValidationMiddleware")
