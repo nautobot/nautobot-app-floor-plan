@@ -4,6 +4,8 @@
 
 """Forms for nautobot_floor_plan."""
 
+import json
+
 from django import forms
 from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.forms import (
@@ -46,10 +48,10 @@ class FloorPlanForm(NautobotModelForm):
         help_text="A positive or negative integer, excluding zero",
         required=True,
     )
-    x_custom_ranges = forms.JSONField(
+    x_custom_ranges = forms.CharField(
         label="Custom Ranges for X Axis",
         required=False,
-        help_text=CUSTOM_RANGES_HELP_TEXT,
+        widget=forms.HiddenInput(),
     )
 
     # Y Axis Fields
@@ -63,11 +65,12 @@ class FloorPlanForm(NautobotModelForm):
         help_text="A positive or negative integer, excluding zero",
         required=True,
     )
-    y_custom_ranges = forms.JSONField(
-        label="Custom Ranges for Y Axis",
+    y_custom_ranges = forms.CharField(
+        label="Custom Ranges for X Axis",
         required=False,
-        help_text=CUSTOM_RANGES_HELP_TEXT,
+        widget=forms.HiddenInput(),
     )
+
     is_tile_movable = forms.BooleanField(
         required=False,
         label="Movable Tiles",
@@ -299,12 +302,46 @@ class FloorPlanForm(NautobotModelForm):
         return custom_ranges
 
     def clean_x_custom_ranges(self):
-        """Validate the X axis custom ranges."""
-        return self._validate_custom_ranges("x_custom_ranges")
+        """Validate and process the X axis custom ranges."""
+        raw_json = self.cleaned_data.get("x_custom_ranges", "[]")
+        print("DEBUG - Raw JSON input for x_custom_ranges:", raw_json)  # Debugging line
+        try:
+            # Parse the JSON string
+            custom_ranges = json.loads(raw_json)
+            print("DEBUG - Parsed custom ranges:", custom_ranges)  # Debugging line
+
+            # Validate the structure of the custom ranges
+            if not isinstance(custom_ranges, list):
+                raise forms.ValidationError("Custom ranges must be a list.")
+
+            for range_item in custom_ranges:
+                # Check for required keys in each range item
+                if not all(key in range_item for key in ["start", "end", "step", "label_type"]):
+                    raise forms.ValidationError("Each range must include 'start', 'end', 'step', and 'label_type'.")
+
+            # Return the validated and processed custom ranges
+            return custom_ranges
+
+        except json.JSONDecodeError:
+            raise forms.ValidationError("Invalid format for X Custom Ranges. Please provide valid JSON.")
 
     def clean_y_custom_ranges(self):
         """Validate the Y axis custom ranges."""
-        return self._validate_custom_ranges("y_custom_ranges")
+        raw_json = self.cleaned_data.get("y_custom_ranges", "[]")
+        try:
+            ranges = json.loads(raw_json)
+            # Perform additional validations if needed
+            return ranges
+        except json.JSONDecodeError:
+            raise forms.ValidationError("Invalid format for Y Custom Ranges.")
+
+    # def clean_x_custom_ranges(self):
+    #     """Validate the X axis custom ranges."""
+    #     return self._validate_custom_ranges("x_custom_ranges")
+
+    # def clean_y_custom_ranges(self):
+    #     """Validate the Y axis custom ranges."""
+    #     return self._validate_custom_ranges("y_custom_ranges")
 
 
 class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pylint: disable=too-many-ancestors
