@@ -7,6 +7,7 @@
 import json
 
 from django import forms
+from django.forms import formset_factory
 from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.forms import (
     DynamicModelChoiceField,
@@ -22,18 +23,12 @@ from nautobot.dcim.models import Location, Rack, RackGroup
 
 from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.utils import general
-from nautobot_floor_plan.utils.custom_validators import RangeValidator
+from nautobot_floor_plan.utils.custom_validators import RangeValidator, ValidateNotZero
 from nautobot_floor_plan.utils.label_converters import LabelToPositionConverter, PositionToLabelConverter
 
 
 class FloorPlanForm(NautobotModelForm):
     """FloorPlan creation/edit form with support for custom axis label ranges."""
-
-    CUSTOM_RANGES_HELP_TEXT = (
-        "Enter custom label ranges in JSON format. <br>"
-        "Distance between start and end cannot exceed the size of the floor plan. <br>"
-        "Examples: <a href='#' data-toggle='modal' data-target='#exampleModal'>Click here for examples</a>."
-    )
 
     location = DynamicModelChoiceField(queryset=Location.objects.all())
 
@@ -46,14 +41,9 @@ class FloorPlanForm(NautobotModelForm):
     x_axis_step = forms.IntegerField(
         label="X Axis Step",
         help_text="A positive or negative integer, excluding zero",
+        validators=[ValidateNotZero(0)],
         required=True,
     )
-    x_custom_ranges = forms.CharField(
-        label="Custom Ranges for X Axis",
-        required=False,
-        widget=forms.HiddenInput(),
-    )
-
     # Y Axis Fields
     y_origin_seed = forms.CharField(
         label="Y Axis Seed",
@@ -63,12 +53,8 @@ class FloorPlanForm(NautobotModelForm):
     y_axis_step = forms.IntegerField(
         label="Y Axis Step",
         help_text="A positive or negative integer, excluding zero",
+        validators=[ValidateNotZero(0)],
         required=True,
-    )
-    y_custom_ranges = forms.CharField(
-        label="Custom Ranges for X Axis",
-        required=False,
-        widget=forms.HiddenInput(),
     )
 
     is_tile_movable = forms.BooleanField(
@@ -82,19 +68,13 @@ class FloorPlanForm(NautobotModelForm):
         (
             "X Axis Settings",
             {
-                "tabs": (
-                    ("Default Labels", ("x_axis_labels", "x_origin_seed", "x_axis_step")),
-                    ("Custom Labels", ("x_custom_ranges",)),
-                ),
+                "tabs": (("Default Labels", ("x_axis_labels", "x_origin_seed", "x_axis_step")),),
             },
         ),
         (
             "Y Axis Settings",
             {
-                "tabs": (
-                    ("Default Labels", ("y_axis_labels", "y_origin_seed", "y_axis_step")),
-                    ("Custom Labels", ("y_custom_ranges",)),
-                ),
+                "tabs": (("Default Labels", ("y_axis_labels", "y_origin_seed", "y_axis_step")),),
             },
         ),
     )
@@ -105,66 +85,94 @@ class FloorPlanForm(NautobotModelForm):
         model = models.FloorPlan
         fields = "__all__"
 
+    @property
+    def x_ranges(self):
+        """Return the X axis ranges formset."""
+        return getattr(self, "_x_ranges", None)
+
+    @x_ranges.setter
+    def x_ranges(self, value):
+        """Set the X axis ranges formset."""
+        self._x_ranges = value
+
+    @property
+    def y_ranges(self):
+        """Return the Y axis ranges formset."""
+        return getattr(self, "_y_ranges", None)
+
+    @y_ranges.setter
+    def y_ranges(self, value):
+        """Set the Y axis ranges formset."""
+        self._y_ranges = value
+
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to set initial values and handle custom ranges."""
         super().__init__(*args, **kwargs)
+
+        # Initialize axis configuration
+        self.axis_letters = {"x": False, "y": False}
 
         # Set initial values for select widget
         if not self.instance.created:
             self.initial["x_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_x_axis_labels")
             self.initial["y_axis_labels"] = get_app_settings_or_config("nautobot_floor_plan", "default_y_axis_labels")
-            self.x_letters = self.initial["x_axis_labels"] == choices.AxisLabelsChoices.LETTERS
-            self.y_letters = self.initial["y_axis_labels"] == choices.AxisLabelsChoices.LETTERS
-            self.initial["x_origin_seed"] = "A" if self.x_letters else "1"
-            self.initial["y_origin_seed"] = "A" if self.y_letters else "1"
+            self.axis_letters["x"] = self.initial["x_axis_labels"] == choices.AxisLabelsChoices.LETTERS
+            self.axis_letters["y"] = self.initial["y_axis_labels"] == choices.AxisLabelsChoices.LETTERS
+            self.initial["x_origin_seed"] = "A" if self.axis_letters["x"] else "1"
+            self.initial["y_origin_seed"] = "A" if self.axis_letters["y"] else "1"
         else:
-            self.x_letters = self.instance.x_axis_labels == choices.AxisLabelsChoices.LETTERS
-            self.y_letters = self.instance.y_axis_labels == choices.AxisLabelsChoices.LETTERS
+            self.axis_letters["x"] = self.instance.x_axis_labels == choices.AxisLabelsChoices.LETTERS
+            self.axis_letters["y"] = self.instance.y_axis_labels == choices.AxisLabelsChoices.LETTERS
 
-        if self.x_letters and str(self.initial["y_origin_seed"]).isdigit():
+        if self.axis_letters["x"] and str(self.initial["x_origin_seed"]).isdigit():
             self.initial["x_origin_seed"] = general.grid_number_to_letter(self.instance.x_origin_seed)
-        if self.y_letters and str(self.initial["y_origin_seed"]).isdigit():
+        if self.axis_letters["y"] and str(self.initial["y_origin_seed"]).isdigit():
             self.initial["y_origin_seed"] = general.grid_number_to_letter(self.instance.y_origin_seed)
 
-        # Load existing custom ranges
+        # Initialize formsets for X and Y axis ranges
         if self.instance.pk:
-            x_ranges = list(
-                self.instance.custom_labels.filter(axis="X")
-                .values("start_label", "end_label", "step", "increment_letter", "label_type", "order")
-                .order_by("order")
-            )
-            y_ranges = list(
-                self.instance.custom_labels.filter(axis="Y")
-                .values("start_label", "end_label", "step", "increment_letter", "label_type", "order")
-                .order_by("order")
-            )
+            x_initial = [
+                {
+                    "start": range.start_label,
+                    "end": range.end_label,
+                    "step": range.step,
+                    "label_type": range.label_type,
+                    "increment_letter": range.increment_letter,
+                }
+                for range in self.instance.custom_labels.filter(axis="X").order_by("order")
+            ]
+            y_initial = [
+                {
+                    "start": range.start_label,
+                    "end": range.end_label,
+                    "step": range.step,
+                    "label_type": range.label_type,
+                    "increment_letter": range.increment_letter,
+                }
+                for range in self.instance.custom_labels.filter(axis="Y").order_by("order")
+            ]
+        else:
+            x_initial = []
+            y_initial = []
 
-            # Set the properties based on whether custom ranges exist
-            self.has_x_custom_labels = bool(x_ranges)
-            self.has_y_custom_labels = bool(y_ranges)
+        # Choose formset class based on whether there's existing data
+        FormSetClass = CustomLabelRangeFormSetNoExtra if x_initial else CustomLabelRangeFormSetWithExtra
+        self.x_ranges = FormSetClass(prefix="x_ranges", initial=x_initial, data=kwargs.get("data"))
 
-            if x_ranges:
-                self.initial["x_custom_ranges"] = [
-                    {
-                        "start": r["start_label"],
-                        "end": r["end_label"],
-                        "step": r["step"],
-                        "increment_letter": r["increment_letter"],
-                        "label_type": r["label_type"],
-                    }
-                    for r in x_ranges
-                ]
-            if y_ranges:
-                self.initial["y_custom_ranges"] = [
-                    {
-                        "start": r["start_label"],
-                        "end": r["end_label"],
-                        "step": r["step"],
-                        "increment_letter": r["increment_letter"],
-                        "label_type": r["label_type"],
-                    }
-                    for r in y_ranges
-                ]
+        FormSetClass = CustomLabelRangeFormSetNoExtra if y_initial else CustomLabelRangeFormSetWithExtra
+        self.y_ranges = FormSetClass(prefix="y_ranges", initial=y_initial, data=kwargs.get("data"))
+
+        # Set has_x_custom_labels based on whether there are actual values in the formset
+        self.has_x_custom_labels = any(
+            form.initial.get("start") and form.initial.get("end")
+            for form in self.x_ranges.forms
+            if hasattr(form, "initial")
+        )
+        self.has_y_custom_labels = any(
+            form.initial.get("start") and form.initial.get("end")
+            for form in self.y_ranges.forms
+            if hasattr(form, "initial")
+        )
 
     def _clean_origin_seed(self, field_name, axis):
         """Clean method for origin seed fields."""
@@ -220,35 +228,107 @@ class FloorPlanForm(NautobotModelForm):
 
         return cleaned_data
 
-    def save(self, commit=True):
-        """Save the FloorPlan instance along with custom ranges."""
-        instance = super().save(commit=False)
-        x_ranges = self.cleaned_data.get("x_custom_ranges", [])
-        y_ranges = self.cleaned_data.get("y_custom_ranges", [])
+    def _post_clean(self):
+        """Process formset data after Django's validation."""
+        super()._post_clean()
 
-        # Set increment_letter defaults
-        for label_range in x_ranges:
-            if label_range.get("increment_letter", True) and label_range["label_type"] == "numbers":
-                label_range["increment_letter"] = False
+        def process_ranges(formset, axis):
+            """Process formset data into a list of range dictionaries."""
+            ranges_data = []
 
-        for label_range in y_ranges:
-            if label_range.get("increment_letter", True) and label_range["label_type"] == "numbers":
-                label_range["increment_letter"] = False
+            for form in formset.forms:
+                if not form.is_valid():
+                    continue  # Skip invalid forms
 
-        if commit:
-            instance.save()
-            self.save_m2m()
+                delete = form.cleaned_data.get("DELETE", False)
+                if delete:
+                    continue  # Skip deleted forms
 
-            # Clear existing custom ranges
-            models.FloorPlanCustomAxisLabel.objects.filter(floor_plan=instance).delete()
+                start = form.cleaned_data.get("start", "")
+                end = form.cleaned_data.get("end", "")
 
-            # Save X axis custom ranges
-            if x_ranges:
-                self.create_custom_axis_labels(x_ranges, instance, axis="X")
-            # Save Y axis custom ranges
-            if y_ranges:
-                self.create_custom_axis_labels(y_ranges, instance, axis="Y")
+                if start and end:
+                    range_data = {
+                        "start": start,
+                        "end": end,
+                        "step": form.cleaned_data.get("step", 1),
+                        "label_type": form.cleaned_data.get("label_type"),
+                        "increment_letter": form.cleaned_data.get("increment_letter", False),
+                        "form_index": formset.forms.index(form),
+                    }
+                    ranges_data.append(range_data)
 
+            if ranges_data:
+                try:
+                    validated_ranges = self._validate_custom_ranges(ranges_data)
+                    if validated_ranges:
+                        self.cleaned_data[f"{axis}_custom_ranges"] = json.dumps(validated_ranges)
+                    return validated_ranges
+                except forms.ValidationError as e:
+                    form = formset.forms[ranges_data[0]["form_index"]]
+                    error_field = "start" if "start" in str(e).lower() else "end"
+                    form.add_error(error_field, e)
+                    return []
+
+            return ranges_data
+
+        # Process X and Y ranges
+        process_ranges(self.x_ranges, "X")
+        process_ranges(self.y_ranges, "Y")
+
+    def is_valid(self):
+        """Custom is_valid to ensure both form and formsets are valid."""
+        # Check main form validity
+        form_valid = super().is_valid()
+
+        # Check formset validity
+        x_ranges_valid = self.x_ranges.is_valid()
+        y_ranges_valid = self.y_ranges.is_valid()
+
+        # Only return True if everything is valid
+        is_valid = all(
+            [
+                form_valid,
+                x_ranges_valid,
+                y_ranges_valid,
+                not any(form.errors for form in self.x_ranges.forms),
+                not any(form.errors for form in self.y_ranges.forms),
+            ]
+        )
+        return is_valid
+
+    def save(self, *args, **kwargs):
+        """Custom save method to handle formsets."""
+        instance = super().save(*args, **kwargs)
+
+        # Clear existing custom ranges and labels
+        instance.custom_labels.all().delete()
+
+        # Process X ranges from the form's cleaned data
+        x_ranges = self.cleaned_data.get("X_custom_ranges")
+        if x_ranges:
+            try:
+                x_ranges = json.loads(x_ranges)
+                valid_ranges = [r for r in x_ranges if r["start"] and r["end"]]
+                if valid_ranges:
+                    instance.x_custom_ranges = json.dumps(valid_ranges)
+                    self.create_custom_axis_labels(valid_ranges, instance, "X")
+            except json.JSONDecodeError:
+                pass
+
+        # Process Y ranges from the form's cleaned data
+        y_ranges = self.cleaned_data.get("Y_custom_ranges")
+        if y_ranges:
+            try:
+                y_ranges = json.loads(y_ranges)
+                valid_ranges = [r for r in y_ranges if r["start"] and r["end"]]
+                if valid_ranges:
+                    instance.y_custom_ranges = json.dumps(valid_ranges)
+                    self.create_custom_axis_labels(valid_ranges, instance, "Y")
+            except json.JSONDecodeError:
+                pass
+
+        instance.save()
         return instance
 
     def create_custom_axis_labels(self, ranges, instance, axis):
@@ -269,18 +349,16 @@ class FloorPlanForm(NautobotModelForm):
             )
         models.FloorPlanCustomAxisLabel.objects.bulk_create(labels)
 
-    def _validate_custom_ranges(self, field_name):
+    def _validate_custom_ranges(self, ranges):
         """Validate custom label ranges."""
-        custom_ranges = self.cleaned_data.get(field_name, [])
-        if not custom_ranges:
+        if not ranges:
             return []
 
-        is_x_axis = field_name == "x_custom_ranges"
-        max_size = self.cleaned_data.get("x_size" if is_x_axis else "y_size")
+        max_size = self.cleaned_data.get("x_size")  # or y_size depending on the axis
         validator = RangeValidator(max_size)
 
         # First validate each individual range
-        for label_range in custom_ranges:
+        for label_range in ranges:
             validator.validate_required_keys(label_range)
 
             start = label_range["start"]
@@ -297,51 +375,9 @@ class FloorPlanForm(NautobotModelForm):
             validator.validate_increment_letter(label_range, label_type)
 
         # Then validate that ranges don't overlap
-        validator.validate_multiple_ranges(custom_ranges)
+        validator.validate_multiple_ranges(ranges)
 
-        return custom_ranges
-
-    def clean_x_custom_ranges(self):
-        """Validate and process the X axis custom ranges."""
-        raw_json = self.cleaned_data.get("x_custom_ranges", "[]")
-        print("DEBUG - Raw JSON input for x_custom_ranges:", raw_json)  # Debugging line
-        try:
-            # Parse the JSON string
-            custom_ranges = json.loads(raw_json)
-            print("DEBUG - Parsed custom ranges:", custom_ranges)  # Debugging line
-
-            # Validate the structure of the custom ranges
-            if not isinstance(custom_ranges, list):
-                raise forms.ValidationError("Custom ranges must be a list.")
-
-            for range_item in custom_ranges:
-                # Check for required keys in each range item
-                if not all(key in range_item for key in ["start", "end", "step", "label_type"]):
-                    raise forms.ValidationError("Each range must include 'start', 'end', 'step', and 'label_type'.")
-
-            # Return the validated and processed custom ranges
-            return custom_ranges
-
-        except json.JSONDecodeError:
-            raise forms.ValidationError("Invalid format for X Custom Ranges. Please provide valid JSON.")
-
-    def clean_y_custom_ranges(self):
-        """Validate the Y axis custom ranges."""
-        raw_json = self.cleaned_data.get("y_custom_ranges", "[]")
-        try:
-            ranges = json.loads(raw_json)
-            # Perform additional validations if needed
-            return ranges
-        except json.JSONDecodeError:
-            raise forms.ValidationError("Invalid format for Y Custom Ranges.")
-
-    # def clean_x_custom_ranges(self):
-    #     """Validate the X axis custom ranges."""
-    #     return self._validate_custom_ranges("x_custom_ranges")
-
-    # def clean_y_custom_ranges(self):
-    #     """Validate the Y axis custom ranges."""
-    #     return self._validate_custom_ranges("y_custom_ranges")
+        return ranges
 
 
 class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pylint: disable=too-many-ancestors
@@ -460,13 +496,12 @@ class FloorPlanTileForm(NautobotModelForm):
     def __init__(self, *args, **kwargs):
         """Initialize the form and handle custom label conversions."""
         super().__init__(*args, **kwargs)
-        self.x_letters = False
-        self.y_letters = False
+        self.axis_letters = {"x": False, "y": False}
 
         if fp_id := self.initial.get("floor_plan") or self.data.get("floor_plan"):
             fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
-            self.x_letters = fp_obj.x_axis_labels == choices.AxisLabelsChoices.LETTERS
-            self.y_letters = fp_obj.y_axis_labels == choices.AxisLabelsChoices.LETTERS
+            self.axis_letters["x"] = fp_obj.x_axis_labels == choices.AxisLabelsChoices.LETTERS
+            self.axis_letters["y"] = fp_obj.y_axis_labels == choices.AxisLabelsChoices.LETTERS
             if not fp_obj.is_tile_movable:
                 self.fields["x_origin"].disabled = True
                 self.fields["y_origin"].disabled = True
@@ -480,10 +515,10 @@ class FloorPlanTileForm(NautobotModelForm):
                     self.initial["x_origin"] = general.axis_init_label_conversion(
                         fp_obj.x_origin_seed,
                         general.grid_number_to_letter(self.instance.x_origin)
-                        if self.x_letters
+                        if self.axis_letters["x"]
                         else self.initial.get("x_origin"),
                         fp_obj.x_axis_step,
-                        self.x_letters,
+                        self.axis_letters["x"],
                     )
                 if fp_obj.custom_labels.filter(axis="Y").exists():
                     converter = PositionToLabelConverter(self.instance.y_origin, "Y", fp_obj)
@@ -493,10 +528,10 @@ class FloorPlanTileForm(NautobotModelForm):
                     self.initial["y_origin"] = general.axis_init_label_conversion(
                         fp_obj.y_origin_seed,
                         general.grid_number_to_letter(self.instance.y_origin)
-                        if self.y_letters
+                        if self.axis_letters["y"]
                         else self.initial.get("y_origin"),
                         fp_obj.y_axis_step,
-                        self.y_letters,
+                        self.axis_letters["y"],
                     )
 
     def letter_validator(self, field, value, axis):
@@ -524,7 +559,9 @@ class FloorPlanTileForm(NautobotModelForm):
         value = self.cleaned_data.get(field_name)
 
         # Determine if letters are being used for x or y axis labels
-        using_letters = (field_name == "x_origin" and self.x_letters) or (field_name == "y_origin" and self.y_letters)
+        using_letters = (field_name == "x_origin" and self.axis_letters["x"]) or (
+            field_name == "y_origin" and self.axis_letters["y"]
+        )
 
         # Perform validation based on the type (letters or numbers)
         validator = self.letter_validator if using_letters else self.number_validator
@@ -533,10 +570,46 @@ class FloorPlanTileForm(NautobotModelForm):
 
         # Select the appropriate axis seed and step
         if field_name == "x_origin":
-            origin_seed, step, use_letters = fp_obj.x_origin_seed, fp_obj.x_axis_step, self.x_letters
+            origin_seed, step, use_letters = fp_obj.x_origin_seed, fp_obj.x_axis_step, self.axis_letters["x"]
         else:
-            origin_seed, step, use_letters = fp_obj.y_origin_seed, fp_obj.y_axis_step, self.y_letters
+            origin_seed, step, use_letters = fp_obj.y_origin_seed, fp_obj.y_axis_step, self.axis_letters["y"]
 
         # Convert and return the label position using the specified conversion function
         cleaned_value = general.axis_clean_label_conversion(origin_seed, value, step, use_letters)
         return int(cleaned_value) if not using_letters else cleaned_value
+
+
+class CustomLabelRangeForm(forms.Form):
+    """Form for handling individual custom label ranges."""
+
+    start = forms.CharField(required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
+    end = forms.CharField(required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
+    step = forms.IntegerField(
+        required=True,
+        initial=1,
+        validators=[ValidateNotZero(0)],
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+    label_type = forms.ChoiceField(
+        choices=choices.CustomAxisLabelsChoices.CHOICES,
+        required=True,
+        widget=forms.Select(attrs={"class": "form-control", step: 1}),
+    )
+    increment_letter = forms.BooleanField(
+        required=False, initial=True, widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
+    )
+
+
+CustomLabelRangeFormSetWithExtra = formset_factory(
+    CustomLabelRangeForm,
+    extra=1,
+    can_delete=True,
+    validate_min=False,
+)
+
+CustomLabelRangeFormSetNoExtra = formset_factory(
+    CustomLabelRangeForm,
+    extra=0,
+    can_delete=True,
+    validate_min=False,
+)

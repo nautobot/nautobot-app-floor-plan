@@ -129,6 +129,24 @@ class RangeValidator:
                         f"Use label_type '{choices.CustomAxisLabelsChoices.NUMBERS}' if no letters are needed."
                     )
 
+                increment_letter = current_range.get("increment_letter", False)
+
+                start_prefix, start_number = general.extract_prefix_and_number(start)
+                end_prefix, end_number = general.extract_prefix_and_number(end)
+
+                if increment_letter:
+                    # When increment_letter is True, the number must stay the same
+                    if start_number != end_number:
+                        raise ValidationError(
+                            f"Invalid alphanumeric range: '{start}' to '{end}' - number portion must remain the same when increment_letter is True."
+                        )
+                else:
+                    # When increment_letter is False, the prefix must stay the same
+                    if start_prefix != end_prefix:
+                        raise ValidationError(
+                            f"Invalid alphanumeric range: '{start}' to '{end}' - prefix must remain the same when increment_letter is False."
+                        )
+
             effective_size = self._calculate_effective_size(range_data)
 
             if effective_size > self.max_size:
@@ -202,7 +220,7 @@ class RangeValidator:
         if label_type == choices.CustomAxisLabelsChoices.LETTERS:
             increment_letter = label_range.get("increment_letter")
             if increment_letter is not None and not isinstance(increment_letter, bool):
-                raise forms.ValidationError("increment_letter at must be a boolean value.")
+                raise forms.ValidationError("increment_letter must be a boolean value.")
 
     def check_range_overlap(self, range1, range2):
         """Check if two ranges overlap."""

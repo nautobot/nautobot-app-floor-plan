@@ -16,6 +16,7 @@ from nautobot.dcim.models import Location
 
 from nautobot_floor_plan import filters, forms, models, tables
 from nautobot_floor_plan.api import serializers
+
 from .choices import CustomAxisLabelsChoices
 
 
@@ -34,11 +35,9 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
     def get_extra_context(self, request, instance=None):
         """Add custom context data to the view."""
         context = super().get_extra_context(request, instance)
-        context['label_type_choices'] = [
-            {'value': choice[0], 'label': choice[1]} 
-            for choice in CustomAxisLabelsChoices.CHOICES
+        context["label_type_choices"] = [
+            {"value": choice[0], "label": choice[1]} for choice in CustomAxisLabelsChoices.CHOICES
         ]
-        print("DEBUG - Label Type Choices:", context['label_type_choices'])  # Debug print
         return context
 
 

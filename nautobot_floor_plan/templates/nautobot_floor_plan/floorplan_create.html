@@ -25,10 +25,10 @@
     <div class="panel-body">
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="{% if not form.has_x_custom_labels and not form.errors.x_custom_ranges %}active{% endif %}">
+                <li role="presentation" {% if not form.has_x_custom_labels and not form.errors.x_custom_ranges %}class="active"{% endif %}>
                     <a href="#x-default" aria-controls="x-default" role="tab" data-toggle="tab">Default Labels</a>
                 </li>
-                <li role="presentation" class="{% if form.has_x_custom_labels or form.errors.x_custom_ranges %}active{% endif %}">
+                <li role="presentation" {% if form.has_x_custom_labels or form.errors.x_custom_ranges %}class="active"{% endif %}>
                     <a href="#x-custom" aria-controls="x-custom" role="tab" data-toggle="tab">Custom Labels</a>
                 </li>
             </ul>
@@ -41,23 +41,75 @@
                 </div>
                 <!-- Custom Labels Tab -->
                 <div role="tabpanel" class="tab-pane {% if form.has_x_custom_labels or form.errors.x_custom_ranges %}active{% endif %}" id="x-custom">
-                    <!-- Range Builder -->
+                    
+                    
+                    {{ form.x_ranges.management_form }}
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm">
                             <thead>
                                 <tr>
-                                    <th scope="col">Start</th>
-                                    <th scope="col">End</th>
-                                    <th scope="col">Step</th>
-                                    <th scope="col">Label Type</th>
-                                    <th scope="col">Increment Letter</th>
-                                    <th scope="col">Actions</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Step</th>
+                                    <th>Label Type</th>
+                                    <th>Increment Letter</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="x-ranges"></tbody>
+                            <tbody id="x-ranges">
+                                {% for range_form in form.x_ranges %}
+                                <tr>
+                                    <td>
+                                        {{ range_form.start }}
+                                        {% if range_form.start.errors %}
+                                        <div class="text-danger">
+                                            {{ range_form.start.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ range_form.end }}
+                                        {% if range_form.end.errors %}
+                                        <div class="text-danger">
+                                            {{ range_form.end.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ range_form.step }}
+                                        {% if range_form.step.errors %}
+                                        <div class="text-danger">
+                                            {{ range_form.step.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ range_form.label_type }}
+                                        {% if range_form.label_type.errors %}
+                                        <div class="text-danger">
+                                            {{ range_form.label_type.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ range_form.increment_letter }}
+                                        {% if range_form.increment_letter.errors %}
+                                        <div class="text-danger">
+                                            {{ range_form.increment_letter.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ range_form.DELETE.as_hidden }}
+                                        <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
                         </table>
                     </div>
                     <button type="button" id="add-x-range" class="btn btn-primary btn-sm mt-2">Add Range</button>
+                    <div><a href="#" data-toggle="modal" data-target="#exampleModal">Click here for examples</a>.</div>
                     <div id="x-preview-section" class="mt-3">
                         <h5>Preview</h5>
                         <div id="x-preview"></div>
@@ -77,39 +129,89 @@
     <div class="panel-body">
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="{% if not form.has_y_custom_labels and not form.errors.y_custom_ranges %}active{% endif %}">
+                <li role="presentation" {% if not form.has_y_custom_labels and not form.errors.y_custom_ranges %}class="active"{% endif %}>
                     <a href="#y-default" aria-controls="y-default" role="tab" data-toggle="tab">Default Labels</a>
                 </li>
-                <li role="presentation" class="{% if form.has_y_custom_labels or form.errors.y_custom_ranges %}active{% endif %}">
+                <li role="presentation" {% if form.has_y_custom_labels or form.errors.y_ranges %}class="active"{% endif %}>
                     <a href="#y-custom" aria-controls="y-custom" role="tab" data-toggle="tab">Custom Labels</a>
                 </li>
             </ul>
             <div class="tab-content">
                 <!-- Default Labels Tab -->
                 <div role="tabpanel" class="tab-pane {% if not form.has_y_custom_labels and not form.errors.y_custom_ranges %}active{% endif %}" id="y-default">
-                    {% for field in form.fieldsets.1.1.tabs.0.1 %}
+                    {% for field in form.fieldsets.2.1.tabs.0.1 %}
                         {% render_field form|get_fieldset_field:field %}
                     {% endfor %}
                 </div>
                 <!-- Custom Labels Tab -->
-                <div role="tabpanel" class="tab-pane {% if form.has_y_custom_labels or form.errors.y_custom_ranges %}active{% endif %}" id="y-custom">
-                    <!-- Range Builder -->
+                <div role="tabpanel" class="tab-pane {% if form.has_y_custom_labels or form.errors.y_ranges %}active{% endif %}" id="y-custom">
+                    {{ form.y_ranges.management_form }}
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm">
                             <thead>
                                 <tr>
-                                    <th scope="col">Start</th>
-                                    <th scope="col">End</th>
-                                    <th scope="col">Step</th>
-                                    <th scope="col">Label Type</th>
-                                    <th scope="col">Increment Letter</th>
-                                    <th scope="col">Actions</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Step</th>
+                                    <th>Label Type</th>
+                                    <th>Increment Letter</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="y-ranges"></tbody>
+                            <tbody id="y-ranges">
+                                {% for range_form in form.y_ranges %}
+                                <tr>
+                                    <td>
+                                        {{ range_form.start }}
+                                        {% if range_form.start.errors %}
+                                        <div class="text-danger">
+                                            {{ range_form.start.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ range_form.end }}
+                                        {% if range_form.end.errors %}
+                                        <div class="text-danger">
+                                            {{ range_form.end.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ range_form.step }}
+                                        {% if range_form.step.errors %}
+                                        <div class="text-danger">
+                                            {{ range_form.step.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ range_form.label_type }}
+                                        {% if range_form.label_type.errors %}
+                                        <div class="text-danger">
+                                            {{ range_form.label_type.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ range_form.increment_letter }}
+                                        {% if range_form.increment_letter.errors %}
+                                        <div class="text-danger">
+                                            {{ range_form.increment_letter.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ range_form.DELETE.as_hidden }}
+                                        <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
                         </table>
                     </div>
                     <button type="button" id="add-y-range" class="btn btn-primary btn-sm mt-2">Add Range</button>
+                    <div><a href="#" data-toggle="modal" data-target="#exampleModal">Click here for examples</a>.</div>
                     <div id="y-preview-section" class="mt-3">
                         <h5>Preview</h5>
                         <div id="y-preview"></div>
@@ -121,205 +223,284 @@
     </div>
 </div>
 
-<script>
+
+<script type="module">
+    import { generateLabels } from '/static/nautobot_floor_plan/js/label_utils.js';
     document.addEventListener("DOMContentLoaded", function () {
-        function createRangeRow() {
-            try {
-                const template = `
-                    <tr class="range-row">
-                        <td><input type="text" class="form-control form-control-sm" name="start" placeholder="Start"></td>
-                        <td><input type="text" class="form-control form-control-sm" name="end" placeholder="End"></td>
-                        <td><input type="number" class="form-control form-control-sm" name="step" placeholder="Step" value="1"></td>
-                        <td>
-                            <select class="form-control form-control-sm" name="label_type">
-                                ${getLabelTypeOptions()}
-                            </select>
-                        </td>
-                        <td class="text-center">
-                            <input type="checkbox" name="increment_letter" class="increment-letter-checkbox">
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
-                        </td>
-                    </tr>
-                `;
-                return template;
-            } catch (error) {
-                console.error("Error creating row:", error);
-                throw error;
-            }
-        }
-
-        function getLabelTypeOptions() {
-            try {
-                const element = document.getElementById('label-type-choices');
-                if (!element) {
-                    console.error("Choices element not found");
-                    throw new Error("Choices element not found");
-                }
-                
-                const choices = JSON.parse(element.textContent);
-                console.log("Parsed choices:", choices);
-                
-                if (!Array.isArray(choices)) {
-                    console.error("Choices is not an array:", choices);
-                    throw new Error("Invalid choices format");
-                }
-                
-                return choices.map(choice => 
-                    `<option value="${choice.value.toUpperCase()}">${choice.value.toUpperCase()}</option>`
-                ).join('');
-            } catch (error) {
-                console.error("Error processing choices:", error);
-                // Fallback to direct choices from CustomAxisLabelsChoices
-                return `
-                    <option value="roman">Roman (e.g., I, II, III)</option>
-                    <option value="greek">Greek (e.g., α, β, γ)</option>
-                    <option value="binary">Binary (e.g., 1, 10, 11)</option>
-                    <option value="hex">Hexadecimal (e.g., 1, A, F)</option>
-                    <option value="numalpha">numalpha (e.g., 02A)</option>
-                    <option value="letters">Letters (e.g., A, B, C)</option>
-                    <option value="alphanumeric">Alphanumeric (e.g., A01, B02)</option>
-                    <option value="numbers">Numbers (e.g. 1, 2, 3)</option>
-                `;
-            }
-        }
-    
-        function addRangeRow(containerId) {
-            console.log("Adding range row to", containerId);
-            const container = document.getElementById(containerId);
-            console.log("Container:", container);
-            container.insertAdjacentHTML("beforeend", createRangeRow());
-            attachListeners(container.lastElementChild);
-        }
-    
-        function attachListeners(row) {
-            console.log("Attaching listeners to row");
-            const labelTypeField = row.querySelector('[name="label_type"]');
-            const incrementLetterField = row.querySelector('[name="increment_letter"]');
+        // Function to attach event listeners and initialize checkbox state for a row
+        function initializeRow(row) {
+            const labelTypeSelect = row.querySelector('select[name*="label_type"]');
+            const incrementLetterField = row.querySelector('input[name*="increment_letter"]');
             
-            function updateCheckboxState(labelType) {
-                console.log("Updating checkbox state for:", labelType);
-                const type = labelType;
-                if (type === "NUMALPHA" || type === "ALPHANUMERIC") {
-                    incrementLetterField.removeAttribute("disabled");
-                    incrementLetterField.checked = true;
-                } 
-                else if (type === "NUMBERS") {
-                    incrementLetterField.setAttribute("disabled", "disabled");
-                    incrementLetterField.checked = false;
-                } else {
-                    incrementLetterField.setAttribute("disabled", "disabled");
-                    incrementLetterField.checked = true;
-                }
+            if (labelTypeSelect && incrementLetterField) {
+                // Set initial state
+                updateCheckboxState(labelTypeSelect.value, incrementLetterField);
+                
+                // Add change listener
+                labelTypeSelect.addEventListener('change', function() {
+                    updateCheckboxState(this.value, incrementLetterField);
+                });
             }
-
-            // Set initial state
-            updateCheckboxState(labelTypeField.value);
-
-            // Add change listener
-            labelTypeField.addEventListener("change", function() {
-                updateCheckboxState(this.value);
-            });
-        }
-    
-        function collectRanges(containerId) {
-            const rows = document.querySelectorAll(`#${containerId} .range-row`);
-            return Array.from(rows).map(row => ({
-                start: row.querySelector('[name="start"]').value,
-                end: row.querySelector('[name="end"]').value,
-                step: parseInt(row.querySelector('[name="step"]').value, 10) || 1,
-                increment_letter: row.querySelector('[name="increment_letter"]').checked,
-                label_type: row.querySelector('[name="label_type"]').value
-            }));
-        }
-    
-        function generatePreview(containerId, previewId, axis) {
-            const ranges = collectRanges(containerId);
-            fetch(`/api/floor-plans/generate-preview/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": "{{ csrf_token }}"
-                },
-                body: JSON.stringify({ axis, ranges })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    const previewContainer = document.getElementById(previewId);
-                    if (data.success) {
-                        previewContainer.innerHTML = data.labels.join(", ");
-                    } else {
-                        previewContainer.innerHTML = `<span class="text-danger">${data.error}</span>`;
-                    }
-                })
-                .catch(err => console.error(err));
-        }
-    
-        // Initialize Event Listeners for X axis
-        const addXButton = document.getElementById("add-x-range");
-        if (addXButton) {
-            addXButton.addEventListener("click", () => {
-                console.log("Add X button clicked");
-                addRangeRow("x-ranges");
-            });
         }
 
-        // Initialize Event Listeners for Y axis
-        const addYButton = document.getElementById("add-y-range");
-        if (addYButton) {
-            addYButton.addEventListener("click", () => {
-                console.log("Add Y button clicked");
-                addRangeRow("y-ranges");
-            });
+        function updateCheckboxState(labelType, incrementLetterField) {
+            if (!incrementLetterField) return;
+        
+            // Store the previous checked state only if enabled
+            const wasChecked = incrementLetterField.checked;
+        
+            if (labelType === "numalpha" || labelType === "alphanumeric") {
+                // Enable and restore previous checked state
+                incrementLetterField.disabled = false;
+                incrementLetterField.checked = wasChecked;
+            } else if (labelType === "numbers") {
+                // Disable and uncheck for numbers
+                incrementLetterField.disabled = true;
+                incrementLetterField.checked = false;
+            } else {
+                // Disable and force checked for other types
+                incrementLetterField.disabled = true;
+                incrementLetterField.checked = true;
+            }
         }
         
-        // Initialize preview buttons for both axes
-        const previewXButton = document.getElementById("generate-x-preview");
-        if (previewXButton) {
-            previewXButton.addEventListener("click", () => generatePreview("x-ranges", "x-preview", "x"));
+        // Initialize existing rows for both X and Y axes
+        document.querySelectorAll('#x-ranges tr, #y-ranges tr').forEach(initializeRow);
+
+        // Generic function to handle adding ranges for both axes
+        function setupRangeAdder(axis) {
+            const addButton = document.getElementById(`add-${axis}-range`);
+            if (addButton) {
+                addButton.addEventListener('click', function() {
+                    const tbody = document.getElementById(`${axis}-ranges`);
+                    const totalForms = document.getElementById(`id_${axis}_ranges-TOTAL_FORMS`);
+                    const currentCount = parseInt(totalForms.value);
+                    
+                    // Clone the empty form template
+                    const emptyForm = document.getElementById(`${axis}-empty-form-template`);
+                    if (emptyForm) {
+                        const newRow = emptyForm.content.firstElementChild.cloneNode(true);
+                        
+                        // Update form index
+                        newRow.innerHTML = newRow.innerHTML.replaceAll(/__prefix__/g, currentCount.toString());
+                        
+                        // Add the new row
+                        tbody.appendChild(newRow);
+                        
+                        // Initialize the new row
+                        initializeRow(newRow);
+                        
+                        // Update total forms count
+                        totalForms.value = currentCount + 1;
+                    }
+                });
+            }
         }
 
-        const previewYButton = document.getElementById("generate-y-preview");
-        if (previewYButton) {
-            previewYButton.addEventListener("click", () => generatePreview("y-ranges", "y-preview", "y"));
-        }
-    
-        // Handle Remove Button Clicks
+        // Setup adders for both X and Y axes
+        setupRangeAdder('x');
+        setupRangeAdder('y');
+
+        // Remove Range Button Click Handler
         document.body.addEventListener("click", event => {
             if (event.target.classList.contains("remove-range")) {
-                event.target.closest("tr").remove();
+                const row = event.target.closest("tr");
+                if (!row) return;
+                
+                const tbody = row.closest('tbody');
+                if (!tbody) return;
+                
+                // Instead of removing the row, mark it as deleted and hide it
+                const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                if (deleteInput) {
+                    deleteInput.value = 'on';  // Mark for deletion
+                    row.style.display = 'none'; // Hide the row
+                }
+                
+                // Update form indices for visible rows
+                const formPrefix = tbody.id.includes('x-ranges') ? 'x_ranges' : 'y_ranges';
+                const visibleRows = Array.from(tbody.querySelectorAll('tr')).filter(r => r.style.display !== 'none');
+                
+                visibleRows.forEach((row, index) => {
+                    row.querySelectorAll(`[name*="${formPrefix}-"]`).forEach(element => {
+                        const newName = element.name.replace(
+                            new RegExp(`${formPrefix}-\\d+-`),
+                            `${formPrefix}-${index}-`
+                        );
+                        element.name = newName;
+                        if (element.id) {
+                            element.id = element.id.replace(
+                                new RegExp(`${formPrefix}-\\d+-`),
+                                `${formPrefix}-${index}-`
+                            );
+                        }
+                    });
+                });
+                
+                // Update total form count (only count visible rows)
+                const totalForms = document.getElementById(`id_${formPrefix}-TOTAL_FORMS`);
+                if (totalForms) {
+                    totalForms.value = visibleRows.length;
+                }
             }
         });
+
+        // Function to generate preview for X and Y axes
+        function generatePreview(axis) {
+            const tbody = document.getElementById(`${axis}-ranges`);
+            const previewSection = document.getElementById(`${axis}-preview`);
+            previewSection.innerHTML = ""; // Clear previous preview
     
-        // Initialize existing rows if present
-        document.querySelectorAll(".range-row").forEach(row => attachListeners(row));
+            const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => row.style.display !== 'none');
+            rows.forEach(row => {
+                const startField = row.querySelector('input[name*="start"]');
+                const endField = row.querySelector('input[name*="end"]');
+                const stepField = row.querySelector('input[name*="step"]');
+                const labelTypeField = row.querySelector('select[name*="label_type"]');
+                const incrementLetterField = row.querySelector('input[name*="increment_letter"]');
+    
+                if (startField && endField && stepField && labelTypeField) {
+                    const startValue = startField.value;
+                    const endValue = endField.value;
+                    const stepValue = parseInt(stepField.value, 10);
+                    const labelType = labelTypeField.value;
+                    const incrementLetter = incrementLetterField ? incrementLetterField.checked : false;
 
-        const updateButton = document.querySelector('button[name="_update"]'); // Select by name
-        if (updateButton) {
-            updateButton.addEventListener("click", function(event) {
-                // Prevent default form submission if needed
-                event.preventDefault();
+                    // Validate start and end values
+                    if (!startValue || !endValue) {
+                        return; // Skip this row if start or end is empty
+                    }
 
-                // Collect ranges and set the hidden input value
-                const ranges = collectRanges("x-ranges"); // or "y-ranges" for Y axis
-                const hiddenInput = document.getElementById('id_x_custom_ranges');
-                if (hiddenInput) {
-                    hiddenInput.value = JSON.stringify(ranges);
-                    console.log("Custom ranges before submission:", hiddenInput.value);
-                } else {
-                    console.error("Hidden input for x_custom_ranges not found!");
+                    // Generate labels using the utility function
+                    let labels = generateLabels(startValue, endValue, stepValue, labelType, incrementLetter);
+        
+                    // Create a preview string
+                    const previewString = `Labels: ${labels.join(', ')}`;
+                    const truncatedPreview = previewString.length > 100 ? previewString.substring(0, 100) + '...' : previewString;
+    
+                    // Append to the preview section
+                    const previewItem = document.createElement('div');
+                    previewItem.textContent = truncatedPreview;
+                    previewSection.appendChild(previewItem);
                 }
-
-                // Optionally, submit the form programmatically if needed
-                // document.forms[0].submit(); // Uncomment if you want to submit the form after processing
             });
-        } else {
-            console.error("Update button not found!");
         }
+
+        // Event listeners for the generate preview buttons
+        document.getElementById('generate-x-preview').addEventListener('click', function() {
+            generatePreview('x');
+        });
+
+        document.getElementById('generate-y-preview').addEventListener('click', function() {
+            generatePreview('y');
+        });
     });    
 </script>
+
     
     
 {% include 'inc/extras_features_edit_form_fields.html' %}
+
+<!-- X Axis Empty Form Template -->
+<template id="x-empty-form-template">
+    <tr>
+        <td>{{ form.x_ranges.empty_form.start }}</td>
+        <td>{{ form.x_ranges.empty_form.end }}</td>
+        <td>{{ form.x_ranges.empty_form.step }}</td>
+        <td>{{ form.x_ranges.empty_form.label_type }}</td>
+        <td>{{ form.x_ranges.empty_form.increment_letter }}</td>
+        <td>
+            {{ form.x_ranges.empty_form.DELETE.as_hidden }}
+            <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+        </td>
+    </tr>
+</template>
+
+<!-- Y Axis Empty Form Template -->
+<template id="y-empty-form-template">
+    <tr>
+        <td>{{ form.y_ranges.empty_form.start }}</td>
+        <td>{{ form.y_ranges.empty_form.end }}</td>
+        <td>{{ form.y_ranges.empty_form.step }}</td>
+        <td>{{ form.y_ranges.empty_form.label_type }}</td>
+        <td>{{ form.y_ranges.empty_form.increment_letter }}</td>
+        <td>
+            {{ form.y_ranges.empty_form.DELETE.as_hidden }}
+            <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+        </td>
+    </tr>
+</template>
+
+<input type="hidden" name="x_custom_ranges" id="x_custom_ranges">
+<input type="hidden" name="y_custom_ranges" id="y_custom_ranges">
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Custom Label Ranges Examples</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Here are some examples of custom label ranges:</p>
+                <ul>
+                    <li><strong>NUMALPHA:</strong>
+                        <ul>
+                            <li><strong>With increment_letter True:</strong>
+                                <ul>
+                                    <li>02A, 02B, 02C, 02D, 02E</li>
+                                    <li>02AA, 02AB, 02AC, 02AD, 02AE</li>
+                                </ul>
+                            </li>
+                            <li><strong>With increment_letter False:</strong>
+                                <ul>
+                                    <li>02AA, 02BB, 02CC, 02DD, 02EE</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><strong>ALPHANUMERIC:</strong>
+                        <ul>
+                            <li><strong>With increment_letter True:</strong>
+                                <ul>
+                                    <li>A01, B01, C01, D01, E01</li>
+                                </ul>
+                            </li>
+                            <li><strong>With increment_letter False:</strong>
+                                <ul>
+                                    <li>A01, A02, A03, A04, A05</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><strong>ROMAN:</strong>
+                        <ul>
+                            <li>I, II, III, IV, V</li>
+                        </ul>
+                    </li>
+                    <li><strong>BINARY:</strong>
+                        <ul>
+                            <li>0b0001, 0b0010, 0b0011, 0b0100, 0b0101</li>
+                        </ul>
+                    </li>
+                    <li><strong>HEXADECIMAL:</strong>
+                        <ul>
+                            <li>0x0001, 0x0002, 0x0003, 0x0004, 0x0005</li>
+                        </ul>
+                    </li>
+                    <li><strong>GREEK:</strong>
+                        <ul>
+                            <li>α, β, γ, δ, ε</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

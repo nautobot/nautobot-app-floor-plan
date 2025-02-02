@@ -68,8 +68,7 @@ Default settings allow you to configure labels, seeds, and steps for each axis o
 The **Custom Labels** tab provides options to configure a custom label range using the following parameters: `start`, `end`, `step`, `increment_letter`, and `label_type`.
 
 ![Custom Label Examples](../images/custom-label-examples.png)
-![Add Floor Plan form part 3](../images/add-tile-axis-numalpha.png)
-![Add Floor Plan form part 4](../images/add-tile-axis-roman.png)
+![Add Floor Plan form part 3](../images/add_custom_axis_labels.png)
 
 ## Parameters
 
@@ -102,14 +101,18 @@ The **Custom Labels** tab provides options to configure a custom label range usi
 
 - **`label_type`**  
   Specifies the type of label. Supported types include:  
-  - `numalpha`  
-  - `alphanumeric`  
-  - `roman`  
-  - `greek`  
-  - `hex`  
-  - `binary`  
-  - `letters`  
-  - `numbers`
+  - `numalpha (e.g., 02A, 05ZZ, 04AZ)`  
+  - `alphanumeric (e.g., A01, B02)`  
+  - `roman (e.g., I, II, III)`  
+  - `greek (e.g., α, β, γ)`  
+  - `hex (e.g., 0x0001, 0x000A, 0x000F)`  
+  - `binary (e.g., 0b0001, 0b1010, 0b0110)`  
+  - `letters (e.g., A, B, C)`  
+  - `numbers (e.g. 1, 2, 3)`
+
+There is a `Generate Preview` button that allows you to preview a range of labels that would be generated on the grid once the Floor Plan form has been saved.
+
+![Add Floor Plan form part 4](../images/custom_axis_label_preview.png)
 
 !!! note
     The total range of configured labels must not exceed the configured *X Size* or *Y Size* of the floor plan for their respective axis.
@@ -120,25 +123,17 @@ The **Custom Labels** tab provides options to configure a custom label range usi
 
 With an X Size of 10:
 
-```json
-[{"start": "02A", "end": "02J", "step": 1, "increment_letter": true, "label_type": "numalpha"}]
-```
+![numalpha_x_10](../images/numalpha_x_10.png)
 
-```json
-[{"start": "I", "end": "X", "step": 1, "label_type": "roman"}]
-```
+![roman_x_10](../images/roman_x_10.png)
 
 ### Multiple Range Example
 
 With an X Size of 10:
 
-```json
-[{"start": "02A", "end": "02E", "step": 1, "increment_letter": true, "label_type": "numalpha"},{"start": "02AA", "end": "02EE", "step": 1, "increment_letter": false, "label_type": "numalpha"}]
-```
+![numalpha_multi_range](../images/numalpha_multi_range.png)
 
-```json
-[{"start": "1", "end": "5", "step": 1, "label_type": "binary"},{"start": "11", "end": "15", "step": 1, "label_type": "binary"}]
-```
+![binary_multi_range](../images/numalpha_multi_range.png)
 
 ## Creating and Managing the Floor Plan
 
