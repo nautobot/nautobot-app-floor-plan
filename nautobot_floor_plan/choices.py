@@ -32,14 +32,14 @@ class CustomAxisLabelsChoices(ChoiceSet):
     NUMBERS = "numbers"
 
     CHOICES = (
+        (NUMBERS, "Numbers (e.g. 1, 2, 3)"),
+        (LETTERS, "Letters (e.g., A, B, C)"),
+        (NUMALPHA, "Numalpha (e.g., 02A)"),
+        (ALPHANUMERIC, "Alphanumeric (e.g., A01, B02)"),
         (ROMAN, "Roman (e.g., I, II, III)"),
         (GREEK, "Greek (e.g., α, β, γ)"),
         (BINARY, "Binary (e.g., 1, 10, 11)"),
         (HEX, "Hexadecimal (e.g., 1, A, F)"),
-        (NUMALPHA, "numalpha (e.g., 02A)"),
-        (LETTERS, "Letters (e.g., A, B, C)"),
-        (ALPHANUMERIC, "Alphanumeric (e.g., A01, B02)"),
-        (NUMBERS, "Numbers (e.g. 1, 2, 3)"),
     )
 
 

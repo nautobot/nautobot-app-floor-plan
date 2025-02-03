@@ -119,32 +119,81 @@ class TestPositionAndLabelConverters(TestCase):
         data = fixtures.create_prerequisites()
         self.floors = data["floors"]
 
-        # Create and save a form instance
-        self.form = forms.FloorPlanForm(
-            data={
-                "location": self.floors[1].pk,
-                "x_size": 10,
-                "y_size": 20,
-                "tile_depth": 1,
-                "tile_width": 2,
-                "x_origin_seed": 1,
-                "x_axis_step": 1,
-                "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
-                "x_custom_ranges": "null",
-                "y_origin_seed": 1,
-                "y_axis_step": 1,
-                "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
-                "y_custom_ranges": "null",
+        # Create and save a form instance with minimal data
+        form_data = {
+            "location": self.floors[1].pk,
+            "x_size": 10,
+            "y_size": 20,
+            "tile_depth": 1,
+            "tile_width": 2,
+            "x_origin_seed": 1,
+            "x_axis_step": 1,
+            "x_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+            "y_origin_seed": 1,
+            "y_axis_step": 1,
+            "y_axis_labels": choices.AxisLabelsChoices.NUMBERS,
+            # Required formset management form fields
+            **fixtures.get_formset_management_data(),
+        }
+
+        self.form = forms.FloorPlanForm(data=form_data)
+        self.assertTrue(self.form.is_valid(), msg=self.form.errors)
+        self.floor_plan = self.form.save()
+
+    def _create_custom_ranges(self, ranges, axis="X"):
+        """Helper method to create custom ranges using formsets."""
+        form_data = {
+            "location": self.floor_plan.location.pk,
+            "x_size": self.floor_plan.x_size,
+            "y_size": self.floor_plan.y_size,
+            "tile_depth": self.floor_plan.tile_depth,
+            "tile_width": self.floor_plan.tile_width,
+            "x_origin_seed": self.floor_plan.x_origin_seed,
+            "x_axis_step": self.floor_plan.x_axis_step,
+            "x_axis_labels": self.floor_plan.x_axis_labels,
+            "y_origin_seed": self.floor_plan.y_origin_seed,
+            "y_axis_step": self.floor_plan.y_axis_step,
+            "y_axis_labels": self.floor_plan.y_axis_labels,
+        }
+
+        # Add formset management form fields
+        formset_prefix = f"{axis.lower()}_ranges"
+        form_data.update(
+            {
+                f"{formset_prefix}-TOTAL_FORMS": str(len(ranges)),
+                f"{formset_prefix}-INITIAL_FORMS": "0",
+                f"{formset_prefix}-MIN_NUM_FORMS": "0",
+                f"{formset_prefix}-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertTrue(self.form.is_valid(), msg=self.form.errors)
-        self.floor_plan = self.form.save(commit=True)  # Save the instance to the database
+
+        # Add range data
+        for i, range_data in enumerate(ranges):
+            for key, value in range_data.items():
+                form_data[f"{formset_prefix}-{i}-{key}"] = value
+
+        # Create and save the form
+        form = forms.FloorPlanForm(data=form_data, instance=self.floor_plan)
+        self.assertTrue(form.is_valid(), msg=form.errors)
+        self.floor_plan = form.save()
 
     def test_numeric_ranges(self):
         """Test numeric ranges with both ascending and descending steps."""
         numeric_ranges = [
-            {"start": "01", "end": "05", "step": 1, "increment_letter": False, "label_type": "numbers"},
-            {"start": "15", "end": "11", "step": -1, "increment_letter": False, "label_type": "numbers"},
+            {
+                "start": "01",
+                "end": "05",
+                "step": 1,
+                "increment_letter": False,
+                "label_type": choices.CustomAxisLabelsChoices.NUMBERS,
+            },
+            {
+                "start": "15",
+                "end": "11",
+                "step": -1,
+                "increment_letter": False,
+                "label_type": choices.CustomAxisLabelsChoices.NUMBERS,
+            },
         ]
         self.form.create_custom_axis_labels(numeric_ranges, self.floor_plan, axis="X")
 
@@ -164,8 +213,20 @@ class TestPositionAndLabelConverters(TestCase):
     def test_alphanumeric_ranges(self):
         """Test alphanumeric ranges with both ascending and descending steps."""
         alphanumeric_ranges = [
-            {"start": "A01", "end": "A05", "step": 1, "increment_letter": False, "label_type": "alphanumeric"},
-            {"start": "B05", "end": "B01", "step": -1, "increment_letter": False, "label_type": "alphanumeric"},
+            {
+                "start": "A01",
+                "end": "A05",
+                "step": 1,
+                "increment_letter": False,
+                "label_type": choices.CustomAxisLabelsChoices.ALPHANUMERIC,
+            },
+            {
+                "start": "B05",
+                "end": "B01",
+                "step": -1,
+                "increment_letter": False,
+                "label_type": choices.CustomAxisLabelsChoices.ALPHANUMERIC,
+            },
         ]
         self.form.create_custom_axis_labels(alphanumeric_ranges, self.floor_plan, axis="X")
 
@@ -184,8 +245,20 @@ class TestPositionAndLabelConverters(TestCase):
     def test_alphanumeric_incrementing_prefix_ranges(self):
         """Test alphanumeric ranges with both ascending and descending steps and incrementing prefix."""
         alphanumeric_ranges = [
-            {"start": "A01", "end": "E01", "step": 1, "increment_letter": True, "label_type": "alphanumeric"},
-            {"start": "F05", "end": "F01", "step": -1, "increment_letter": False, "label_type": "alphanumeric"},
+            {
+                "start": "A01",
+                "end": "E01",
+                "step": 1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.ALPHANUMERIC,
+            },
+            {
+                "start": "F05",
+                "end": "F01",
+                "step": -1,
+                "increment_letter": False,
+                "label_type": choices.CustomAxisLabelsChoices.ALPHANUMERIC,
+            },
         ]
         self.form.create_custom_axis_labels(alphanumeric_ranges, self.floor_plan, axis="X")
 
@@ -204,8 +277,20 @@ class TestPositionAndLabelConverters(TestCase):
     def test_numalpha_ranges(self):
         """Test numalpha ranges with both ascending and descending steps."""
         numalpha_ranges = [
-            {"start": "02A", "end": "02E", "step": 1, "increment_letter": True, "label_type": "numalpha"},
-            {"start": "03E", "end": "03A", "step": -1, "increment_letter": True, "label_type": "numalpha"},
+            {
+                "start": "02A",
+                "end": "02E",
+                "step": 1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.NUMALPHA,
+            },
+            {
+                "start": "03E",
+                "end": "03A",
+                "step": -1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.NUMALPHA,
+            },
         ]
         self.form.create_custom_axis_labels(numalpha_ranges, self.floor_plan, axis="X")
 
@@ -224,8 +309,20 @@ class TestPositionAndLabelConverters(TestCase):
     def test_letter_ranges(self):
         """Test letter ranges with both ascending and descending steps."""
         letter_ranges = [
-            {"start": "A", "end": "E", "step": 1, "increment_letter": True, "label_type": "letters"},
-            {"start": "K", "end": "G", "step": -1, "increment_letter": True, "label_type": "letters"},
+            {
+                "start": "A",
+                "end": "E",
+                "step": 1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.LETTERS,
+            },
+            {
+                "start": "K",
+                "end": "G",
+                "step": -1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.LETTERS,
+            },
         ]
         self.form.create_custom_axis_labels(letter_ranges, self.floor_plan, axis="X")
 
@@ -244,8 +341,20 @@ class TestPositionAndLabelConverters(TestCase):
     def test_roman_ranges(self):
         """Test roman numeral ranges with both ascending and descending steps."""
         roman_ranges = [
-            {"start": "I", "end": "V", "step": 1, "increment_letter": True, "label_type": "roman"},
-            {"start": "X", "end": "VI", "step": -1, "increment_letter": True, "label_type": "roman"},
+            {
+                "start": "I",
+                "end": "V",
+                "step": 1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.ROMAN,
+            },
+            {
+                "start": "X",
+                "end": "VI",
+                "step": -1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.ROMAN,
+            },
         ]
         self.form.create_custom_axis_labels(roman_ranges, self.floor_plan, axis="X")
 
@@ -264,8 +373,20 @@ class TestPositionAndLabelConverters(TestCase):
     def test_hex_ranges(self):
         """Test hexadecimal ranges with both ascending and descending steps."""
         hex_ranges = [
-            {"start": "1", "end": "5", "step": 1, "increment_letter": True, "label_type": "hex"},
-            {"start": "10", "end": "6", "step": -1, "increment_letter": True, "label_type": "hex"},
+            {
+                "start": "1",
+                "end": "5",
+                "step": 1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.HEX,
+            },
+            {
+                "start": "10",
+                "end": "6",
+                "step": -1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.HEX,
+            },
         ]
         self.form.create_custom_axis_labels(hex_ranges, self.floor_plan, axis="X")
 
@@ -284,8 +405,20 @@ class TestPositionAndLabelConverters(TestCase):
     def test_binary_ranges(self):
         """Test binary ranges with both ascending and descending steps."""
         binary_ranges = [
-            {"start": "1", "end": "5", "step": 1, "increment_letter": True, "label_type": "binary"},
-            {"start": "10", "end": "6", "step": -1, "increment_letter": True, "label_type": "binary"},
+            {
+                "start": "1",
+                "end": "5",
+                "step": 1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.BINARY,
+            },
+            {
+                "start": "10",
+                "end": "6",
+                "step": -1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.BINARY,
+            },
         ]
         self.form.create_custom_axis_labels(binary_ranges, self.floor_plan, axis="X")
 
@@ -304,8 +437,20 @@ class TestPositionAndLabelConverters(TestCase):
     def test_greek_ranges(self):
         """Test Greek letter ranges with both ascending and descending steps."""
         greek_ranges = [
-            {"start": "α", "end": "ε", "step": 1, "increment_letter": True, "label_type": "greek"},
-            {"start": "κ", "end": "ζ", "step": -1, "increment_letter": True, "label_type": "greek"},
+            {
+                "start": "α",
+                "end": "ε",
+                "step": 1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.GREEK,
+            },
+            {
+                "start": "κ",
+                "end": "ζ",
+                "step": -1,
+                "increment_letter": True,
+                "label_type": choices.CustomAxisLabelsChoices.GREEK,
+            },
         ]
         self.form.create_custom_axis_labels(greek_ranges, self.floor_plan, axis="X")
 
