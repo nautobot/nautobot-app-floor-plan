@@ -1,8 +1,21 @@
 {% load buttons %}
 
 {% if floor_plan %}
-    <h4>{{ floor_plan }} {% edit_button floor_plan %}</h4>
-    Use shift+scroll wheel to zoom in or out. Click and drag to scroll.
+    <div class="pull-right noprint">
+        <a href="{% url 'plugins:nautobot_floor_plan:floorplan_edit' floor_plan.pk %}" class="btn btn-warning btn-sm" id="edit-button">
+            <span class="mdi mdi-checkerboard" aria-hidden="true"></span> Edit Floorplan
+        </a>
+        <a href="{% url 'plugins:nautobot_floor_plan:floorplantile_add' %}?floor_plan={{ floor_plan.pk }}" class="btn btn-primary btn-sm " id="add-floor-plan">
+            <span class="mdi mdi-plus-box" aria-hidden="true"></span> Add Tile
+        </a>
+    </div>
+    <h4>{{ floor_plan }}</h4>
+    <div>
+        Use shift+scroll wheel to zoom in or out.
+        Click and drag to scroll.<br>
+        Add a tile by clicking the plus symbol on the grid OR by using the "Add Tile" button.
+    </div>
+
     <div class="text-center text-small">
         <a href="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=floor_plan.pk %}" class="rack_elevation_save_svg_link" download="floor_plan_{{ floor_plan.location.name }}.svg">
             <i class="mdi mdi-content-save-outline"></i> Save SVG
