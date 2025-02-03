@@ -328,7 +328,6 @@ class FloorPlanForm(NautobotModelForm):
             except json.JSONDecodeError:
                 pass
 
-        instance.save()
         return instance
 
     def create_custom_axis_labels(self, ranges, instance, axis):
