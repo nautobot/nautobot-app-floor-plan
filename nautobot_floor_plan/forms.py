@@ -133,23 +133,23 @@ class FloorPlanForm(NautobotModelForm):
         if self.instance.pk:
             x_initial = [
                 {
-                    "start": range.start_label,
-                    "end": range.end_label,
-                    "step": range.step,
-                    "label_type": range.label_type,
-                    "increment_letter": range.increment_letter,
+                    "start": label_range.start_label,
+                    "end": label_range.end_label,
+                    "step": label_range.step,
+                    "label_type": label_range.label_type,
+                    "increment_letter": label_range.increment_letter,
                 }
-                for range in self.instance.custom_labels.filter(axis="X").order_by("order")
+                for label_range in self.instance.custom_labels.filter(axis="X").order_by("order")
             ]
             y_initial = [
                 {
-                    "start": range.start_label,
-                    "end": range.end_label,
-                    "step": range.step,
-                    "label_type": range.label_type,
-                    "increment_letter": range.increment_letter,
+                    "start": label_range.start_label,
+                    "end": label_range.end_label,
+                    "step": label_range.step,
+                    "label_type": label_range.label_type,
+                    "increment_letter": label_range.increment_letter,
                 }
-                for range in self.instance.custom_labels.filter(axis="Y").order_by("order")
+                for label_range in self.instance.custom_labels.filter(axis="Y").order_by("order")
             ]
         else:
             x_initial = []
@@ -260,7 +260,7 @@ class FloorPlanForm(NautobotModelForm):
 
             if ranges_data:
                 try:
-                    validated_ranges = self._validate_custom_ranges(ranges_data)
+                    validated_ranges = self._validate_custom_ranges(ranges_data, axis)
                     if validated_ranges:
                         self.cleaned_data[f"{axis}_custom_ranges"] = json.dumps(validated_ranges)
                     return validated_ranges
@@ -291,8 +291,6 @@ class FloorPlanForm(NautobotModelForm):
                 form_valid,
                 x_ranges_valid,
                 y_ranges_valid,
-                not any(form.errors for form in self.x_ranges.forms),
-                not any(form.errors for form in self.y_ranges.forms),
             ]
         )
         return is_valid
@@ -313,8 +311,8 @@ class FloorPlanForm(NautobotModelForm):
                 if valid_ranges:
                     instance.x_custom_ranges = json.dumps(valid_ranges)
                     self.create_custom_axis_labels(valid_ranges, instance, "X")
-            except json.JSONDecodeError:
-                pass
+            except json.JSONDecodeError as e:
+                self.add_error(None, f"Invalid X axis range format: {e}")
 
         # Process Y ranges from the form's cleaned data
         y_ranges = self.cleaned_data.get("Y_custom_ranges")
@@ -325,8 +323,8 @@ class FloorPlanForm(NautobotModelForm):
                 if valid_ranges:
                     instance.y_custom_ranges = json.dumps(valid_ranges)
                     self.create_custom_axis_labels(valid_ranges, instance, "Y")
-            except json.JSONDecodeError:
-                pass
+            except json.JSONDecodeError as e:
+                self.add_error(None, f"Invalid Y axis range format: {e}")
 
         return instance
 
@@ -348,12 +346,14 @@ class FloorPlanForm(NautobotModelForm):
             )
         models.FloorPlanCustomAxisLabel.objects.bulk_create(labels)
 
-    def _validate_custom_ranges(self, ranges):
+    def _validate_custom_ranges(self, ranges, axis):
         """Validate custom label ranges."""
         if not ranges:
             return []
 
-        max_size = self.cleaned_data.get("x_size")  # or y_size depending on the axis
+        is_x_axis = axis == "X"
+
+        max_size = self.cleaned_data.get("x_size" if is_x_axis else "y_size")
         validator = RangeValidator(max_size)
 
         # First validate each individual range

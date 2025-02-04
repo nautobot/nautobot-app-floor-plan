@@ -1,1 +1,1 @@
-Added the ability to configure custom labels using Django Formsets.
+Enhanced the UI for configuring custom labels for a floor plan, including the ability to preview the resulting label sequence.

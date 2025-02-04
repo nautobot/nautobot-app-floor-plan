@@ -123,17 +123,17 @@ There is a `Generate Preview` button that allows you to preview a range of label
 
 With an X Size of 10:
 
-![numalpha_x_10](../images/numalpha_x_10.png)
+![Example: Numalpha Single Range, X Size of 10](../images/numalpha_x_10.png)
 
-![roman_x_10](../images/roman_x_10.png)
+![Example: Roman Numeral Single Range, X Size of 10](../images/roman_x_10.png)
 
 ### Multiple Range Example
 
 With an X Size of 10:
 
-![numalpha_multi_range](../images/numalpha_multi_range.png)
+![Example: Numalpha Multi Range, X Size of 10](../images/numalpha_multi_range.png)
 
-![binary_multi_range](../images/numalpha_multi_range.png)
+![Example: Binary Multi Range, X Size of 10](../images/numalpha_multi_range.png)
 
 ## Creating and Managing the Floor Plan
 
