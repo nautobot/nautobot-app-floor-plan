@@ -815,8 +815,10 @@ def check_migrations(context):
         "failfast": "fail as soon as a single test fails don't run the entire test suite",
         "buffer": "Discard output from passing tests",
         "pattern": "Run specific test methods, classes, or modules instead of all tests",
+        "tags": "Unittest tags to target",
         "verbose": "Enable verbose test output.",
-    }
+    },
+    iterable=["tags"],
 )
 def unittest(  # noqa: PLR0913
     context,
@@ -824,6 +826,7 @@ def unittest(  # noqa: PLR0913
     label="nautobot_floor_plan",
     failfast=False,
     buffer=True,
+    tags=[],
     pattern="",
     verbose=False,
 ):
@@ -840,7 +843,11 @@ def unittest(  # noqa: PLR0913
         command += f" -k='{pattern}'"
     if verbose:
         command += " --verbosity 2"
+    for t in tags:
+        command += f" --tag={t}"
 
+    if "integration" in tags:
+        start(context, service="nautobot")
     run_command(context, command)
 
 
@@ -883,6 +890,8 @@ def tests(context, failfast=False, keepdb=False, lint_only=False):
     if not lint_only:
         print("Running unit tests...")
         unittest(context, failfast=failfast, keepdb=keepdb)
+        print("Running integ tests...")
+        unittest(context, failfast=failfast, keepdb=keepdb, tags=["integration"])
         unittest_coverage(context)
     print("All tests have passed!")
 
