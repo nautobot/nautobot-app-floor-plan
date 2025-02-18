@@ -1,6 +1,9 @@
 """Validators for nautobot_floor_plan."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Set
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -16,18 +19,18 @@ from nautobot_floor_plan.utils.label_converters import LabelConverterFactory
 class RangeValidator:
     """Helper class to validate custom ranges."""
 
-    def __init__(self, max_size):
+    def __init__(self, max_size: int) -> None:
         """Initialize validator with max size."""
-        self.max_size = max_size
-        self.current_range = None
+        self.max_size: int = max_size
+        self.current_range: Optional[Dict[str, Any]] = None
 
-    def validate_required_keys(self, label_range):
+    def validate_required_keys(self, label_range: Dict[str, Any]) -> None:
         """Validate that all required keys are present in the range."""
-        required_keys = {"start", "end", "label_type"}
+        required_keys: Set[str] = {"start", "end", "label_type"}
         if not all(k in label_range for k in required_keys):
             raise forms.ValidationError(f"Range is missing required keys {required_keys}.")
 
-    def validate_label_type(self, label_type):
+    def validate_label_type(self, label_type: str) -> None:
         """Validate the label type is valid."""
         if label_type not in dict(choices.CustomAxisLabelsChoices.CHOICES):
             raise forms.ValidationError(
@@ -56,19 +59,19 @@ class RangeValidator:
         step: int
         label_type: str
 
-    def validate_numeric_range(self, start, end, current_range=None):
+    def validate_numeric_range(self, start: str, end: str, current_range: Optional[Dict[str, Any]] = None) -> None:
         """Validate numeric ranges (hex, binary) considering step size."""
         self.current_range = current_range
         try:
-            start_num = int(start)
-            end_num = int(end)
-            step = self.get_step_from_range()
+            start_num: int = int(start)
+            end_num: int = int(end)
+            step: int = self.get_step_from_range()
 
-            range_data = self.RangeData(
+            range_data: RangeValidator.RangeData = self.RangeData(
                 start=start, end=end, start_num=start_num, end_num=end_num, step=step, label_type=""
             )
 
-            effective_size = self._calculate_numeric_range_size(
+            effective_size: int = self._calculate_numeric_range_size(
                 range_data.start_num, range_data.end_num, range_data.step
             )
 
@@ -80,11 +83,11 @@ class RangeValidator:
         except ValueError as e:
             raise ValidationError(f"Invalid numeric values - {str(e)}") from e
 
-    def get_step_from_range(self):
+    def get_step_from_range(self) -> int:
         """Get step value from the range."""
         return self.current_range.get("step", 1) if self.current_range else 1
 
-    def validate_numalpha_prefix(self, start, end, _):
+    def validate_numalpha_prefix(self, start: str, end: str, _: Any) -> None:
         """Validate that numalpha prefixes match."""
         start_prefix, _ = general.extract_prefix_and_letter(start)
         end_prefix, _ = general.extract_prefix_and_letter(end)
@@ -94,12 +97,14 @@ class RangeValidator:
                 f"Range: '{start_prefix}' != '{end_prefix}'. Use separate ranges for different prefixes"
             )
 
-    def validate_increment_letter_for_numbers(self, increment_letter):
+    def validate_increment_letter_for_numbers(self, increment_letter: Any) -> None:
         """Validate increment_letter for numbers."""
         if increment_letter:
             raise ValidationError("increment_letter must be False when using numeric labels")
 
-    def validate_custom_range(self, start, end, label_type, current_range=None):
+    def validate_custom_range(
+        self, start: str, end: str, label_type: str, current_range: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Validate custom label ranges considering step size and prefix matching."""
         self.current_range = current_range
         try:
@@ -110,7 +115,7 @@ class RangeValidator:
                 converter.set_number_only_mode(True)
 
             # Get numeric values and create range data
-            range_data = self.RangeData(
+            range_data: RangeValidator.RangeData = self.RangeData(
                 start=start,
                 end=end,
                 start_num=converter.to_numeric(start),
@@ -131,7 +136,7 @@ class RangeValidator:
                         f"Use label_type '{choices.CustomAxisLabelsChoices.NUMBERS}' if no letters are needed."
                     )
 
-                increment_letter = current_range.get("increment_letter", False)
+                increment_letter: bool = current_range.get("increment_letter", False) if current_range else False
 
                 start_prefix, start_number = general.extract_prefix_and_number(start)
                 end_prefix, end_number = general.extract_prefix_and_number(end)
@@ -149,7 +154,7 @@ class RangeValidator:
                             f"Invalid alphanumeric range: '{start}' to '{end}' - prefix must remain the same when increment_letter is False."
                         )
 
-            effective_size = self._calculate_effective_size(range_data)
+            effective_size: int = self._calculate_effective_size(range_data)
 
             if effective_size > self.max_size:
                 raise ValidationError(
@@ -159,17 +164,17 @@ class RangeValidator:
         except ValueError as e:
             raise ValidationError(f"Invalid values for {label_type} - {str(e)}") from e
 
-    def _contains_letter(self, label):
+    def _contains_letter(self, label: str) -> bool:
         """Check if a label contains at least one alphabetic character."""
         return any(char.isalpha() for char in label)
 
-    def _calculate_effective_size(self, range_data: RangeData):
+    def _calculate_effective_size(self, range_data: RangeValidator.RangeData) -> int:
         """Calculate the effective size of the range based on label type and configuration."""
         if range_data.label_type in [choices.CustomAxisLabelsChoices.LETTERS, choices.CustomAxisLabelsChoices.NUMALPHA]:
             return self._calculate_letter_range_size(range_data.start, range_data.end)
         return self._calculate_numeric_range_size(range_data.start_num, range_data.end_num, range_data.step)
 
-    def _calculate_letter_range_size(self, start, end):
+    def _calculate_letter_range_size(self, start: str, end: str) -> int:
         """Calculate the size of letter-based ranges."""
         _, start_letters = general.extract_prefix_and_letter(start)
         _, end_letters = general.extract_prefix_and_letter(end)
@@ -181,23 +186,23 @@ class RangeValidator:
 
         if self.current_range and self.current_range.get("increment_letter"):
             # For increment_letter=True, use full grid_letter_to_number conversion
-            start_pos = general.grid_letter_to_number(start_letters)
-            end_pos = general.grid_letter_to_number(end_letters)
+            start_pos: int = general.grid_letter_to_number(start_letters)
+            end_pos: int = general.grid_letter_to_number(end_letters)
         else:
             # For increment_letter=False, only look at first character
-            start_pos = general.grid_letter_to_number(start_letters[0])
-            end_pos = general.grid_letter_to_number(end_letters[0])
+            start_pos: int = general.grid_letter_to_number(start_letters[0])
+            end_pos: int = general.grid_letter_to_number(end_letters[0])
 
-        step = self.get_step_from_range()
-        range_size = end_pos - start_pos + 1
+        step: int = self.get_step_from_range()
+        range_size: int = end_pos - start_pos + 1
 
         if step and step < 0:
             return range_size if start_pos >= end_pos else 0
         return range_size if start_pos <= end_pos else 0
 
-    def _calculate_numeric_range_size(self, start_num, end_num, step):
+    def _calculate_numeric_range_size(self, start_num: int, end_num: int, step: int) -> int:
         """Calculate the size of numeric ranges."""
-        range_data = self.RangeData(
+        range_data: RangeValidator.RangeData = self.RangeData(
             start=str(start_num),
             end=str(end_num),
             start_num=start_num,
@@ -217,23 +222,23 @@ class RangeValidator:
             raise ValidationError(f"With positive step {range_data.step}, start value must be less than end value")
         return len(range(range_data.start_num, range_data.end_num + 1, abs(range_data.step) if range_data.step else 1))
 
-    def validate_increment_letter(self, label_range, label_type):
+    def validate_increment_letter(self, label_range: Dict[str, Any], label_type: str) -> None:
         """Validate increment_letter if present for letter type."""
         if label_type == choices.CustomAxisLabelsChoices.LETTERS:
             increment_letter = label_range.get("increment_letter")
             if increment_letter is not None and not isinstance(increment_letter, bool):
                 raise forms.ValidationError("increment_letter must be a boolean value.")
 
-    def check_range_overlap(self, range1, range2):
+    def check_range_overlap(self, range1: Dict[str, Any], range2: Dict[str, Any]) -> bool:
         """Check if two ranges overlap."""
         # Only check overlap for ranges of the same label type
         if range1["label_type"] != range2["label_type"]:
             return False
 
-        label_type = range1["label_type"]
+        label_type: str = range1["label_type"]
         converter = LabelConverterFactory.get_converter(label_type)
 
-        def alphanumeric_overlap(range1, range2):
+        def alphanumeric_overlap(range1: Dict[str, Any], range2: Dict[str, Any]) -> bool:
             """Check overlap for alphanumeric ranges."""
             # Extract prefix and numbers using the utility function
             prefix1, num1 = general.extract_prefix_and_number(range1["start"])
@@ -246,15 +251,15 @@ class RangeValidator:
                 return False
 
             # Convert to integers for comparison
-            num1_start = int(num1)
-            num1_end = int(num1_end)
-            num2_start = int(num2)
-            num2_end = int(num2_end)
+            num1_start: int = int(num1)
+            num1_end_int: int = int(num1_end)
+            num2_start: int = int(num2)
+            num2_end_int: int = int(num2_end)
 
             # Check numeric overlap
-            return not (num1_end < num2_start or num2_end < num1_start)
+            return not (num1_end_int < num2_start or num2_end_int < num1_start)
 
-        def numalpha_overlap(range1, range2):
+        def numalpha_overlap(range1: Dict[str, Any], range2: Dict[str, Any]) -> bool:
             """Check overlap for numalpha ranges."""
             # Extract prefix (numbers) and letters
             prefix1, letter1_start = general.extract_prefix_and_letter(range1["start"])
@@ -267,14 +272,14 @@ class RangeValidator:
                 return False
 
             # For numalpha ranges, we need to consider the direction (step)
-            step1 = range1.get("step", 1)
-            step2 = range2.get("step", 1)
+            step1: int = range1.get("step", 1)
+            step2: int = range2.get("step", 1)
 
             # Convert letters to numeric values using existing utility function
-            start1 = general.grid_letter_to_number(letter1_start)
-            end1 = general.grid_letter_to_number(letter1_end)
-            start2 = general.grid_letter_to_number(letter2_start)
-            end2 = general.grid_letter_to_number(letter2_end)
+            start1: int = general.grid_letter_to_number(letter1_start)
+            end1: int = general.grid_letter_to_number(letter1_end)
+            start2: int = general.grid_letter_to_number(letter2_start)
+            end2: int = general.grid_letter_to_number(letter2_end)
 
             # Adjust ranges based on step direction
             if step1 < 0:
@@ -294,11 +299,11 @@ class RangeValidator:
         if label_type == choices.CustomAxisLabelsChoices.NUMBERS:
             converter.set_number_only_mode(True)
 
-        def create_range_data(range_info):
+        def create_range_data(range_info: Dict[str, Any]) -> RangeValidator.RangeData:
             """Helper to create a RangeData object."""
             # Validate step value first
-            step = range_info.get("step", 1)
-            if step == 0:
+            step_value: int = range_info.get("step", 1)
+            if step_value == 0:
                 raise ValidationError("Step value must be a non-zero integer.")
 
             return self.RangeData(
@@ -306,30 +311,30 @@ class RangeValidator:
                 end=range_info["end"],
                 start_num=converter.to_numeric(range_info["start"]),
                 end_num=converter.to_numeric(range_info["end"]),
-                step=step,
+                step=step_value,
                 label_type=label_type,
             )
 
         try:
-            range1_data = create_range_data(range1)
-            range2_data = create_range_data(range2)
+            range1_data: RangeValidator.RangeData = create_range_data(range1)
+            range2_data: RangeValidator.RangeData = create_range_data(range2)
 
-            def generate_labels(range_data):
+            def generate_labels(range_data: RangeValidator.RangeData) -> Set[str]:
                 """Generate label set for a range."""
                 return {
                     converter.from_numeric(i)
                     for i in range(range_data.start_num, range_data.end_num + 1, range_data.step)
                 }
 
-            labels1 = generate_labels(range1_data)
-            labels2 = generate_labels(range2_data)
+            labels1: Set[str] = generate_labels(range1_data)
+            labels2: Set[str] = generate_labels(range2_data)
 
             # Check for any common labels
             return bool(labels1.intersection(labels2))
         except ValueError as e:
             raise ValidationError(f"Invalid values for {label_type} - {str(e)}") from e
 
-    def validate_multiple_ranges(self, ranges):
+    def validate_multiple_ranges(self, ranges: List[Dict[str, Any]]) -> None:
         """Validate that multiple ranges don't overlap."""
         if not ranges or len(ranges) <= 1:
             return
@@ -344,10 +349,10 @@ class RangeValidator:
 class ValidateNotZero(BaseValidator):
     """Ensure that the field's value is not zero."""
 
-    message = "Must be a positive or negative Integer not equal to zero."
-    code = "zero_not_allowed"
+    message: str = "Must be a positive or negative Integer not equal to zero."
+    code: str = "zero_not_allowed"
 
-    def __call__(self, value):
+    def __call__(self, value: int) -> None:
         """Ensure that the field's value is not zero."""
         if value == 0:
             raise ValidationError(
@@ -359,21 +364,21 @@ class ValidateNotZero(BaseValidator):
 class RackValidator(CustomValidator):
     """Custom Validator to verify a Rack is not installed on a Floor Plan before allowing the changing of Location."""
 
-    model = "dcim.rack"
+    model: str = "dcim.rack"
 
-    def clean(self):
+    def clean(self) -> None:
         """
         Validate that the Rack's location is not changed if it is installed on a Floor Plan.
 
         Raises:
             ValidationError: If the Rack is installed on a Floor Plan and its location is being changed.
         """
-        rack = self.context["object"]
+        rack: Any = self.context["object"]
 
         # Skip validation if the Rack is new
         if rack.present_in_database:
             # Get the original instance of the rack
-            original_instance = Rack.objects.get(pk=rack.pk)
+            original_instance: Rack = Rack.objects.get(pk=rack.pk)
 
             # Check if the location is being changed
             if (
@@ -383,4 +388,4 @@ class RackValidator(CustomValidator):
                 self.validation_error({"location": "Cannot move Rack as it is currently installed in a FloorPlan."})
 
 
-custom_validators = [RackValidator]
+custom_validators: List[Any] = [RackValidator]

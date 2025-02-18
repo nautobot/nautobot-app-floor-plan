@@ -2,12 +2,14 @@
 
 import logging
 import os
+from typing import Any, Dict, List, Tuple
 
 import svgwrite
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.http import urlencode
 from nautobot.core.templatetags.helpers import fgcolor
+from svgwrite import Drawing
 
 from nautobot_floor_plan.choices import AllocationTypeChoices, RackOrientationChoices
 
@@ -31,13 +33,13 @@ class FloorPlanSVG:
     RACKGROUP_TEXT_OFFSET = 12
     Y_LABEL_TEXT_OFFSET = 34
 
-    def __init__(self, *, floor_plan, user, base_url):
+    def __init__(self, *, floor_plan: Any, user: Any, base_url: str) -> None:
         """
         Initialize a FloorPlanSVG.
 
         Args:
-            floor_plan (FloorPlan): FloorPlan to render
-            user (User): User making this request
+            floor_plan (Any): FloorPlan to render
+            user (Any): User making this request
             base_url (str): Server URL, needed to prepend to URLs included in the rendered SVG.
         """
         self.floor_plan = floor_plan
@@ -59,9 +61,9 @@ class FloorPlanSVG:
         """Grid spacing in the Y (depth) dimension."""
         return max(150, (150 * self.floor_plan.tile_depth) // self.floor_plan.tile_width)
 
-    def _setup_drawing(self, width, depth):
+    def _setup_drawing(self, width: int, depth: int) -> Drawing:
         """Initialize an appropriate svgwrite.Drawing instance."""
-        drawing = svgwrite.Drawing(size=(width, depth), debug=False)
+        drawing: Drawing = svgwrite.Drawing(size=(width, depth), debug=False)
         drawing.viewbox(0, 0, width=width, height=depth)
 
         # Add our custom stylesheet
@@ -72,7 +74,7 @@ class FloorPlanSVG:
         ) as css_file:
             drawing.defs.add(drawing.style(css_file.read()))
 
-        border_offset = self.BORDER_WIDTH / 2
+        border_offset: float = self.BORDER_WIDTH / 2
         drawing.add(
             drawing.rect(
                 insert=(border_offset, border_offset),
@@ -86,7 +88,7 @@ class FloorPlanSVG:
 
         return drawing
 
-    def _draw_tile_link(self, drawing, axis):
+    def _draw_tile_link(self, drawing: Drawing, axis: Dict[str, Any]) -> None:
         """Draw a '+' link for adding a new tile at the specified grid position."""
         query_params = urlencode(
             {
@@ -96,12 +98,12 @@ class FloorPlanSVG:
                 "return_url": self.return_url,
             }
         )
-        add_url = f"{self.add_url}?{query_params}"
+        add_url: str = f"{self.add_url}?{query_params}"
         add_link = drawing.add(drawing.a(href=add_url, target="_top"))
 
         # Use grid indices for positioning
-        x_pos = axis["x_idx"]
-        y_pos = axis["y_idx"]
+        x_pos: float = axis["x_idx"]
+        y_pos: float = axis["y_idx"]
 
         add_link.add(
             drawing.rect(
@@ -125,14 +127,14 @@ class FloorPlanSVG:
             )
         )
 
-    def _draw_grid(self, drawing):
+    def _draw_grid(self, drawing: Drawing) -> None:
         """Render the grid underlying all tiles."""
         self._draw_grid_lines(drawing)
         x_labels, y_labels = self._generate_axis_labels()
         self._draw_axis_labels(drawing, x_labels, y_labels)
         self._draw_tile_links(drawing, x_labels, y_labels)
 
-    def _draw_grid_lines(self, drawing):
+    def _draw_grid_lines(self, drawing: Drawing) -> None:
         """Draw the vertical and horizontal grid lines."""
         for x in range(0, self.floor_plan.x_size + 1):
             drawing.add(
@@ -157,13 +159,13 @@ class FloorPlanSVG:
                 )
             )
 
-    def _generate_axis_labels(self):
+    def _generate_axis_labels(self) -> Tuple[List[str], List[str]]:
         """Generate labels for the X and Y axes."""
-        x_labels = self.floor_plan.generate_labels("X", self.floor_plan.x_size)
-        y_labels = self.floor_plan.generate_labels("Y", self.floor_plan.y_size)
+        x_labels: List[str] = self.floor_plan.generate_labels("X", self.floor_plan.x_size)
+        y_labels: List[str] = self.floor_plan.generate_labels("Y", self.floor_plan.y_size)
         return x_labels, y_labels
 
-    def _draw_axis_labels(self, drawing, x_labels, y_labels):
+    def _draw_axis_labels(self, drawing: Drawing, x_labels: List[str], y_labels: List[str]) -> None:
         """Draw labels on the X and Y axes."""
         for idx, label in enumerate(x_labels):
             drawing.add(
@@ -176,8 +178,8 @@ class FloorPlanSVG:
                     class_="grid-label",
                 )
             )
-        max_y_length = max(len(str(label)) for label in y_labels)
-        y_label_text_offset = self._calculate_y_label_offset(max_y_length)
+        max_y_length: int = max(len(str(label)) for label in y_labels)
+        y_label_text_offset: int = self._calculate_y_label_offset(max_y_length)
 
         for idx, label in enumerate(y_labels):
             drawing.add(
@@ -191,14 +193,14 @@ class FloorPlanSVG:
                 )
             )
 
-    def _calculate_y_label_offset(self, max_y_length):
+    def _calculate_y_label_offset(self, max_y_length: int) -> int:
         """Calculate the offset for Y-axis labels."""
         # Add prefix length for binary (0b) and hex (0x) labels when calculating max length
-        adjusted_length = max_y_length
+        adjusted_length: int = max_y_length
         if str(self.floor_plan.y_origin_seed).startswith(("0b", "0x")):
             adjusted_length = max_y_length + 2
         # Base offset calculation
-        base_offset = (
+        base_offset: int = (
             self.Y_LABEL_TEXT_OFFSET - (6 - len(str(self.floor_plan.y_origin_seed))) if adjusted_length > 1 else 0
         )
         # Calculate additional offset
@@ -207,23 +209,23 @@ class FloorPlanSVG:
             adjusted_length = adjusted_length + 1
         if adjusted_length > 4:
             # Add 10 for each increment of 2 beyond 4 and handle odd cases
-            additional_offset = ((adjusted_length - 4 + 1) // 2) * 10
+            additional_offset: int = ((adjusted_length - 4 + 1) // 2) * 10
         else:
             additional_offset = 0
         return base_offset + additional_offset
 
-    def _draw_tile_links(self, drawing, x_labels, y_labels):
+    def _draw_tile_links(self, drawing: Drawing, x_labels: List[str], y_labels: List[str]) -> None:
         """Draw links for each tile in the grid."""
         for y_idx, y_label in enumerate(y_labels):
             for x_idx, x_label in enumerate(x_labels):
                 try:
-                    axis = {"x": x_label, "y": y_label, "x_idx": x_idx, "y_idx": y_idx}
+                    axis: Dict[str, Any] = {"x": x_label, "y": y_label, "x_idx": x_idx, "y_idx": y_idx}
                     self._draw_tile_link(drawing, axis)
                 except (ValueError, TypeError) as e:
                     logger.warning("Error processing grid position (%s, %s): %s", x_idx, y_idx, e)
                     continue
 
-    def _draw_tile(self, drawing, tile):
+    def _draw_tile(self, drawing: Drawing, tile: Any) -> None:
         """Render an individual FloorPlanTile to the drawing."""
         # functions to handle rack_group tiles and status tiles.
         # Add text to status group and rack group tiles
@@ -236,7 +238,7 @@ class FloorPlanSVG:
             self._draw_rack_tile(drawing, tile)
 
     # Draw a outline of status and Rackgroup
-    def _draw_underlay_tiles(self, drawing, tile):
+    def _draw_underlay_tiles(self, drawing: Drawing, tile: Any) -> None:
         """Render a tile based on its Status."""
         # If a tile is a rackgroup or status tile with no installed racks
         # or if a tile is a single Rackgroup tile with a rack installed
@@ -259,7 +261,7 @@ class FloorPlanSVG:
                 )
             )
 
-    def _draw_defined_rackgroup_tile(self, drawing, tile):
+    def _draw_defined_rackgroup_tile(self, drawing: Drawing, tile: Any) -> None:
         """Add Status and RackGroup text to a rendered tile."""
         origin = (
             (tile.x_origin - self.floor_plan.x_origin_seed) * self.GRID_SIZE_X + self.GRID_OFFSET + self.TILE_INSET,
@@ -294,7 +296,7 @@ class FloorPlanSVG:
                 )
             )
 
-    def _draw_rack_tile(self, drawing, tile):
+    def _draw_rack_tile(self, drawing: Drawing, tile: Any) -> None:
         """Overlay Rack information onto an already drawn tile."""
         origin = (
             (tile.x_origin - self.floor_plan.x_origin_seed) * self.GRID_SIZE_X + self.GRID_OFFSET,
@@ -468,7 +470,7 @@ class FloorPlanSVG:
         if tile.on_group_tile is True:
             self._draw_edit_delete_button(drawing, tile, self.RACK_BUTTON_OFFSET, self.GRID_OFFSET)
 
-    def _draw_edit_delete_button(self, drawing, tile, button_offset, grid_offset):
+    def _draw_edit_delete_button(self, drawing: Drawing, tile: Any, button_offset: int, grid_offset: int) -> None:
         if tile.allocation_type == AllocationTypeChoices.RACK:
             tile_inset = 0
         else:
@@ -536,10 +538,10 @@ class FloorPlanSVG:
             )
         )
 
-    def render(self):
+    def render(self) -> Drawing:
         """Generate an SVG document representing a FloorPlan."""
         logger.debug("Setting up drawing...")
-        drawing = self._setup_drawing(
+        drawing: Drawing = self._setup_drawing(
             width=self.floor_plan.x_size * self.GRID_SIZE_X + self.GRID_OFFSET + self.BORDER_WIDTH * 2,
             depth=self.floor_plan.y_size * self.GRID_SIZE_Y + self.GRID_OFFSET + self.BORDER_WIDTH * 2,
         )

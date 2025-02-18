@@ -1,5 +1,9 @@
 """Helper for seed conversion to letters."""
 
+from __future__ import annotations
+
+from typing import Any, Optional
+
 from django import template
 
 from nautobot_floor_plan import choices
@@ -9,7 +13,7 @@ register = template.Library()
 
 
 @register.filter()
-def seed_conversion(floor_plan, axis):
+def seed_conversion(floor_plan: Any, axis: str) -> str:
     """Convert seed number to letter if necessary."""
     letters = getattr(floor_plan, f"{axis}_axis_labels")
     seed = getattr(floor_plan, f"{axis}_origin_seed")
@@ -21,7 +25,7 @@ def seed_conversion(floor_plan, axis):
 
 
 @register.filter()
-def render_axis_origin(record, axis):
+def render_axis_origin(record: Any, axis: str) -> str:
     """
     Generalized function to render axis origin using PositionToLabelConverter or default conversion.
 
@@ -41,7 +45,8 @@ def render_axis_origin(record, axis):
     # Check if custom labels exist for the axis
     if record.floor_plan.custom_labels.filter(axis=axis).exists():
         converter = label_converters.PositionToLabelConverter(origin_value, axis, record.floor_plan)
-        return converter.convert()
+        result = converter.convert()
+        return result if result is not None else ""
 
     is_letters = axis_labels_choice == choices.AxisLabelsChoices.LETTERS
     origin_value_str = str(origin_value)  # Convert to string for checking
@@ -51,11 +56,11 @@ def render_axis_origin(record, axis):
         return general.letter_conversion(converted_location)  # Return the numeric value directly
 
     # Proceed with axis_init_label_conversion if it's not a digit
-    return general.axis_init_label_conversion(axis_seed, origin_value_str, axis_step, is_letters)
+    return str(general.axis_init_label_conversion(axis_seed, origin_value_str, axis_step, is_letters))
 
 
 @register.simple_tag
-def render_axis_origin_tag(record, axis):
+def render_axis_origin_tag(record: Any, axis: str) -> str:
     """
     Template tag to render an axis origin label.
 
@@ -75,14 +80,14 @@ def render_axis_origin_tag(record, axis):
 
 
 @register.filter()
-def count_children_floor_plans(location):
+def count_children_floor_plans(location: Any) -> int:
     """Returns count of Children with FloorPlans for a given location."""
     count = location.children.filter(floor_plan__isnull=False).count()
     return count
 
 
 @register.filter()
-def get_fieldset_field(form, field_name):
+def get_fieldset_field(form: Any, field_name: str) -> Optional[Any]:
     """Retrieve a field from the form using a dynamic field name."""
     try:
         return form[field_name]
@@ -91,7 +96,7 @@ def get_fieldset_field(form, field_name):
 
 
 @register.filter
-def render_origin_seed(obj, axis):
+def render_origin_seed(obj: Any, axis: str) -> str:
     """Render custom seed info for the specified axis if it exists, otherwise display the default seed."""
     custom_label = obj.custom_labels.filter(axis=axis.upper()).first()
     if custom_label:
@@ -113,7 +118,7 @@ def render_origin_seed(obj, axis):
 
 
 @register.filter
-def render_axis_label(obj, axis):
+def render_axis_label(obj: Any, axis: str) -> str:
     """Render custom label for the specified axis if it exists, otherwise display the default label."""
     custom_label = obj.custom_labels.filter(axis=axis.upper()).first()
     if custom_label:
@@ -122,7 +127,7 @@ def render_axis_label(obj, axis):
 
 
 @register.filter
-def render_axis_step(obj, axis):
+def render_axis_step(obj: Any, axis: str) -> int:
     """Render custom step for the specified axis if it exists, otherwise display the default step."""
     custom_label = obj.custom_labels.filter(axis=axis.upper()).first()
     if custom_label:

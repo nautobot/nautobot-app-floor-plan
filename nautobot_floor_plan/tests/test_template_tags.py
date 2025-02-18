@@ -56,7 +56,7 @@ class TestSeedHelpers(TestCase):
         # Test numeric grid
         floor_plan.x_axis_labels = choices.AxisLabelsChoices.NUMBERS
         floor_plan_tile.x_origin = 1
-        self.assertEqual(render_axis_origin(floor_plan_tile, "x"), 1)
+        self.assertEqual(render_axis_origin(floor_plan_tile, "x"), "1")
 
         # Test letter conversion
         floor_plan.x_axis_labels = choices.AxisLabelsChoices.LETTERS

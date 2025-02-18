@@ -1,11 +1,17 @@
 """Models for Nautobot Floor Plan."""
 
+from __future__ import annotations
+
 import logging
+from typing import Any, List, Optional, Tuple
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
+from django.db.models import QuerySet
 from nautobot.apps.models import PrimaryModel, StatusField, extras_features
+from nautobot.dcim.models import Rack, RackGroup
+from svgwrite import Drawing
 
 from nautobot_floor_plan.choices import (
     AllocationTypeChoices,
@@ -94,27 +100,27 @@ class FloorPlan(PrimaryModel):
 
         ordering = ["location___name"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Stringify instance."""
         return f'Floor Plan for Location "{self.location.name}"'
 
-    def get_svg(self, *, user, base_url):
+    def get_svg(self, *, user: Any, base_url: str) -> Drawing:
         """Get SVG representation of this FloorPlan."""
         return FloorPlanSVG(floor_plan=self, user=user, base_url=base_url).render()
 
-    def clean(self):
+    def clean(self) -> None:
         """Validate the floor plan dimensions and other constraints."""
         super().clean()
         self.validate_no_resizing_with_tiles()
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """Override save in order to update any existing tiles."""
         if self.present_in_database:
             # Get origin_seed pre/post values
-            initial_instance = self.__class__.objects.get(pk=self.pk)
-            x_initial = initial_instance.x_origin_seed
-            y_initial = initial_instance.y_origin_seed
-            changed = x_initial != self.x_origin_seed or y_initial != self.y_origin_seed
+            initial_instance: FloorPlan = self.__class__.objects.get(pk=self.pk)
+            x_initial: int = initial_instance.x_origin_seed
+            y_initial: int = initial_instance.y_origin_seed
+            changed: bool = x_initial != self.x_origin_seed or y_initial != self.y_origin_seed
         else:
             changed = False
 
@@ -122,15 +128,19 @@ class FloorPlan(PrimaryModel):
             super().save(**kwargs)
 
             if changed:
-                tiles = self.update_tile_origins(x_initial, self.x_origin_seed, y_initial, self.y_origin_seed)
+                tiles: QuerySet[FloorPlanTile] = self.update_tile_origins(
+                    x_initial, self.x_origin_seed, y_initial, self.y_origin_seed
+                )
                 for tile in tiles:
                     tile.validated_save()
 
-    def update_tile_origins(self, x_initial, x_updated, y_initial, y_updated):
+    def update_tile_origins(
+        self, x_initial: int, x_updated: int, y_initial: int, y_updated: int
+    ) -> QuerySet[FloorPlanTile]:
         """Update any existing tiles if axis_origin_seed was modified."""
-        tiles = self.tiles.all()
-        x_delta = x_updated - x_initial
-        y_delta = y_updated - y_initial
+        tiles: QuerySet[FloorPlanTile] = self.tiles.all()
+        x_delta: int = x_updated - x_initial
+        y_delta: int = y_updated - y_initial
 
         if x_delta > 0:
             tiles = tiles.order_by("-x_origin")
@@ -143,11 +153,11 @@ class FloorPlan(PrimaryModel):
 
         return tiles
 
-    def validate_no_resizing_with_tiles(self):
+    def validate_no_resizing_with_tiles(self) -> None:
         """Prevent resizing the floor plan dimensions if tiles have been placed."""
         if self.tiles.exists():
             # Check for original instance
-            original = self.__class__.objects.filter(pk=self.pk).first()
+            original: Optional[FloorPlan] = self.__class__.objects.filter(pk=self.pk).first()
             if original:
                 # Don't allow resize if tile is placed
                 if self.x_size != original.x_size or self.y_size != original.y_size:
@@ -156,7 +166,7 @@ class FloorPlan(PrimaryModel):
                         f"FloorPlan must maintain original size: ({original.x_size}, {original.y_size}), "
                     )
 
-    def generate_labels(self, axis, count):
+    def generate_labels(self, axis: str, count: int) -> List[str]:
         """
         Generate labels for the specified axis.
 
@@ -167,15 +177,15 @@ class FloorPlan(PrimaryModel):
         generator = FloorPlanLabelGenerator(self)
         return generator.generate_labels(axis, count)
 
-    def reset_seed_for_custom_labels(self):
+    def reset_seed_for_custom_labels(self) -> None:
         """Reset seed and step values when custom labels are added."""
         # Only proceed if there are custom labels
         if not self.custom_labels.exists():
             return
 
-        changed = False
-        x_has_custom = self.custom_labels.filter(axis="X").exists()
-        y_has_custom = self.custom_labels.filter(axis="Y").exists()
+        changed: bool = False
+        x_has_custom: bool = self.custom_labels.filter(axis="X").exists()
+        y_has_custom: bool = self.custom_labels.filter(axis="Y").exists()
 
         if x_has_custom and (self.x_origin_seed != 1 or self.x_axis_step != 1):
             self.x_origin_seed = 1
@@ -189,12 +199,12 @@ class FloorPlan(PrimaryModel):
 
         if changed:
             # Get the current values before updating
-            initial_instance = self.__class__.objects.get(pk=self.pk)
-            x_initial = initial_instance.x_origin_seed
-            y_initial = initial_instance.y_origin_seed
+            initial_instance: FloorPlan = self.__class__.objects.get(pk=self.pk)
+            x_initial: int = initial_instance.x_origin_seed
+            y_initial: int = initial_instance.y_origin_seed
 
             # Update tile positions only for axes that have custom labels
-            tiles = self.update_tile_origins(
+            tiles: QuerySet[FloorPlanTile] = self.update_tile_origins(
                 x_initial=x_initial if x_has_custom else self.x_origin_seed,
                 x_updated=1 if x_has_custom else self.x_origin_seed,
                 y_initial=y_initial if y_has_custom else self.y_origin_seed,
@@ -262,13 +272,13 @@ class FloorPlanCustomAxisLabel(models.Model):
 
         ordering = ["floor_plan", "axis", "order"]
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """Override save to reset seed values when custom labels are added."""
         super().save(*args, **kwargs)
         # Reset the corresponding seed value to 1
         self.floor_plan.reset_seed_for_custom_labels()
 
-    def clean(self):
+    def clean(self) -> None:
         """Add validation to ensure seed values are reset."""
         super().clean()
         # If this is a new custom label (no pk) or the axis has changed
@@ -292,7 +302,7 @@ class FloorPlanCustomAxisLabel(models.Model):
 class FloorPlanTile(PrimaryModel):
     """Model representing a single rectangular "tile" within a FloorPlan, its status, and any Rack that it contains."""
 
-    status = StatusField(blank=False, null=False)
+    status = StatusField(blank=False, null=False)  # type: ignore
     floor_plan = models.ForeignKey(to=FloorPlan, on_delete=models.CASCADE, related_name="tiles")
     # TODO: for efficiency we could consider using something like GeoDjango, rather than inventing geometry from
     # first principles, but since that requires changing settings.DATABASES and installing libraries, avoid it for now.
@@ -347,16 +357,16 @@ class FloorPlanTile(PrimaryModel):
         ordering = ["floor_plan", "y_origin", "x_origin"]
         unique_together = ["floor_plan", "x_origin", "y_origin", "allocation_type"]
 
-    def allocation_type_assignment(self):
+    def allocation_type_assignment(self) -> None:
         """Assign the appropriate tile allocation type when saving in clean."""
-        # Assign Allocation type based off of Tile Assignemnt
+        # Assign Allocation type based off of Tile Assignment
         if self.rack_group is not None or self.status is not None:
             self.allocation_type = AllocationTypeChoices.RACKGROUP
         if self.rack is not None:
             self.allocation_type = AllocationTypeChoices.RACK
             self.on_group_tile = False
 
-    def validate_tile_placement(self):
+    def validate_tile_placement(self) -> None:
         """Check that tile fits within the floorplan."""
         if self.x_origin > self.floor_plan.x_size + self.floor_plan.x_origin_seed - 1:
             raise ValidationError({"x_origin": f"Too large for {self.floor_plan}"})
@@ -372,7 +382,7 @@ class FloorPlanTile(PrimaryModel):
             raise ValidationError({"y_size": f"Extends beyond the edge of {self.floor_plan}"})
 
     @property
-    def bounds(self):
+    def bounds(self) -> Tuple[int, int, int, int, str, Optional[RackGroup]]:
         """Get the tuple representing the set of grid spaces occupied by this FloorPlanTile.
 
         This function also serves to return the allocation_type and rack_group of the underlying tile
@@ -387,7 +397,7 @@ class FloorPlanTile(PrimaryModel):
             self.rack_group,
         )
 
-    def clean(self):
+    def clean(self) -> None:
         """
         Validate parameters above and beyond what the database can provide.
 
@@ -396,10 +406,10 @@ class FloorPlanTile(PrimaryModel):
         - Ensure that this FloorPlanTile doesn't overlap with any other FloorPlanTile in this FloorPlan.
         """
         super().clean()
-        FloorPlanTile.allocation_type_assignment(self)
-        FloorPlanTile.validate_tile_placement(self)
+        self.allocation_type_assignment()
+        self.validate_tile_placement()
 
-        def group_tile_bounds(rack, rack_group):
+        def group_tile_bounds(rack: Optional[Rack], rack_group: Optional[RackGroup]) -> None:
             """Validate the overlapping of group tiles."""
             if rack is not None:
                 # Set the tile rack_group equal to the rack.rack_group if the rack is in a rack_group
@@ -408,11 +418,11 @@ class FloorPlanTile(PrimaryModel):
                     self.rack_group = rack.rack_group
                 if x_max > ox_max or x_min < ox_min:
                     raise ValidationError(
-                        {f"Rack {self.rack} must not extend beyond the boundary of the defined group tiles"}
+                        {f"Rack {self.rack} must not extend beyond the boundary of the defined group tiles"}  # type: ignore
                     )
                 if y_max > oy_max or y_min < oy_min:
                     raise ValidationError(
-                        {f"Rack {self.rack} must not extend beyond the boundary of the defined group tiles"}
+                        {f"Rack {self.rack} must not extend beyond the boundary of the defined group tiles"}  # type: ignore
                     )
                 self.on_group_tile = True
                 if orack_group is not None:
@@ -459,6 +469,6 @@ class FloorPlanTile(PrimaryModel):
             # Else they must overlap
             raise ValidationError("Tile overlaps with another defined tile.")
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Stringify instance."""
         return f"Tile ({render_axis_origin(self, 'X')}, {render_axis_origin(self, 'Y')}), ({self.x_size},{self.y_size}) in {self.floor_plan}"
