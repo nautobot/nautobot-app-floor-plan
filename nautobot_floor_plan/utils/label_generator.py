@@ -1,5 +1,6 @@
 """Label generation functionality for floor plans."""
 
+from nautobot_floor_plan import models
 from nautobot_floor_plan.choices import (
     AxisLabelsChoices,
     CustomAxisLabelsChoices,
@@ -39,20 +40,24 @@ class FloorPlanLabelGenerator:
             if len(labels) >= count:
                 return labels[:count]
 
-        # If custom ranges don't provide enough labels, fall back to default labeling
+        # If custom ranges don't provide enough labels, create a new numeric range
         if len(labels) < count:
             remaining_count = count - len(labels)
-            if axis == "X":
-                start = self.floor_plan.x_origin_seed + (len(labels) * self.floor_plan.x_axis_step)
-                step = self.floor_plan.x_axis_step
-                is_letters = self.floor_plan.x_axis_labels == AxisLabelsChoices.LETTERS
-            else:
-                start = self.floor_plan.y_origin_seed + (len(labels) * self.floor_plan.y_axis_step)
-                step = self.floor_plan.y_axis_step
-                is_letters = self.floor_plan.y_axis_labels == AxisLabelsChoices.LETTERS
+            # Start from the position after the last label
+            start_value = len(labels) + 1
 
-            default_labels = self._generate_default_range(start, step, remaining_count, is_letters)
-            labels.extend(default_labels)
+            new_range = models.FloorPlanCustomAxisLabel.objects.create(
+                floor_plan=self.floor_plan,
+                axis=axis,
+                start_label=str(start_value),
+                end_label=str(start_value + remaining_count - 1),
+                step=1,
+                label_type=CustomAxisLabelsChoices.NUMBERS,
+                increment_letter=False,
+            )
+
+            remaining_labels = self._generate_labels_for_range(new_range)
+            labels.extend(remaining_labels)
 
         return labels
 
