@@ -111,8 +111,12 @@ def axis_init_label_conversion(
         if is_letters:
             return letter_conversion(converted_location)
         return converted_location
-    except Exception as e:
-        raise e
+
+    except ValidationError as e:
+        raise ValidationError(
+            f"Error in axis conversion: axis_origin={axis_origin}, "
+            f"axis_location={axis_location}, step={step}, is_letters={is_letters}"
+        ) from e
 
 
 def axis_clean_label_conversion(
@@ -172,7 +176,7 @@ def axis_clean_label_conversion(
     return str(original_location)
 
 
-# Depreciate in version 2.6 and remove in 2.7
+# TODO UPDATE nautobot_floor_plan/migrations/0008_add_axis_step.py and remove this
 
 
 def validate_not_zero(value: int) -> None:
