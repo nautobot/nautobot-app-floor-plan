@@ -325,13 +325,13 @@ class LabelConverter:
 class NumalphaConverter(LabelConverter):
     """Numalpha (e.g., 02A, 02AA) conversion."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the converter."""
         super().__init__()
-        self._prefix = ""
-        self._current_label = None
-        self._start_label = None
-        self._end_label = None
+        self._prefix: str = ""
+        self._current_label: str = ""
+        self._start_label: str = ""
+        self._end_label: str = ""
 
     def _handle_letter_only_conversion(self, letters):
         """Handle conversion for letter-only labels."""
@@ -614,14 +614,14 @@ class HexConverter(LabelConverter):
 class AlphanumericConverter(LabelConverter):
     """Alphanumeric (e.g., A01, A1) and pure number (e.g., 01, 1) conversion."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the converter."""
         super().__init__()
-        self._prefix = ""
-        self._use_leading_zeros = None
-        self._number = None
-        self._is_number_only = False
-        self._increment_prefix = False
+        self._prefix: str = ""
+        self._use_leading_zeros: bool = False
+        self._number: int = 0
+        self._is_number_only: bool = False
+        self._increment_prefix: bool = False
 
     def to_numeric(self, label) -> int:
         """Convert alphanumeric or numeric label to numeric value."""

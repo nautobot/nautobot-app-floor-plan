@@ -19,9 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-packages = [
-    { include = "nautobot_floor_plan" },
-]
+packages = [{ include = "nautobot_floor_plan" }]
 include = [
     # Poetry by default will exclude files that are in .gitignore
     "nautobot_floor_plan/static/nautobot_floor_plan/docs/**/*",
@@ -58,9 +56,20 @@ towncrier = "~23.6.0"
 to-json-schema = "*"
 jsonschema = "*"
 
+pyright = "^1.1.393"
+django-stubs = "<5.0.0"
+django-stubs-ext = "^5.1.3"
+
+[tool.pyright]
+include = ["nautobot_floor_plan"]
+exclude = ["**/migrations", "**/tests"]
+reportIncompatibleVariableOverride = "none"
+reportAttributeAccessIssue = "none"
+typeCheckingMode = "basic"
+
+
 [tool.poetry.extras]
-all = [
-]
+all = []
 
 [tool.pylint.master]
 # Include the pylint_django plugin to avoid spurious warnings about Django patterns
@@ -87,9 +96,7 @@ notes = """,
     """
 
 [tool.pylint-nautobot]
-supported_nautobot_versions = [
-    "2.0.0"
-]
+supported_nautobot_versions = ["2.0.0"]
 
 [tool.ruff]
 line-length = 120
@@ -97,10 +104,12 @@ target-version = "py38"
 
 [tool.ruff.lint]
 select = [
-    "D",  # pydocstyle
-    "F", "E", "W",  # flake8
-    "S",  # bandit
-    "I",  # isort
+    "D", # pydocstyle
+    "F",
+    "E",
+    "W", # flake8
+    "S", # bandit
+    "I", # isort
 ]
 ignore = [
     # warning: `one-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible.
@@ -125,13 +134,8 @@ ignore = [
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"nautobot_floor_plan/migrations/*" = [
-    "D",
-]
-"nautobot_floor_plan/tests/*" = [
-    "D",
-    "S"
-]
+"nautobot_floor_plan/migrations/*" = ["D"]
+"nautobot_floor_plan/tests/*" = ["D", "S"]
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]

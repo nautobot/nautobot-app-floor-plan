@@ -1,5 +1,10 @@
 """Views for FloorPlan."""
 
+from __future__ import annotations
+
+from typing import Any, Dict, Optional, Union
+
+from django.http import HttpRequest
 from django_tables2 import RequestConfig
 from nautobot.apps.views import (
     NautobotUIViewSet,
@@ -32,7 +37,7 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
     serializer_class = serializers.FloorPlanSerializer
     table_class = tables.FloorPlanTable
 
-    def get_extra_context(self, request, instance=None):
+    def get_extra_context(self, request: HttpRequest, instance: Optional[Any] = None) -> Dict[str, Any]:
         """Add custom context data to the view."""
         context = super().get_extra_context(request, instance)
         context["label_type_choices"] = [
@@ -54,7 +59,7 @@ class ChildLocationFloorPlanTab(ObjectView):
     queryset = Location.objects.without_tree_fields().all()
     template_name = "nautobot_floor_plan/location_child_floor_plan.html"
 
-    def get_extra_context(self, request, instance):
+    def get_extra_context(self, request: HttpRequest, instance: Location) -> Dict[str, Any]:
         """Return child locations that have floor plans."""
         children = (
             Location.objects.restrict(request.user, "view")
@@ -65,17 +70,18 @@ class ChildLocationFloorPlanTab(ObjectView):
 
         children_table = tables.FloorPlanTable(models.FloorPlan.objects.filter(location__in=children.all()))
 
-        paginate = {
+        paginate: Union[bool, Dict[str, Any]] = {
             "paginator_class": EnhancedPaginator,
             "per_page": get_paginate_count(request),
         }
-        RequestConfig(request, paginate).configure(children_table)
+        RequestConfig(request, paginate).configure(children_table)  # type: ignore
 
-        return {
+        extra_context: Dict[str, Any] = {
             "children_table": children_table,
             "active_tab": "nautobot_floor_plan:2",
-            **super().get_extra_context(request, instance),
         }
+        extra_context.update(super().get_extra_context(request, instance))
+        return extra_context
 
 
 class FloorPlanTileUIViewSet(
@@ -95,4 +101,4 @@ class FloorPlanTileUIViewSet(
     queryset = models.FloorPlanTile.objects.all()
     serializer_class = serializers.FloorPlanTileSerializer
     table_class = tables.FloorPlanTileTable
-    action_buttons = ()
+    action_buttons: tuple = ()

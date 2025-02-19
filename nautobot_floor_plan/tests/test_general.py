@@ -65,6 +65,12 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertEqual(general.axis_init_label_conversion(1, 2, 1, False), 2)
         self.assertEqual(general.axis_init_label_conversion(1, "AA", 1, True), "AA")
         self.assertEqual(general.axis_init_label_conversion(1, "Z", 1, True), "Z")
+        # Test for Error
+        with self.assertRaises(TypeError):
+            general.axis_init_label_conversion(1, None, 1, True)  # None should raise ValueError
+
+        with self.assertRaises(TypeError):
+            general.axis_init_label_conversion(1, 1.5, 1, True)  # Float should raise ValueError
 
     def test_axis_clean_label_conversion(self):
         # Test with letters
@@ -85,10 +91,3 @@ class TestGeneralUtils(unittest.TestCase):
         # Edge cases
         self.assertEqual(general.axis_clean_label_conversion(1, "ZZZ", 1, True), "18278")
         self.assertEqual(general.axis_clean_label_conversion(1, "DDD", 1, True), "2812")
-
-        # Test for Error
-        with self.assertRaises(TypeError):
-            general.axis_init_label_conversion(1, None, 1, True)  # None should raise ValueError
-
-        with self.assertRaises(TypeError):
-            general.axis_init_label_conversion(1, 1.5, 1, True)  # Float should raise ValueError
