@@ -1,1 +1,1 @@
-Fixed bug where x_origin was None when placing FloorPlanTiles, caused by fallback to default labels when custom labels didn't cover the full X or Y range.
+Fixed a bug when placing FloorPlanTiles when custom labels didn't cover the full X or Y range.
