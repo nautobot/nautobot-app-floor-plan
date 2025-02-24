@@ -20,6 +20,8 @@ services:
         condition: "service_started"
       db:
         condition: "service_healthy"
+      selenium:
+        condition: "service_started"
     <<:
       - *nautobot-base
       - *nautobot-build
@@ -49,3 +51,9 @@ services:
     healthcheck:
       disable: true
     <<: *nautobot-base
+  selenium:
+    image: "selenium/standalone-firefox:4.27"
+    ports:
+      - "4444"
+      - "5900"
+    shm_size: "2g"
