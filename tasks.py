@@ -15,6 +15,7 @@ limitations under the License.
 import os
 import re
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from time import sleep
 
@@ -857,6 +858,25 @@ def unittest_coverage(context):
     command = "coverage report --skip-covered --include 'nautobot_floor_plan/*' --omit *migrations*"
 
     run_command(context, command)
+
+
+@task(pre=[unittest])
+def unittest_xml_coverage(context):
+    """Produce an XML coverage report that can be ingested into other tools."""
+    produce_xml_cmd = "coverage xml --include 'nautobot_floor_plan/*'"
+    run_command(context, produce_xml_cmd)
+
+    # Since the container runs from a different working dir,
+    # We have to edit the XML to inject the current directory
+    # to play nice with tools outside of the container.
+    cur_dir = os.path.dirname(__file__)
+    cov_xml_path = os.path.join(cur_dir, "coverage.xml")
+
+    tree = ET.parse(cov_xml_path)  # noqa: S314
+    root = tree.getroot()
+
+    root.find(".//sources/source").text = cur_dir
+    tree.write(cov_xml_path, encoding="utf-8", xml_declaration=True)
 
 
 @task(
