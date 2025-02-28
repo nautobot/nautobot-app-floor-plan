@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("dcim", "0067_controllermanageddevicegroup_tenant"),
         ("nautobot_floor_plan", "0009_add_custom_label_support"),
     ]
 
