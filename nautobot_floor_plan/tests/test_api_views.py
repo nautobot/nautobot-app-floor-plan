@@ -45,7 +45,7 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
 
     model = models.FloorPlanTile
     brief_fields = ["display", "id", "url", "x_origin", "x_size", "y_origin", "y_size"]
-    choices_fields = ["rack_orientation", "allocation_type"]
+    choices_fields = ["object_orientation", "allocation_type"]
     validation_excluded_fields = ["status", "allocation_type"]
 
     @classmethod
@@ -67,7 +67,7 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
             x_origin=2,
             y_origin=2,
             rack=cls.rack_2_2_2,
-            allocation_type=choices.AllocationTypeChoices.RACK,
+            allocation_type=choices.AllocationTypeChoices.OBJECT,
         )
         cls.model.objects.create(floor_plan=floor_plans[2], status=data["status"], x_origin=3, y_origin=3)
         cls.rackgroup1_1_1 = RackGroup(
@@ -95,8 +95,8 @@ class FloorPlanTileAPIViewTest(APIViewTestCases.APIViewTestCase):
                 "status": data["status"].name,
                 "rack": cls.rack_3_1_1.pk,
                 "rack_group": cls.rackgroup1_1_1.pk,
-                "rack_orientation": choices.RackOrientationChoices.RIGHT,
-                "allocation_type": choices.AllocationTypeChoices.RACK,
+                "object_orientation": choices.ObjectOrientationChoices.RIGHT,
+                "allocation_type": choices.AllocationTypeChoices.OBJECT,
             },
             {
                 "floor_plan": floor_plans[2].pk,

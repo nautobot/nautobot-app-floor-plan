@@ -408,3 +408,14 @@ class TestFloorPlanTileForm(TestCase):
         )
         self.assertFalse(form.is_valid())
         self.assertIn(['Too large for Floor Plan for Location "Floor 1"'], form.errors.values())
+
+    def test_immovable_tiles(self):
+        """Test handling of immovable tiles."""
+        # Set floor plan to immovable
+        self.floor_plan.is_tile_movable = False
+        self.floor_plan.save()
+
+        form = forms.FloorPlanTileForm(initial={"floor_plan": self.floor_plan.pk})
+
+        self.assertTrue(form.fields["x_origin"].disabled)
+        self.assertTrue(form.fields["y_origin"].disabled)

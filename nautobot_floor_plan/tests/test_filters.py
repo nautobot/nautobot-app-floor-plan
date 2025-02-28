@@ -4,7 +4,7 @@ from django.test import TestCase
 from nautobot.dcim.models import Rack, RackGroup
 from nautobot.extras.models import Tag
 
-from nautobot_floor_plan import filters, models
+from nautobot_floor_plan import choices, filters, models
 from nautobot_floor_plan.tests import fixtures
 
 
@@ -79,7 +79,12 @@ class TestFloorPlanTileFilterSet(TestCase):
         data = fixtures.create_prerequisites()
         cls.floors = data["floors"]
         cls.active_status = data["status"]
+        cls.device_type = data["device_type"]
+        cls.device_role = data["device_role"]
+        cls.manufacturer = data["manufacturer"]
         cls.floor_plans = fixtures.create_floor_plans(cls.floors)
+
+        # Create rack and rack group tiles
         for floor_plan in cls.floor_plans:
             for y in range(1, floor_plan.y_size + 1):
                 for x in range(1, floor_plan.x_size + 1):
@@ -130,7 +135,29 @@ class TestFloorPlanTileFilterSet(TestCase):
 
     def test_rack_group(self):
         """Test filtering by RackGroup."""
-        params = {"rack_group": list(RackGroup.objects.all()[:3])}
+        # Create a rack group
+        rack_group = RackGroup.objects.create(name="Test Rack Group", location=self.floors[0])
+
+        # Create three tiles with the rack group
+        for i in range(3):
+            models.FloorPlanTile.objects.create(
+                floor_plan=self.floor_plans[0],
+                status=self.active_status,
+                x_origin=i,
+                y_origin=0,
+                rack_group=rack_group,
+                allocation_type=choices.AllocationTypeChoices.RACKGROUP,
+            )
+
+        # Create a tile without a rack group
+        models.FloorPlanTile.objects.create(
+            floor_plan=self.floor_plans[0],
+            status=self.active_status,
+            x_origin=3,
+            y_origin=0,
+        )
+
+        params = {"rack_group": [rack_group.pk]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 3)
 
     def test_tags(self):

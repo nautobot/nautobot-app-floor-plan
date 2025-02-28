@@ -1,0 +1,90 @@
+{% extends 'generic/object_create.html' %}
+{% load static %}
+{% load buttons %}
+{% load form_helpers %}
+{% load seed_helpers %}
+
+{% block form %}
+    <!-- General Fields Panel -->
+    <div class="panel panel-default">
+        <div class="panel-heading"><strong>General</strong></div>
+        <div class="panel-body">
+            {% for field_name in form.fieldsets.0.1 %}
+                {% render_field form|get_fieldset_field:field_name %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Object Configuration Panel with Tabs -->
+    <div class="panel panel-default">
+        <div class="panel-heading"><strong>Object Configuration</strong></div>
+        <div class="panel-body">  
+            {% with power_feed_errors=form.power_feed.errors device_errors=form.device.errors power_panel_errors=form.power_panel.errors rack_errors=form.rack.errors %}
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" {% if rack_errors %}class="active"{% elif obj.rack and not power_feed_errors and not device_errors and not power_panel_errors %}class="active"{% elif not power_feed_errors and not device_errors and not power_panel_errors and not obj.device and not obj.power_panel and not obj.power_feed %}class="active"{% endif %}>
+                    <a href="#rack" aria-controls="rack" role="tab" data-toggle="tab">Rack</a>
+                </li>
+                <li role="presentation" {% if device_errors %}class="active"{% elif obj.device and not power_feed_errors and not rack_errors and not power_panel_errors %}class="active"{% endif %}>
+                    <a href="#device" aria-controls="device" role="tab" data-toggle="tab">Device</a>
+                </li>
+                <li role="presentation" {% if power_panel_errors %}class="active"{% elif obj.power_panel and not power_feed_errors and not device_errors and not rack_errors %}class="active"{% endif %}>
+                    <a href="#power-panel" aria-controls="power-panel" role="tab" data-toggle="tab">Power Panel</a>
+                </li>
+                <li role="presentation" {% if power_feed_errors %}class="active"{% elif obj.power_feed and not device_errors and not rack_errors and not power_panel_errors %}class="active"{% endif %}>
+                    <a href="#power-feed" aria-controls="power-feed" role="tab" data-toggle="tab">Power Feed</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane {% if rack_errors %}active{% elif obj.rack and not power_feed_errors and not device_errors and not power_panel_errors %}active{% elif not power_feed_errors and not device_errors and not power_panel_errors and not obj.device and not obj.power_panel and not obj.power_feed %}active{% endif %}" id="rack">
+                    {% render_field form.rack %}
+                    {% render_field form.rack_group %}
+                </div>
+            
+                <div role="tabpanel" class="tab-pane {% if device_errors %}active{% elif obj.device and not power_feed_errors and not rack_errors and not power_panel_errors %}active{% endif %}" id="device">
+                    {% render_field form.device %}
+                </div>
+            
+                <div role="tabpanel" class="tab-pane {% if power_panel_errors %}active{% elif obj.power_panel and not power_feed_errors and not device_errors and not rack_errors %}active{% endif %}" id="power-panel">
+                    {% render_field form.power_panel %}
+                    {% render_field form.rack_group %}
+                </div>
+            
+                <div role="tabpanel" class="tab-pane {% if power_feed_errors %}active{% elif obj.power_feed and not device_errors and not rack_errors and not power_panel_errors %}active{% endif %}" id="power-feed">
+                    {% render_field form.power_feed %}
+                </div>
+            </div>
+            {% endwith %}
+
+            <!-- Object orientation field outside of tabs so it's always available -->
+            <div class="form-group">
+                <label class="col-md-3 control-label" for="id_object_orientation">Object Orientation</label>
+                <div class="col-md-9">
+                    {{ form.object_orientation }}
+                    {% if form.object_orientation.help_text %}
+                        <span class="help-block">{{ form.object_orientation.help_text }}</span>
+                    {% endif %}
+                    {% if form.object_orientation.errors %}
+                        <span class="help-block">{{ form.object_orientation.errors }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'inc/extras_features_edit_form_fields.html' %}
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+<script>
+    // This script ensures the correct tab is active on page load
+    document.addEventListener("DOMContentLoaded", function () {
+        // If no tab is active, set the default
+        if ($('.nav-tabs li.active').length === 0) {
+            $('.nav-tabs li:first-child').addClass('active');
+            $('.tab-pane:first-child').addClass('active');
+        }
+    });
+</script>
+{% endblock %}

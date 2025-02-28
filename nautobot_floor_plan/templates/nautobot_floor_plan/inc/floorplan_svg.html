@@ -21,6 +21,14 @@
             <i class="mdi mdi-content-save-outline"></i> Save SVG
         </a>
     </div>
+
+    {% comment %}
+    Add Tippy.js resources
+    {% endcomment %}
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css"/>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+
     {% comment %}
     Scale the SVG by default to match the page width, preserving its aspect-ratio.
     See https://css-tricks.com/scale-svg/ for more details.
@@ -33,97 +41,232 @@
         </object>
     </div>
     <script>
-        const svgImage = document.getElementById("floor-plan-svg");
-        var isPanning = false;
-        var startPoint = {x: 0, y: 0};
-        var endPoint = {x: 0, y: 0};
+        document.addEventListener('DOMContentLoaded', function() {
+            const svgImage = document.getElementById("floor-plan-svg");
+            var isPanning = false;
+            var startPoint = {x: 0, y: 0};
+            var endPoint = {x: 0, y: 0};
 
-        // Because svgImage is an '<object>', we have to wait until it loads before attaching actions to it.
-        svgImage.onload = function(e) {
-            const svgDisplaySize = {
-                w: svgImage.clientWidth,
-                h: svgImage.clientHeight,
-            };
-            const svgActualSize = {
-                w: svgImage.getSVGDocument().querySelector("svg").getAttribute("width"),
-                h: svgImage.getSVGDocument().querySelector("svg").getAttribute("height")
-            };
-            var viewBox = {
-                x: 0,
-                y: 0,
-                w: svgActualSize.w,
-                h: svgActualSize.h,
-            };
-            var scale = svgDisplaySize.w / svgActualSize.w;
-
-            // Helper function for consistent panning and zooming of the SVG.
-            updateViewBox = function(candidateViewBox) {
-                // Don't allow zooming out past the zoom that fits the entire SVG in the window.
-                var newW = Math.min(candidateViewBox.w, svgActualSize.w);
-                var newH = Math.min(candidateViewBox.h, svgActualSize.h);
-                // Don't allow panning beyond the edges of the SVG either.
-                var newViewBox = {
-                    x: Math.min(Math.max(candidateViewBox.x, 0), svgActualSize.w - newW),
-                    y: Math.min(Math.max(candidateViewBox.y, 0), svgActualSize.h - newH),
-                    w: newW,
-                    h: newH,
+            // Because svgImage is an '<object>', we have to wait until it loads before attaching actions to it.
+            svgImage.onload = function(e) {
+                const svgDisplaySize = {
+                    w: svgImage.clientWidth,
+                    h: svgImage.clientHeight,
                 };
-                svgImage
-                    .getSVGDocument()
-                    .querySelector("svg")
-                    .setAttribute('viewBox', `${newViewBox.x} ${newViewBox.y} ${newViewBox.w} ${newViewBox.h}`);
-                return newViewBox;
-            };
+                const svgActualSize = {
+                    w: svgImage.getSVGDocument().querySelector("svg").getAttribute("width"),
+                    h: svgImage.getSVGDocument().querySelector("svg").getAttribute("height")
+                };
+                var viewBox = {
+                    x: 0,
+                    y: 0,
+                    w: svgActualSize.w,
+                    h: svgActualSize.h,
+                };
+                var scale = svgDisplaySize.w / svgActualSize.w;
 
-            // On scroll wheel in the SVG, zoom in or out
-            svgImage.contentDocument.addEventListener("wheel", function(e){
-                if (!e.shiftKey) return
-                e.preventDefault();
-                var w = viewBox.w;
-                var h = viewBox.h;
-                var mx = e.offsetX;
-                var my = e.offsetY;
-                var dw = w * Math.sign(e.deltaY) * -0.05;
-                var dh = h * Math.sign(e.deltaY) * -0.05;
-                var dx = dw * mx / svgDisplaySize.w;
-                var dy = dh * my / svgDisplaySize.h;
-                var scaledViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w - dw, h: viewBox.h - dh};
-                viewBox = updateViewBox(scaledViewBox);
-                scale = svgDisplaySize.w/viewBox.w;
-            }, { passive: false });
+                // Initialize tooltips for the SVG objects
+                const svgDoc = svgImage.getSVGDocument();
+                if (!svgDoc) return;
 
-            // On click in the SVG, record the click location and begin panning.
-            svgImage.contentDocument.onmousedown = function(e){
-                e.preventDefault();
-                isPanning = true;
-                startPoint = {x: e.x, y: e.y};
-            };
-
-            // On dragging the mouse, update the panning location in real time but do not update the viewBox variable.
-            svgImage.contentDocument.onmousemove = function(e){
-                e.preventDefault();
-                if (isPanning) {
-                    endPoint = {x: e.x, y: e.y};
-                    var dx = (startPoint.x - endPoint.x) / scale;
-                    var dy = (startPoint.y - endPoint.y) / scale;
-                    var movedViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w, h: viewBox.h};
-                    updateViewBox(movedViewBox);
+                // Helper function for consistent panning and zooming of the SVG.
+                function updateViewBox(candidateViewBox) {
+                    // Don't allow zooming out past the zoom that fits the entire SVG in the window.
+                    var newW = Math.min(candidateViewBox.w, svgActualSize.w);
+                    var newH = Math.min(candidateViewBox.h, svgActualSize.h);
+                    // Don't allow panning beyond the edges of the SVG either.
+                    var newViewBox = {
+                        x: Math.min(Math.max(candidateViewBox.x, 0), svgActualSize.w - newW),
+                        y: Math.min(Math.max(candidateViewBox.y, 0), svgActualSize.h - newH),
+                        w: newW,
+                        h: newH,
+                    };
+                    svgImage
+                        .getSVGDocument()
+                        .querySelector("svg")
+                        .setAttribute('viewBox', `${newViewBox.x} ${newViewBox.y} ${newViewBox.w} ${newViewBox.h}`);
+                    return newViewBox;
                 }
-            };
 
-            // On releasing the mouse button, update the panning location and update the stored viewBox variable.
-            svgImage.contentDocument.onmouseup = function(e){
-                e.preventDefault();
-                if (isPanning) {
-                    endPoint = {x: e.x, y: e.y};
-                    var dx = (startPoint.x - endPoint.x) / scale;
-                    var dy = (startPoint.y - endPoint.y) / scale;
-                    var movedViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w, h: viewBox.h};
-                    viewBox = updateViewBox(movedViewBox);
+                // Create a container for our tooltip triggers that scales with the SVG
+                const tooltipContainer = document.createElement('div');
+                tooltipContainer.style.position = 'absolute';
+                tooltipContainer.style.top = '0';
+                tooltipContainer.style.left = '0';
+                tooltipContainer.style.width = '100%';
+                tooltipContainer.style.height = '100%';
+                tooltipContainer.style.pointerEvents = 'none';
+                tooltipContainer.style.transform = `scale(${scale})`;
+                tooltipContainer.style.transformOrigin = 'top left';
+                svgImage.parentElement.appendChild(tooltipContainer);
+
+                // Store tooltip instances for updating during pan/zoom
+                const tooltipInstances = [];
+
+                // Function to create tooltip instance
+                function createTooltip(element) {
+                    // Create a trigger element
+                    const trigger = document.createElement('div');
+                    trigger.style.position = 'absolute';
+                    trigger.style.pointerEvents = 'none';
+                    tooltipContainer.appendChild(trigger);
+
+                    const instance = tippy(trigger, {
+                        content() {
+                            try {
+                                const data = JSON.parse(element.getAttribute('data-tooltip'));
+                                return Object.entries(data)
+                                    .map(([key, value]) => `<strong>${key.replace(/_/g, ' ')}:</strong> ${value}`)
+                                    .join('<br>');
+                            } catch (e) {
+                                console.error('Error parsing tooltip data:', e);
+                                return 'Error loading tooltip data';
+                            }
+                        },
+                        allowHTML: true,
+                        placement: 'top',
+                        interactive: true,
+                        theme: 'light',
+                        arrow: true,
+                        offset: [0, 5],
+                        trigger: 'manual',
+                        popperOptions: {
+                            modifiers: [{
+                                name: 'preventOverflow',
+                                options: {
+                                    boundary: 'viewport',
+                                    padding: 10
+                                }
+                            }]
+                        }
+                    });
+
+                    // Update trigger position based on SVG element, accounting for scaling and viewBox
+                    function updatePosition() {
+                        const svg = svgDoc.querySelector('svg');
+                        const ctm = svg.getScreenCTM();
+                        const bbox = element.getBBox();
+                        
+                        // Get the center point of the element
+                        const pt = svg.createSVGPoint();
+                        pt.x = bbox.x + bbox.width/2;
+                        pt.y = bbox.y;
+                        
+                        // Transform point to account for SVG transformations
+                        const transformedPt = pt.matrixTransform(ctm);
+                        const svgRect = svgImage.getBoundingClientRect();
+                        
+                        // Calculate position relative to the SVG viewBox
+                        const viewBoxScale = {
+                            x: svgRect.width / viewBox.w,
+                            y: svgRect.height / viewBox.h
+                        };
+                        
+                        const adjustedX = (transformedPt.x - viewBox.x * viewBoxScale.x) / scale;
+                        const adjustedY = (transformedPt.y - viewBox.y * viewBoxScale.y) / scale;
+
+                        trigger.style.left = `${adjustedX}px`;
+                        trigger.style.top = `${adjustedY}px`;
+                        trigger.style.width = `${bbox.width}px`;
+                        trigger.style.height = `${bbox.height}px`;
+                    }
+
+                    // Attach mouse events to the SVG element
+                    element.addEventListener('mouseenter', () => {
+                        updatePosition();
+                        instance.show();
+                    });
+                    element.addEventListener('mouseleave', () => {
+                        instance.hide();
+                    });
+
+                    // Update position when viewBox changes (during pan/zoom)
+                    return {
+                        instance,
+                        updatePosition
+                    };
                 }
-                isPanning = false;
+
+                // Function to initialize tooltips
+                function initializeTooltips() {
+                    const tooltipElements = svgDoc.querySelectorAll('.object-tooltip');
+                    tooltipElements.forEach(element => {
+                        if (!element._tippy) {
+                            tooltipInstances.push(createTooltip(element));
+                        }
+                    });
+                }
+
+                // Initialize tooltips after SVG is loaded
+                initializeTooltips();
+
+                // Wrap the updateViewBox function to update tooltip positions
+                const originalUpdateViewBox = updateViewBox;
+                updateViewBox = function(candidateViewBox) {
+                    const result = originalUpdateViewBox(candidateViewBox);
+                    tooltipInstances.forEach(tooltip => tooltip.updatePosition());
+                    return result;
+                };
+
+                // Set up MutationObserver to watch for changes in the SVG
+                const observer = new MutationObserver(initializeTooltips);
+                observer.observe(svgDoc.documentElement, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['class', 'data-tooltip']
+                });
+
+                // On scroll wheel in the SVG, zoom in or out
+                svgImage.contentDocument.addEventListener("wheel", function(e){
+                    if (!e.shiftKey) return
+                    e.preventDefault();
+                    var w = viewBox.w;
+                    var h = viewBox.h;
+                    var mx = e.offsetX;
+                    var my = e.offsetY;
+                    var dw = w * Math.sign(e.deltaY) * -0.05;
+                    var dh = h * Math.sign(e.deltaY) * -0.05;
+                    var dx = dw * mx / svgDisplaySize.w;
+                    var dy = dh * my / svgDisplaySize.h;
+                    var scaledViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w - dw, h: viewBox.h - dh};
+                    viewBox = updateViewBox(scaledViewBox);
+                    scale = svgDisplaySize.w/viewBox.w;
+                }, { passive: false });
+
+                // On click in the SVG, record the click location and begin panning.
+                svgImage.contentDocument.onmousedown = function(e){
+                    e.preventDefault();
+                    isPanning = true;
+                    startPoint = {x: e.x, y: e.y};
+                };
+
+                // On dragging the mouse, update the panning location in real time but do not update the viewBox variable.
+                svgImage.contentDocument.onmousemove = function(e){
+                    e.preventDefault();
+                    if (isPanning) {
+                        endPoint = {x: e.x, y: e.y};
+                        var dx = (startPoint.x - endPoint.x) / scale;
+                        var dy = (startPoint.y - endPoint.y) / scale;
+                        var movedViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w, h: viewBox.h};
+                        updateViewBox(movedViewBox);
+                    }
+                };
+
+                // On releasing the mouse button, update the panning location and update the stored viewBox variable.
+                svgImage.contentDocument.onmouseup = function(e){
+                    e.preventDefault();
+                    if (isPanning) {
+                        endPoint = {x: e.x, y: e.y};
+                        var dx = (startPoint.x - endPoint.x) / scale;
+                        var dy = (startPoint.y - endPoint.y) / scale;
+                        var movedViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w, h: viewBox.h};
+                        viewBox = updateViewBox(movedViewBox);
+                    }
+                    isPanning = false;
+                };
             };
-        }
+        });
     </script>
 {% else %}
     {% comment %}

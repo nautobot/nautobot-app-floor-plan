@@ -2,7 +2,7 @@
 
 from django.core.exceptions import ValidationError
 from nautobot.core.testing import TestCase
-from nautobot.dcim.models import Rack, RackGroup
+from nautobot.dcim.models import Device, Location, PowerFeed, PowerPanel, Rack, RackGroup
 
 from nautobot_floor_plan import models
 from nautobot_floor_plan.tests import fixtures
@@ -12,19 +12,46 @@ class TestFloorPlan(TestCase):
     """Test FloorPlan model."""
 
     def setUp(self):
-        """Create LocationType, Status, and Location records."""
-        data = fixtures.create_prerequisites()
-        self.floors = data["floors"]
-        self.status = data["status"]
+        """Create LocationType, Status, Location, and FloorPlan records."""
+        prerequisites = fixtures.create_prerequisites()
+
+        # Keep the most frequently used attributes as instance variables
+        self.status = prerequisites["status"]
+        self.floors = prerequisites["floors"]
+        self.floor_plans = fixtures.create_floor_plans(self.floors)
+        self.rack_group = RackGroup.objects.create(name="RackGroup 1", location=self.floors[2])
+        self.rack = Rack.objects.create(
+            name="Rack 1", status=self.status, rack_group=self.rack_group, location=self.floors[2]
+        )
+
+        # Store less frequently used attributes in a dictionary
+        self._test_data = {
+            "location": prerequisites["location"],
+            "device_type": prerequisites["device_type"],
+            "device_role": prerequisites["device_role"],
+            "valid_rack_group": RackGroup.objects.create(name="RackGroup 2", location=self.floors[3]),
+        }
 
     def test_create_floor_plan_valid(self):
         """Successfully create various FloorPlan records."""
-        floor_plan_minimal = models.FloorPlan(location=self.floors[0], x_size=1, y_size=1)
+        # Create new locations for these tests to avoid conflicts
+        new_floors = []
+        for i in range(3):
+            new_floors.append(
+                Location.objects.create(
+                    name=f"Test Floor {i}",
+                    location_type=self.floors[0].location_type,
+                    status=self.status,
+                    parent=self.floors[0].parent,
+                )
+            )
+
+        floor_plan_minimal = models.FloorPlan(location=new_floors[0], x_size=1, y_size=1)
         floor_plan_minimal.validated_save()
-        floor_plan_huge = models.FloorPlan(location=self.floors[1], x_size=100, y_size=100)
+        floor_plan_huge = models.FloorPlan(location=new_floors[1], x_size=100, y_size=100)
         floor_plan_huge.validated_save()
         floor_plan_pos_neg_step = models.FloorPlan(
-            location=self.floors[2], x_size=20, y_size=20, x_axis_step=-1, y_axis_step=2
+            location=new_floors[2], x_size=20, y_size=20, x_axis_step=-1, y_axis_step=2
         )
         floor_plan_pos_neg_step.validated_save()
 
@@ -45,14 +72,24 @@ class TestFloorPlan(TestCase):
 
     def test_create_floor_plan_invalid_duplicate_location(self):
         """Only one FloorPlan per Location can be created."""
-        models.FloorPlan(location=self.floors[0], x_size=1, y_size=1).validated_save()
-        with self.assertRaises(ValidationError):
-            models.FloorPlan(location=self.floors[0], x_size=2, y_size=2).validated_save()
+        # First floor plan is already created in setUp
+        with self.assertRaises(ValidationError) as context:
+            models.FloorPlan(location=self.floors[0], x_size=1, y_size=1).validated_save()
+
+        self.assertIn("location", context.exception.message_dict)
+        self.assertIn("Floor plan with this Location already exists.", context.exception.message_dict["location"])
 
     def test_origin_seed_x_increase(self):
         """Test that existing tile origins are updated during origin_seed updates"""
+        # Create a new location for this test
+        new_floor = Location.objects.create(
+            name="Test Floor X Increase",
+            location_type=self.floors[0].location_type,
+            status=self.status,
+            parent=self.floors[0].parent,
+        )
         floor_plan = models.FloorPlan.objects.create(
-            location=self.floors[0], x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1
+            location=new_floor, x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1
         )
 
         tile_1_1_1 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=1, y_origin=1, status=self.status)
@@ -69,8 +106,15 @@ class TestFloorPlan(TestCase):
 
     def test_origin_seed_y_decrease(self):
         """Test that existing tile origins are updated during origin_seed updates"""
+        # Create a new location for this test
+        new_floor = Location.objects.create(
+            name="Test Floor Y Decrease",
+            location_type=self.floors[0].location_type,
+            status=self.status,
+            parent=self.floors[0].parent,
+        )
         floor_plan = models.FloorPlan.objects.create(
-            location=self.floors[0], x_size=3, y_size=3, x_origin_seed=3, y_origin_seed=3
+            location=new_floor, x_size=3, y_size=3, x_origin_seed=3, y_origin_seed=3
         )
         tile_1_5_5 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=5, y_origin=5, status=self.status)
         tile_1_5_5.validated_save()
@@ -81,8 +125,15 @@ class TestFloorPlan(TestCase):
 
     def test_origin_seed_x_increase_y_decrease(self):
         """Test that existing tile origins are updated during origin_seed updates"""
+        # Create a new location for this test
+        new_floor = Location.objects.create(
+            name="Test Floor XY Change",
+            location_type=self.floors[0].location_type,
+            status=self.status,
+            parent=self.floors[0].parent,
+        )
         floor_plan = models.FloorPlan.objects.create(
-            location=self.floors[0], x_size=5, y_size=5, x_origin_seed=3, y_origin_seed=3
+            location=new_floor, x_size=5, y_size=5, x_origin_seed=3, y_origin_seed=3
         )
 
         tile_1_3_3 = models.FloorPlanTile(floor_plan=floor_plan, x_origin=3, y_origin=4, status=self.status)
@@ -115,8 +166,15 @@ class TestFloorPlan(TestCase):
 
     def test_resize_x_floor_plan_with_tiles(self):
         """Test that a FloorPlan cannot be resized after tiles are placed."""
+        # Create a new location for this test
+        new_floor = Location.objects.create(
+            name="Test Floor X Resize",
+            location_type=self.floors[0].location_type,
+            status=self.status,
+            parent=self.floors[0].parent,
+        )
         floor_plan = models.FloorPlan.objects.create(
-            location=self.floors[0], x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1
+            location=new_floor, x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1
         )
         tile = models.FloorPlanTile(floor_plan=floor_plan, x_origin=1, y_origin=1, status=self.status)
         tile.validated_save()
@@ -128,8 +186,15 @@ class TestFloorPlan(TestCase):
 
     def test_resize_y_floor_plan_with_tiles(self):
         """Test that a FloorPlan cannot be resized after tiles are placed."""
+        # Create a new location for this test
+        new_floor = Location.objects.create(
+            name="Test Floor Y Resize",
+            location_type=self.floors[0].location_type,
+            status=self.status,
+            parent=self.floors[0].parent,
+        )
         floor_plan = models.FloorPlan.objects.create(
-            location=self.floors[0], x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1
+            location=new_floor, x_size=3, y_size=3, x_origin_seed=1, y_origin_seed=1
         )
         tile = models.FloorPlanTile(floor_plan=floor_plan, x_origin=1, y_origin=1, status=self.status)
         tile.validated_save()
@@ -145,41 +210,42 @@ class TestFloorPlanTile(TestCase):
 
     def setUp(self):
         """Create LocationType, Status, Location, and FloorPlan records."""
-        data = fixtures.create_prerequisites()
-        self.active_status = data["status"]
-        self.floors = data["floors"]
-        self.location = data["location"]
+        prerequisites = fixtures.create_prerequisites()
+
+        # Keep only the most essential attributes as instance variables
+        self.status = prerequisites["status"]
+        self.floors = prerequisites["floors"]
         self.floor_plans = fixtures.create_floor_plans(self.floors)
-        self.rack_group = RackGroup.objects.create(name="RackGroup 1", location=self.floors[2])
+        self.rack = None  # Will be set after rack_group is created
+
+        # Store all other test data in the dictionary
+        self._test_data = {
+            "location": prerequisites["location"],
+            "device_type": prerequisites["device_type"],
+            "device_role": prerequisites["device_role"],
+            "valid_rack_group": RackGroup.objects.create(name="RackGroup 2", location=self.floors[3]),
+            "rack_group": RackGroup.objects.create(name="RackGroup 1", location=self.floors[2]),
+        }
+
+        # Create rack after rack_group is in _test_data
         self.rack = Rack.objects.create(
-            name="Rack 1", status=self.active_status, rack_group=self.rack_group, location=self.floors[2]
+            name="Rack 1", status=self.status, rack_group=self._test_data["rack_group"], location=self.floors[2]
         )
-        self.valid_rack_group = RackGroup.objects.create(name="RackGroup 2", location=self.floors[3])
 
     def test_create_floor_plan_single_tiles_valid(self):
         """A FloorPlanTile can be created for each legal position in a FloorPlan."""
-        tile_1_1_1 = models.FloorPlanTile(
-            floor_plan=self.floor_plans[0], x_origin=1, y_origin=1, status=self.active_status
-        )
+        tile_1_1_1 = models.FloorPlanTile(floor_plan=self.floor_plans[0], x_origin=1, y_origin=1, status=self.status)
         tile_1_1_1.validated_save()
-        tile_2_1_1 = models.FloorPlanTile(
-            floor_plan=self.floor_plans[1], x_origin=1, y_origin=1, status=self.active_status
-        )
+        tile_2_1_1 = models.FloorPlanTile(floor_plan=self.floor_plans[1], x_origin=1, y_origin=1, status=self.status)
         tile_2_1_1.validated_save()
-        tile_2_2_1 = models.FloorPlanTile(
-            floor_plan=self.floor_plans[1], x_origin=2, y_origin=1, status=self.active_status
-        )
+        tile_2_2_1 = models.FloorPlanTile(floor_plan=self.floor_plans[1], x_origin=2, y_origin=1, status=self.status)
         tile_2_2_1.validated_save()
-        tile_2_1_2 = models.FloorPlanTile(
-            floor_plan=self.floor_plans[1], x_origin=1, y_origin=2, status=self.active_status
-        )
+        tile_2_1_2 = models.FloorPlanTile(floor_plan=self.floor_plans[1], x_origin=1, y_origin=2, status=self.status)
         tile_2_1_2.validated_save()
-        tile_2_2_2 = models.FloorPlanTile(
-            floor_plan=self.floor_plans[1], x_origin=2, y_origin=2, status=self.active_status
-        )
+        tile_2_2_2 = models.FloorPlanTile(floor_plan=self.floor_plans[1], x_origin=2, y_origin=2, status=self.status)
         tile_2_2_2.validated_save()
         tile_3_2_2 = models.FloorPlanTile(
-            floor_plan=self.floor_plans[2], x_origin=2, y_origin=2, status=self.active_status, rack=self.rack
+            floor_plan=self.floor_plans[2], x_origin=2, y_origin=2, status=self.status, rack=self.rack
         )
         tile_3_2_2.validated_save()
 
@@ -198,12 +264,15 @@ class TestFloorPlanTile(TestCase):
         +-+-+-+-+
         """
         valid_rack = Rack.objects.create(
-            name="Rack 3", status=self.active_status, rack_group=self.valid_rack_group, location=self.floors[3]
+            name="Rack 3",
+            status=self.status,
+            rack_group=self._test_data["valid_rack_group"],
+            location=self.floors[3],
         )
         models.FloorPlanTile(
             floor_plan=self.floor_plans[3],
-            status=self.active_status,
-            rack_group=self.valid_rack_group,
+            status=self.status,
+            rack_group=self._test_data["valid_rack_group"],
             x_origin=2,
             y_origin=2,
             x_size=2,
@@ -211,8 +280,8 @@ class TestFloorPlanTile(TestCase):
         ).validated_save()
         models.FloorPlanTile(
             floor_plan=self.floor_plans[3],
-            status=self.active_status,
-            rack_group=self.valid_rack_group,
+            status=self.status,
+            rack_group=self._test_data["valid_rack_group"],
             rack=valid_rack,
             x_origin=2,
             y_origin=2,
@@ -220,18 +289,18 @@ class TestFloorPlanTile(TestCase):
             y_size=2,
         ).validated_save()
         models.FloorPlanTile(
-            floor_plan=self.floor_plans[3], status=self.active_status, x_origin=1, y_origin=1, x_size=3, y_size=1
+            floor_plan=self.floor_plans[3], status=self.status, x_origin=1, y_origin=1, x_size=3, y_size=1
         ).validated_save()
         models.FloorPlanTile(
-            floor_plan=self.floor_plans[3], status=self.active_status, x_origin=1, y_origin=2, x_size=1, y_size=3
+            floor_plan=self.floor_plans[3], status=self.status, x_origin=1, y_origin=2, x_size=1, y_size=3
         ).validated_save()
         models.FloorPlanTile(
-            floor_plan=self.floor_plans[3], status=self.active_status, x_origin=4, y_origin=1, x_size=1, y_size=3
+            floor_plan=self.floor_plans[3], status=self.status, x_origin=4, y_origin=1, x_size=1, y_size=3
         ).validated_save()
         models.FloorPlanTile(
             floor_plan=self.floor_plans[3],
-            status=self.active_status,
-            rack_group=self.valid_rack_group,
+            status=self.status,
+            rack_group=self._test_data["valid_rack_group"],
             x_origin=2,
             y_origin=4,
             x_size=3,
@@ -241,27 +310,27 @@ class TestFloorPlanTile(TestCase):
     def test_create_floor_plan_single_tile_invalid_duplicate_position(self):
         """Two FloorPlanTiles cannot occupy the same position in the same FloorPlan."""
         models.FloorPlanTile(
-            floor_plan=self.floor_plans[0], x_origin=1, y_origin=1, status=self.active_status
+            floor_plan=self.floor_plans[0], x_origin=1, y_origin=1, status=self.status
         ).validated_save()
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
-                floor_plan=self.floor_plans[0], x_origin=1, y_origin=1, status=self.active_status
+                floor_plan=self.floor_plans[0], x_origin=1, y_origin=1, status=self.status
             ).validated_save()
 
     def test_create_floor_plan_tile_invalid_duplicate_rack(self):
         """Each Rack can only associate to at most one FloorPlanTile."""
         models.FloorPlanTile(
-            floor_plan=self.floor_plans[2], x_origin=1, y_origin=1, status=self.active_status, rack=self.rack
+            floor_plan=self.floor_plans[2], x_origin=1, y_origin=1, status=self.status, rack=self.rack
         ).validated_save()
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
-                floor_plan=self.floor_plans[2], x_origin=2, y_origin=2, status=self.active_status, rack=self.rack
+                floor_plan=self.floor_plans[2], x_origin=2, y_origin=2, status=self.status, rack=self.rack
             ).validated_save()
 
     def test_create_floor_plan_tile_invalid_rack_rackgroup(self):
         """A Rack being placed on a Rackgroup tile must also be in the rack_group."""
         valid_rack = Rack.objects.create(
-            name="Rack 3", status=self.active_status, rack_group=self.valid_rack_group, location=self.floors[3]
+            name="Rack 3", status=self.status, rack_group=self._test_data["valid_rack_group"], location=self.floors[3]
         )
         models.FloorPlanTile(
             floor_plan=self.floor_plans[2],
@@ -269,11 +338,11 @@ class TestFloorPlanTile(TestCase):
             y_origin=1,
             x_size=1,
             y_size=1,
-            status=self.active_status,
-            rack_group=self.rack_group,
+            status=self.status,
+            rack_group=self._test_data["rack_group"],
         ).validated_save()
         # How about a rack without the correct rack group?
-        non_rack_group_rack = Rack.objects.create(name="Rack 2", status=self.active_status, location=self.floors[2])
+        non_rack_group_rack = Rack.objects.create(name="Rack 2", status=self.status, location=self.floors[2])
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[2],
@@ -281,7 +350,7 @@ class TestFloorPlanTile(TestCase):
                 y_origin=1,
                 x_size=1,
                 y_size=1,
-                status=self.active_status,
+                status=self.status,
                 rack=non_rack_group_rack,
             ).validated_save()
         # How about a tile with with a rack and the incorrect rackgroup
@@ -293,7 +362,7 @@ class TestFloorPlanTile(TestCase):
                 y_origin=1,
                 x_size=1,
                 y_size=1,
-                status=self.active_status,
+                status=self.status,
                 rack_group=invalid_rack_group,
                 rack=valid_rack,
             ).validated_save()
@@ -305,8 +374,8 @@ class TestFloorPlanTile(TestCase):
                 y_origin=1,
                 x_size=2,
                 y_size=1,
-                status=self.active_status,
-                rack_group=self.valid_rack_group,
+                status=self.status,
+                rack_group=self._test_data["valid_rack_group"],
                 rack=valid_rack,
             ).validated_save()
 
@@ -315,13 +384,13 @@ class TestFloorPlanTile(TestCase):
         # x_origin too small
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
-                floor_plan=self.floor_plans[0], status=self.active_status, x_origin=0, y_origin=1
+                floor_plan=self.floor_plans[0], status=self.status, x_origin=0, y_origin=1
             ).validated_save()
         # x_origin too large
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[0],
-                status=self.active_status,
+                status=self.status,
                 x_origin=self.floor_plans[0].x_size + 1,
                 y_origin=1,
             ).validated_save()
@@ -329,7 +398,7 @@ class TestFloorPlanTile(TestCase):
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[0],
-                status=self.active_status,
+                status=self.status,
                 x_origin=self.floor_plans[0].x_size,
                 y_origin=1,
                 x_size=2,
@@ -337,13 +406,13 @@ class TestFloorPlanTile(TestCase):
         # y_origin too small
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
-                floor_plan=self.floor_plans[0], status=self.active_status, x_origin=1, y_origin=0
+                floor_plan=self.floor_plans[0], status=self.status, x_origin=1, y_origin=0
             ).validated_save()
         # y_origin too large
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[0],
-                status=self.active_status,
+                status=self.status,
                 x_origin=1,
                 y_origin=self.floor_plans[0].y_size + 1,
             ).validated_save()
@@ -351,7 +420,7 @@ class TestFloorPlanTile(TestCase):
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[0],
-                status=self.active_status,
+                status=self.status,
                 x_origin=1,
                 y_origin=self.floor_plans[0].y_size,
                 y_size=2,
@@ -361,7 +430,7 @@ class TestFloorPlanTile(TestCase):
         """FloorPlanTiles cannot overlap one another."""
         models.FloorPlanTile(
             floor_plan=self.floor_plans[3],
-            status=self.active_status,
+            status=self.status,
             x_origin=2,
             y_origin=2,
             x_size=2,
@@ -370,7 +439,7 @@ class TestFloorPlanTile(TestCase):
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[3],
-                status=self.active_status,
+                status=self.status,
                 x_origin=1,
                 y_origin=1,
                 x_size=2,
@@ -379,7 +448,7 @@ class TestFloorPlanTile(TestCase):
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[3],
-                status=self.active_status,
+                status=self.status,
                 x_origin=1,
                 y_origin=3,
                 x_size=2,
@@ -388,7 +457,7 @@ class TestFloorPlanTile(TestCase):
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[3],
-                status=self.active_status,
+                status=self.status,
                 x_origin=3,
                 y_origin=1,
                 x_size=2,
@@ -397,7 +466,7 @@ class TestFloorPlanTile(TestCase):
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
                 floor_plan=self.floor_plans[3],
-                status=self.active_status,
+                status=self.status,
                 x_origin=3,
                 y_origin=3,
                 x_size=2,
@@ -409,11 +478,402 @@ class TestFloorPlanTile(TestCase):
         # self.rack is attached to self.floors[-1], not self.floors[0]
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
-                floor_plan=self.floor_plans[0], status=self.active_status, x_origin=1, y_origin=1, rack=self.rack
+                floor_plan=self.floor_plans[0], status=self.status, x_origin=1, y_origin=1, rack=self.rack
             ).validated_save()
         # How about a rack with no Location at all?
-        non_located_rack = Rack.objects.create(name="Rack 2", status=self.active_status, location=self.location)
+        non_located_rack = Rack.objects.create(name="Rack 2", status=self.status, location=self._test_data["location"])
         with self.assertRaises(ValidationError):
             models.FloorPlanTile(
-                floor_plan=self.floor_plans[0], status=self.active_status, x_origin=1, y_origin=1, rack=non_located_rack
+                floor_plan=self.floor_plans[0], status=self.status, x_origin=1, y_origin=1, rack=non_located_rack
             ).validated_save()
+
+    def test_allocation_type_assignment_rack_group(self):
+        """Test that allocation type is correctly assigned for rack group tiles."""
+        tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            rack_group=self._test_data["valid_rack_group"],
+        )
+        tile.clean()
+        self.assertEqual(tile.allocation_type, models.AllocationTypeChoices.RACKGROUP)
+
+    def test_allocation_type_assignment_object(self):
+        """Test that allocation type is correctly assigned for object tiles."""
+        # Create a rack in the correct location
+        rack = Rack.objects.create(
+            name="Test Rack for Allocation",
+            status=self.status,
+            location=self.floor_plans[3].location,
+        )
+
+        tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            rack=rack,
+        )
+        tile.clean()
+        self.assertEqual(tile.allocation_type, models.AllocationTypeChoices.OBJECT)
+
+    def test_allocation_type_assignment_status_only(self):
+        """Test that allocation type is correctly assigned for tiles with only status."""
+        tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+        )
+        tile.clean()
+        self.assertEqual(tile.allocation_type, models.AllocationTypeChoices.RACKGROUP)
+
+    def test_rack_on_rackgroup_tile_valid(self):
+        """Test that a rack can be placed on a rack group tile if it belongs to that group."""
+        # Create a rack group tile
+        rackgroup_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            rack_group=self._test_data["valid_rack_group"],
+            allocation_type=models.AllocationTypeChoices.RACKGROUP,
+        )
+        rackgroup_tile.validated_save()
+
+        # Create a rack in the same group
+        rack = Rack.objects.create(
+            name="Test Rack",
+            status=self.status,
+            location=self.floor_plans[3].location,
+            rack_group=self._test_data["valid_rack_group"],
+        )
+
+        # Place rack on the rack group tile
+        rack_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            rack=rack,
+        )
+        rack_tile.clean()  # Should not raise ValidationError
+        self.assertTrue(rack_tile.on_group_tile)
+        self.assertEqual(rack_tile.rack_group, self._test_data["valid_rack_group"])
+
+    def test_rack_on_rackgroup_tile_invalid_group(self):
+        """Test that a rack cannot be placed on a rack group tile if it belongs to a different group."""
+        # Create a different rack group
+        other_rack_group = RackGroup.objects.create(
+            name="Other Rack Group",
+            location=self.floor_plans[3].location,
+        )
+
+        # Create a rack group tile
+        rackgroup_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            rack_group=self._test_data["rack_group"],
+            allocation_type=models.AllocationTypeChoices.RACKGROUP,
+        )
+        rackgroup_tile.validated_save()
+
+        # Create a rack in a different group
+        rack = Rack.objects.create(
+            name="Test Rack",
+            status=self.status,
+            location=self.floor_plans[3].location,
+            rack_group=other_rack_group,
+        )
+
+        # Try to place rack on the rack group tile
+        rack_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            rack=rack,
+        )
+        with self.assertRaises(ValidationError):
+            rack_tile.clean()
+
+    def test_object_tile_within_rackgroup_bounds(self):
+        """Test that an object tile must fit within the bounds of its rack group tile."""
+        # Create a rack group tile
+        models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            x_size=2,
+            y_size=2,
+            rack_group=self._test_data["valid_rack_group"],
+            allocation_type=models.AllocationTypeChoices.RACKGROUP,
+        )
+
+        # Try to create an object tile that extends beyond the rack group tile
+        object_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=1,  # Extends beyond the rack group tile
+            y_origin=2,
+            rack=self.rack,
+        )
+        with self.assertRaises(ValidationError):
+            object_tile.clean()
+
+    def test_rackgroup_tiles_cannot_overlap(self):
+        """Test that rack group tiles cannot overlap with each other."""
+        # Create first rack group tile
+        models.FloorPlanTile.objects.create(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            rack_group=self._test_data["valid_rack_group"],
+            allocation_type=models.AllocationTypeChoices.RACKGROUP,
+        )
+
+        # Create another rack group
+        other_rack_group = RackGroup.objects.create(
+            name="Other Rack Group",
+            location=self.floor_plans[3].location,
+        )
+
+        # Try to create an overlapping rack group tile
+        overlapping_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            rack_group=other_rack_group,
+            allocation_type=models.AllocationTypeChoices.RACKGROUP,
+        )
+        with self.assertRaises(ValidationError):
+            overlapping_tile.clean()
+
+    def test_object_tiles_cannot_overlap(self):
+        """Test that object tiles cannot overlap with each other."""
+        # Create first object tile with a rack
+        rack = Rack.objects.create(
+            name="Test Rack for Overlap",
+            status=self.status,
+            location=self.floor_plans[3].location,
+        )
+        models.FloorPlanTile.objects.create(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            rack=rack,
+            allocation_type=models.AllocationTypeChoices.OBJECT,
+        )
+
+        # Try to create an overlapping object tile with a device
+        device = Device.objects.create(
+            name="Test Device",
+            device_type=self._test_data["device_type"],
+            role=self._test_data["device_role"],
+            status=self.status,
+            location=self.floor_plans[3].location,
+        )
+        overlapping_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            device=device,
+            allocation_type=models.AllocationTypeChoices.OBJECT,
+        )
+        with self.assertRaises(ValidationError):
+            overlapping_tile.clean()
+
+
+class TestFloorPlanTilePower(TestCase):
+    """Test power-related functionality of FloorPlanTile model."""
+
+    def setUp(self):
+        """Create LocationType, Status, Location, and FloorPlan records."""
+        prerequisites = fixtures.create_prerequisites()
+
+        # Keep only the most essential attributes as instance variables
+        self.status = prerequisites["status"]
+        self.floors = prerequisites["floors"]
+        self.floor_plans = fixtures.create_floor_plans(self.floors)
+
+        # Store all other test data in the dictionary
+        self._test_data = {
+            "location": prerequisites["location"],
+            "device_type": prerequisites["device_type"],
+            "device_role": prerequisites["device_role"],
+            "valid_rack_group": RackGroup.objects.create(name="RackGroup 2", location=self.floors[3]),
+        }
+
+    def test_power_objects_on_tiles(self):
+        """Test that power panels and power feeds can be placed on tiles and validate overlap rules."""
+        # Create a power panel
+        power_panel = PowerPanel.objects.create(
+            name="Test Power Panel",
+            location=self.floor_plans[3].location,
+        )
+
+        # Create a power feed connected to the panel
+        power_feed = PowerFeed.objects.create(
+            name="Test Power Feed",
+            status=self.status,
+            power_panel=power_panel,
+        )
+
+        # Place power panel on a tile
+        panel_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            power_panel=power_panel,
+            allocation_type=models.AllocationTypeChoices.OBJECT,
+        )
+        panel_tile.validated_save()
+
+        # Try to place power feed on the same tile - should fail
+        feed_tile_overlapping = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            power_feed=power_feed,
+            allocation_type=models.AllocationTypeChoices.OBJECT,
+        )
+        with self.assertRaises(ValidationError):
+            feed_tile_overlapping.clean()
+
+        # Place power feed on a different tile - should succeed
+        feed_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=3,
+            y_origin=3,
+            power_feed=power_feed,
+            allocation_type=models.AllocationTypeChoices.OBJECT,
+        )
+        feed_tile.validated_save()
+
+        # Verify allocation types are set correctly
+        self.assertEqual(panel_tile.allocation_type, models.AllocationTypeChoices.OBJECT)
+        self.assertEqual(feed_tile.allocation_type, models.AllocationTypeChoices.OBJECT)
+
+        # Try to place another object on the power panel tile - should fail
+        device = Device.objects.create(
+            name="Test Device",
+            device_type=self._test_data["device_type"],
+            role=self._test_data["device_role"],
+            status=self.status,
+            location=self.floor_plans[3].location,
+        )
+        device_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            device=device,
+            allocation_type=models.AllocationTypeChoices.OBJECT,
+        )
+        with self.assertRaises(ValidationError):
+            device_tile.clean()
+
+    def test_power_panel_with_rack_group(self):
+        """Test that power panels respect rack group assignments and tile validation."""
+        # Create a rack group tile
+        rackgroup_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            rack_group=self._test_data["valid_rack_group"],
+            allocation_type=models.AllocationTypeChoices.RACKGROUP,
+        )
+        rackgroup_tile.validated_save()
+
+        # Create a power panel in the correct rack group
+        power_panel = PowerPanel.objects.create(
+            name="Test Power Panel",
+            location=self.floor_plans[3].location,
+            rack_group=self._test_data["valid_rack_group"],
+        )
+        power_panel.validated_save()
+
+        # Place power panel on the rack group tile - should succeed
+        panel_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            power_panel=power_panel,
+            allocation_type=models.AllocationTypeChoices.OBJECT,
+        )
+        panel_tile.validated_save()
+
+        self.assertEqual(rackgroup_tile.rack_group, self._test_data["valid_rack_group"])
+        self.assertEqual(power_panel.rack_group, rackgroup_tile.rack_group)
+        self.assertTrue(panel_tile.on_group_tile)
+
+        # Create a power panel in a different rack group
+        other_rack_group = RackGroup.objects.create(
+            name="Other Rack Group",
+            location=self.floor_plans[3].location,
+        )
+        other_power_panel = PowerPanel.objects.create(
+            name="Other Power Panel",
+            location=self.floor_plans[3].location,
+            rack_group=other_rack_group,
+        )
+
+        # Try to place power panel from different rack group on the tile - should fail
+        invalid_panel_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            power_panel=other_power_panel,
+            allocation_type=models.AllocationTypeChoices.OBJECT,
+        )
+        with self.assertRaises(ValidationError):
+            invalid_panel_tile.validated_save()
+
+    def test_power_feed_in_rack_cannot_be_placed_on_tile(self):
+        """Test that a PowerFeed connected to a rack cannot be placed directly on a FloorPlanTile."""
+        # Create necessary objects
+        rack = Rack.objects.create(
+            name="Test Rack",
+            status=self.status,
+            location=self.floor_plans[3].location,
+        )
+        power_panel = PowerPanel.objects.create(
+            name="Test Power Panel",
+            location=self.floor_plans[3].location,
+        )
+        power_feed = PowerFeed.objects.create(
+            name="Test Power Feed",
+            status=self.status,
+            power_panel=power_panel,
+            rack=rack,
+        )
+
+        # Attempt to place the racked power feed on a tile
+        feed_tile = models.FloorPlanTile(
+            floor_plan=self.floor_plans[3],
+            status=self.status,
+            x_origin=2,
+            y_origin=2,
+            power_feed=power_feed,
+            allocation_type=models.AllocationTypeChoices.OBJECT,
+        )
+        with self.assertRaises(ValidationError) as context:
+            feed_tile.validated_save()
+
+        self.assertIn("power_feed", str(context.exception))
+        self.assertIn("is installed in Rack", str(context.exception))
+        self.assertIn("Please remove it from the rack before placing on the floor plan", str(context.exception))

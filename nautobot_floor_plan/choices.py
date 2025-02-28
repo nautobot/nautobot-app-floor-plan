@@ -3,7 +3,7 @@
 from nautobot.apps.choices import ChoiceSet
 
 
-class RackOrientationChoices(ChoiceSet):
+class ObjectOrientationChoices(ChoiceSet):
     """Choices for the orientation of a Rack relative to its associated FloorPlan."""
 
     UP = "up"
@@ -56,12 +56,29 @@ class AxisLabelsChoices(ChoiceSet):
 
 
 class AllocationTypeChoices(ChoiceSet):
-    """Choices for tile allocation type."""
+    """Choices for tile allocation types."""
 
-    RACK = "rack"
+    OBJECT = "object"
     RACKGROUP = "rackgroup"
 
     CHOICES = (
-        (RACK, "Rack"),
+        (OBJECT, "Object"),
         (RACKGROUP, "RackGroup"),
+    )
+
+
+class ObjectTypeChoices(ChoiceSet):
+    """Choices for FloorPlanTile object types."""
+
+    DEVICE = "device"
+    POWER_PANEL = "power_panel"
+    POWER_FEED = "power_feed"
+    RACK = "rack"
+
+    CHOICES = (
+        ("", "---------"),
+        (DEVICE, "Device"),
+        (POWER_PANEL, "Power Panel"),
+        (POWER_FEED, "Power Feed"),
+        (RACK, "Rack"),
     )

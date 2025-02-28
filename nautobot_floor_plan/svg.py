@@ -1,20 +1,33 @@
 """Render a FloorPlan as an SVG image."""
 
+import json
 import logging
 import os
+from dataclasses import dataclass
 
 import svgwrite
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.http import urlencode
 from nautobot.core.templatetags.helpers import fgcolor
+from nautobot.dcim.models import Device, PowerFeed, PowerPanel, Rack
 
-from nautobot_floor_plan.choices import AllocationTypeChoices, RackOrientationChoices
+from nautobot_floor_plan.choices import AllocationTypeChoices, ObjectOrientationChoices
 
 logger = logging.getLogger(__name__)
 
 
-class FloorPlanSVG:
+@dataclass
+class TextElement:
+    """Container for text element parameters."""
+
+    text: str
+    line_offset: int
+    class_name: str
+    color: str
+
+
+class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
     """Use this class to render a FloorPlan as an SVG image."""
 
     BORDER_WIDTH = 10
@@ -22,12 +35,12 @@ class FloorPlanSVG:
     TILE_INSET = 2
     TEXT_LINE_HEIGHT = 16
     GRID_OFFSET = 26
-    RACK_INSETS = (3 * TILE_INSET, 3 * TILE_INSET + TEXT_LINE_HEIGHT)
-    RACK_PADDING = 4
-    RACK_TILE_INSET = 3
-    RACK_FRONT_DEPTH = 15
-    RACK_BUTTON_OFFSET = 5
-    RACK_ORIENTATION_OFFSET = 14
+    OBJECT_INSETS = (3 * TILE_INSET, 3 * TILE_INSET + TEXT_LINE_HEIGHT)
+    OBJECT_PADDING = 4
+    OBJECT_TILE_INSET = 3
+    OBJECT_FRONT_DEPTH = 15
+    OBJECT_BUTTON_OFFSET = 5
+    OBJECT_ORIENTATION_OFFSET = 14
     RACKGROUP_TEXT_OFFSET = 12
     Y_LABEL_TEXT_OFFSET = 34
 
@@ -225,15 +238,14 @@ class FloorPlanSVG:
 
     def _draw_tile(self, drawing, tile):
         """Render an individual FloorPlanTile to the drawing."""
-        # functions to handle rack_group tiles and status tiles.
-        # Add text to status group and rack group tiles
+        # Draw defined rackgroup tile and status tiles
         self._draw_defined_rackgroup_tile(drawing, tile)
         # Add buttons for editing and deleting the group tile definition
         if tile.on_group_tile is False:
             self._draw_edit_delete_button(drawing, tile, 0, 0)
-        # Draw tiles that contain racks
-        if tile.rack is not None:
-            self._draw_rack_tile(drawing, tile)
+        # Draw tiles that contain objects
+        if any([tile.rack, tile.device, tile.power_panel, tile.power_feed]):
+            self._draw_object_tile(drawing, tile)
 
     # Draw a outline of status and Rackgroup
     def _draw_underlay_tiles(self, drawing, tile):
@@ -294,182 +306,258 @@ class FloorPlanSVG:
                 )
             )
 
-    def _draw_rack_tile(self, drawing, tile):
-        """Overlay Rack information onto an already drawn tile."""
+    def _draw_object_tile(self, drawing, tile):
+        """Draw a generic object tile with appropriate styling and information."""
         origin = (
             (tile.x_origin - self.floor_plan.x_origin_seed) * self.GRID_SIZE_X + self.GRID_OFFSET,
             (tile.y_origin - self.floor_plan.y_origin_seed) * self.GRID_SIZE_Y + self.GRID_OFFSET,
         )
 
-        rack_url = reverse("dcim:rack", kwargs={"pk": tile.rack.pk})
-        rack_url = f"{self.base_url}{rack_url}"
+        # Determine the object and its URL
+        if tile.rack is not None:
+            obj = tile.rack
+            obj_url = reverse("dcim:rack", kwargs={"pk": obj.pk})
+        elif tile.device is not None:
+            obj = tile.device
+            obj_url = reverse("dcim:device", kwargs={"pk": obj.pk})
+        elif tile.power_panel is not None:
+            obj = tile.power_panel
+            obj_url = reverse("dcim:powerpanel", kwargs={"pk": obj.pk})
+        elif tile.power_feed is not None:
+            obj = tile.power_feed
+            obj_url = reverse("dcim:powerfeed", kwargs={"pk": obj.pk})
+        else:
+            return  # No object to draw
 
-        # Add link to the detail view of the rack
-        link = drawing.add(drawing.a(href=rack_url, target="_top"))
-        # # Draw rectangle within the tile, representing the rack
+        obj_url = f"{self.base_url}{obj_url}"
+
+        # Add link to the detail view of the object
+        link = drawing.add(drawing.a(href=obj_url, target="_top"))
+
+        # Draw the main object rectangle
         link.add(
             drawing.rect(
-                (origin[0] + self.RACK_INSETS[0], origin[1] + self.RACK_INSETS[1] + self.RACK_PADDING),
+                (origin[0] + self.OBJECT_INSETS[0], origin[1] + self.OBJECT_INSETS[1] + self.OBJECT_PADDING),
                 (
-                    tile.x_size * self.GRID_SIZE_X - self.TILE_INSET * self.RACK_INSETS[0],
-                    tile.y_size * self.GRID_SIZE_Y - self.RACK_INSETS[1] - self.BORDER_WIDTH * self.TILE_INSET,
+                    tile.x_size * self.GRID_SIZE_X - self.TILE_INSET * self.OBJECT_INSETS[0],
+                    tile.y_size * self.GRID_SIZE_Y - self.OBJECT_INSETS[1] - self.BORDER_WIDTH * self.TILE_INSET,
                 ),
                 rx=self.CORNER_RADIUS,
-                class_="rack",
-                style=f"fill: #{tile.rack.status.color}; stroke: {fgcolor(tile.status.color)}",
+                class_="object",
+                style=f"fill: #{obj.status.color if hasattr(obj, 'status') else tile.status.color}; "
+                f"stroke: {fgcolor(tile.status.color)}",
             )
         )
-        # Indicate the front of the rack, if defined
-        if tile.rack_orientation == RackOrientationChoices.UP:
+
+        # Draw orientation indicator for any object type if orientation is set
+        if tile.object_orientation:
+            self._draw_object_orientation(drawing, tile, link, origin)
+
+        # Add the object text
+        self._draw_object_text(drawing, tile, link, origin)
+
+        # Add buttons for editing and deleting the tile definition
+        if tile.on_group_tile is True:
+            self._draw_edit_delete_button(drawing, tile, self.OBJECT_BUTTON_OFFSET, self.GRID_OFFSET)
+
+    def _draw_object_orientation(self, drawing, tile, link, origin):
+        """Draw the object orientation indicator."""
+        if tile.object_orientation == ObjectOrientationChoices.UP:
             link.add(
                 drawing.rect(
-                    (origin[0] + self.RACK_INSETS[0], origin[1] + self.RACK_INSETS[1]),
+                    (origin[0] + self.OBJECT_INSETS[0], origin[1] + self.OBJECT_INSETS[1]),
                     (
-                        tile.x_size * self.GRID_SIZE_X - 2 * self.RACK_INSETS[0],
-                        self.RACK_FRONT_DEPTH,
+                        tile.x_size * self.GRID_SIZE_X - 2 * self.OBJECT_INSETS[0],
+                        self.OBJECT_FRONT_DEPTH,
                     ),
                     rx=self.CORNER_RADIUS,
-                    class_="rack",
+                    class_="object",
                     style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
                 )
             )
-        elif tile.rack_orientation == RackOrientationChoices.DOWN:
+        elif tile.object_orientation == ObjectOrientationChoices.DOWN:
             link.add(
                 drawing.rect(
                     (
-                        origin[0] + self.RACK_INSETS[0],
+                        origin[0] + self.OBJECT_INSETS[0],
                         origin[1]
                         + tile.y_size * self.GRID_SIZE_Y
-                        - self.RACK_TILE_INSET * self.TILE_INSET
-                        - self.RACK_FRONT_DEPTH,
+                        - self.OBJECT_TILE_INSET * self.TILE_INSET
+                        - self.OBJECT_FRONT_DEPTH,
                     ),
                     (
-                        tile.x_size * self.GRID_SIZE_X - 2 * self.RACK_INSETS[0],
-                        self.RACK_FRONT_DEPTH,
+                        tile.x_size * self.GRID_SIZE_X - 2 * self.OBJECT_INSETS[0],
+                        self.OBJECT_FRONT_DEPTH,
                     ),
                     rx=self.CORNER_RADIUS,
-                    class_="rack",
+                    class_="object",
                     style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
                 )
             )
-        elif tile.rack_orientation == RackOrientationChoices.LEFT:
+        elif tile.object_orientation == ObjectOrientationChoices.LEFT:
             link.add(
                 drawing.rect(
-                    (origin[0] + self.RACK_INSETS[0], origin[1] + self.RACK_INSETS[1] + self.RACK_TILE_INSET),
+                    (origin[0] + self.OBJECT_INSETS[0], origin[1] + self.OBJECT_INSETS[1] + self.OBJECT_TILE_INSET),
                     (
-                        self.RACK_FRONT_DEPTH,
+                        self.OBJECT_FRONT_DEPTH,
                         tile.y_size * self.GRID_SIZE_Y
-                        - self.RACK_INSETS[1]
+                        - self.OBJECT_INSETS[1]
                         - 2 * self.TILE_INSET
-                        - self.RACK_ORIENTATION_OFFSET,
+                        - self.OBJECT_ORIENTATION_OFFSET,
                     ),
                     rx=self.CORNER_RADIUS,
-                    class_="rack",
+                    class_="object",
                     style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
                 )
             )
-        elif tile.rack_orientation == RackOrientationChoices.RIGHT:
+        elif tile.object_orientation == ObjectOrientationChoices.RIGHT:
             link.add(
                 drawing.rect(
                     (
-                        origin[0] + tile.x_size * self.GRID_SIZE_X - self.RACK_INSETS[0] - self.RACK_FRONT_DEPTH,
-                        origin[1] + self.RACK_INSETS[1] + self.RACK_TILE_INSET,
+                        origin[0] + tile.x_size * self.GRID_SIZE_X - self.OBJECT_INSETS[0] - self.OBJECT_FRONT_DEPTH,
+                        origin[1] + self.OBJECT_INSETS[1] + self.OBJECT_TILE_INSET,
                     ),
                     (
-                        self.RACK_FRONT_DEPTH,
+                        self.OBJECT_FRONT_DEPTH,
                         tile.y_size * self.GRID_SIZE_Y
-                        - self.RACK_INSETS[1]
+                        - self.OBJECT_INSETS[1]
                         - 2 * self.TILE_INSET
-                        - self.RACK_ORIENTATION_OFFSET,
+                        - self.OBJECT_ORIENTATION_OFFSET,
                     ),
                     rx=self.CORNER_RADIUS,
-                    class_="rack",
+                    class_="object",
                     style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
                 )
             )
 
-        # Add the rack name as text
-        link.add(
+    def _draw_object_text(self, drawing, tile, link, origin):
+        """Draw basic object information and add tooltip data."""
+        obj = None
+        obj_type = None
+
+        if tile.rack is not None:
+            obj = tile.rack
+            obj_type = "Rack"
+        elif tile.device is not None:
+            obj = tile.device
+            obj_type = "Device"
+        elif tile.power_panel is not None:
+            obj = tile.power_panel
+            obj_type = "Power Panel"
+        elif tile.power_feed is not None:
+            obj = tile.power_feed
+            obj_type = "Power Feed"
+
+        if obj is None:
+            return
+
+        # Add basic text (name and type)
+        self._add_text_element(
+            drawing,
+            TextElement(
+                text=obj.name,
+                line_offset=-1,
+                class_name="label-text-primary",
+                color=obj.status.color if hasattr(obj, "status") else tile.status.color,
+            ),
+            origin,
+            tile,
+        )
+
+        self._add_text_element(
+            drawing,
+            TextElement(
+                text=obj_type,
+                line_offset=1,
+                class_name="label-text",
+                color=obj.status.color if hasattr(obj, "status") else tile.status.color,
+            ),
+            origin,
+            tile,
+        )
+
+        # Add tooltip data
+        tooltip_data = self._get_tooltip_data(obj, obj_type)
+        # Add tooltip data to the link element using proper SVG attribute setting
+        link["data-tooltip"] = json.dumps(tooltip_data)
+        link["class"] = "object-tooltip"
+
+    def _get_tooltip_data(self, obj, obj_type):
+        """Generate tooltip data based on object type."""
+        data = {
+            "Name": obj.name,
+            "Type": obj_type,
+        }
+
+        # Add status if available
+        if hasattr(obj, "status"):
+            data["Status"] = obj.status.name
+
+        # Add type-specific information
+        if isinstance(obj, Rack):
+            ru_used, ru_total = obj.get_utilization()
+            data.update(
+                {
+                    "Utilization": f"{ru_used} / {ru_total} RU",
+                    "Tenant": obj.tenant.name if obj.tenant else None,
+                    "Tenant_group": obj.tenant.tenant_group.name if obj.tenant and obj.tenant.tenant_group else None,
+                    "Rack_group": obj.rack_group.name if obj.rack_group else None,
+                }
+            )
+
+        elif isinstance(obj, Device):
+            data.update(
+                {
+                    "Manufacturer": obj.device_type.manufacturer.name if obj.device_type else None,
+                    "Model": obj.device_type.model if obj.device_type else None,
+                    "Serial": obj.serial,
+                    "Asset_tag": obj.asset_tag,
+                }
+            )
+
+        elif isinstance(obj, PowerPanel):
+            power_feeds = obj.power_feeds.all()
+            data.update(
+                {
+                    "Feeds": [pf.name for pf in power_feeds],
+                    "Rack_group": obj.rack_group.name if obj.rack_group else None,
+                }
+            )
+
+        elif isinstance(obj, PowerFeed):
+            data.update(
+                {
+                    "Panel": obj.power_panel.name,
+                    "Status": obj.status.name if obj.status else None,
+                    "Type": obj.type,
+                    "Voltage": f"{obj.voltage}V" if obj.voltage else None,
+                    "Amperage": f"{obj.amperage}A" if obj.amperage else None,
+                    "Phase": f"{obj.phase}-phase" if obj.phase else None,
+                }
+            )
+
+        # Remove None values
+        return {k: v for k, v in data.items() if v is not None}
+
+    def _add_text_element(self, drawing, text_element: TextElement, origin, tile):
+        """Helper method to add a text element with consistent positioning."""
+        drawing.add(
             drawing.text(
-                tile.rack.name,
+                text_element.text,
                 insert=(
                     origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 - self.TEXT_LINE_HEIGHT * 2,
+                    origin[1]
+                    + (tile.y_size * self.GRID_SIZE_Y) / 2
+                    + (self.TEXT_LINE_HEIGHT * text_element.line_offset),
                 ),
-                class_="label-text-primary",
-                style=f"fill: {fgcolor(tile.rack.status.color)}",
+                class_=text_element.class_name,
+                style=f"fill: {fgcolor(text_element.color)}",
             )
         )
-        # Add the rack status as text
-        link.add(
-            drawing.text(
-                tile.rack.status.name,
-                insert=(
-                    origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 - self.TEXT_LINE_HEIGHT,
-                ),
-                class_="label-text",
-                style=f"fill: {fgcolor(tile.rack.status.color)}",
-            )
-        )
-        # Add the rackgroup name as text
-        if tile.allocation_type == AllocationTypeChoices.RACK and tile.rack_group is not None:
-            link.add(
-                drawing.text(
-                    tile.rack_group.name,
-                    insert=(
-                        origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                        origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 + self.TEXT_LINE_HEIGHT,
-                    ),
-                    class_="label-text",
-                    style=f"fill: {fgcolor(tile.rack.status.color)}",
-                )
-            )
-        # Add the tenant name if it is configured
-        if tile.rack.tenant is not None:
-            link.add(
-                drawing.text(
-                    tile.rack.tenant.name,
-                    insert=(
-                        origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                        origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 + self.TEXT_LINE_HEIGHT * 2,
-                    ),
-                    class_="label-text",
-                    style=f"fill: {fgcolor(tile.rack.status.color)}",
-                )
-            )
-            # Add the tenant_group name if the tenant is in a group
-            if tile.rack.tenant.tenant_group is not None:
-                link.add(
-                    drawing.text(
-                        tile.rack.tenant.tenant_group.name,
-                        insert=(
-                            origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                            origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2 + self.TEXT_LINE_HEIGHT * 3,
-                        ),
-                        class_="label-text",
-                        style=f"fill: {fgcolor(tile.rack.status.color)}",
-                    )
-                )
-        # Add the rack utilization as text
-        ru_used, ru_total = tile.rack.get_utilization()
-        link.add(
-            drawing.text(
-                f"{ru_used} / {ru_total} RU",
-                insert=(
-                    origin[0] + (tile.x_size * self.GRID_SIZE_X) / 2,
-                    origin[1] + (tile.y_size * self.GRID_SIZE_Y) / 2,
-                ),
-                class_="label-text",
-                style=f"fill: {fgcolor(tile.rack.status.color)}",
-            )
-        )
-        # Add buttons for editing and deleting the Rack tile definition
-        if tile.on_group_tile is True:
-            self._draw_edit_delete_button(drawing, tile, self.RACK_BUTTON_OFFSET, self.GRID_OFFSET)
 
     def _draw_edit_delete_button(self, drawing, tile, button_offset, grid_offset):
-        if tile.allocation_type == AllocationTypeChoices.RACK:
+        """Draw edit and delete buttons for a tile."""
+        if tile.allocation_type == AllocationTypeChoices.OBJECT:
             tile_inset = 0
         else:
             tile_inset = self.TILE_INSET
@@ -513,7 +601,7 @@ class FloorPlanSVG:
                 (
                     origin[0]
                     + tile.x_size * self.GRID_SIZE_X
-                    - self.RACK_TILE_INSET * self.TILE_INSET
+                    - self.OBJECT_TILE_INSET * self.TILE_INSET
                     - self.TEXT_LINE_HEIGHT,
                     origin[1] + self.TILE_INSET + grid_offset,
                 ),
@@ -528,7 +616,7 @@ class FloorPlanSVG:
                 insert=(
                     origin[0]
                     + tile.x_size * self.GRID_SIZE_X
-                    - self.RACK_TILE_INSET * self.TILE_INSET
+                    - self.OBJECT_TILE_INSET * self.TILE_INSET
                     - self.TEXT_LINE_HEIGHT / 2,
                     origin[1] + self.TILE_INSET + self.TEXT_LINE_HEIGHT / 2 + grid_offset,
                 ),

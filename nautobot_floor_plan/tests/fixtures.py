@@ -1,8 +1,18 @@
 """Create fixtures for tests."""
 
 from django.contrib.contenttypes.models import ContentType
-from nautobot.dcim.models import Location, LocationType, Rack, RackGroup
-from nautobot.extras.models import Status
+from nautobot.dcim.models import (
+    Device,
+    DeviceType,
+    Location,
+    LocationType,
+    Manufacturer,
+    PowerFeed,
+    PowerPanel,
+    Rack,
+    RackGroup,
+)
+from nautobot.extras.models import Role, Status
 
 from nautobot_floor_plan import choices
 from nautobot_floor_plan.models import FloorPlan, FloorPlanTile
@@ -13,11 +23,30 @@ def create_prerequisites(floor_count=4):
     location_type_site = LocationType.objects.create(name="Site")
     parent_location_type = LocationType.objects.create(name="Building")
     location_type = LocationType.objects.create(name="Floor", parent=parent_location_type)
+    location_type.content_types.add(ContentType.objects.get_for_model(Device))
+    location_type.content_types.add(ContentType.objects.get_for_model(PowerFeed))
+    location_type.content_types.add(ContentType.objects.get_for_model(PowerPanel))
     location_type.content_types.add(ContentType.objects.get_for_model(Rack))
     location_type.content_types.add(ContentType.objects.get_for_model(RackGroup))
 
     active_status = Status.objects.get(name="Active")
     active_status.content_types.add(ContentType.objects.get_for_model(FloorPlanTile))
+    active_status.content_types.add(ContentType.objects.get_for_model(Device))
+    active_status.content_types.add(ContentType.objects.get_for_model(PowerFeed))
+    active_status.content_types.add(ContentType.objects.get_for_model(Rack))
+
+    # Create manufacturer
+    manufacturer = Manufacturer.objects.create(name="Test Manufacturer")
+
+    # Create device role
+    device_role = Role.objects.create(name="Test Role", color="ff0000")
+    device_role.content_types.add(ContentType.objects.get_for_model(Device))
+
+    # Create device type
+    device_type = DeviceType.objects.create(
+        manufacturer=manufacturer,
+        model="Test Device Type",
+    )
 
     location = Location.objects.create(name="Location 1", status=active_status, location_type=location_type_site)
     building = Location.objects.create(
@@ -36,6 +65,9 @@ def create_prerequisites(floor_count=4):
         "floors": floors,
         "location": location,
         "building": building,
+        "manufacturer": manufacturer,
+        "device_role": device_role,
+        "device_type": device_type,
     }
 
 
