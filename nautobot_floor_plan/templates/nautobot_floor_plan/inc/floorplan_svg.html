@@ -12,7 +12,9 @@
     <h4>{{ floor_plan }}</h4>
     <div>
         Use shift+scroll wheel to zoom in or out.
-        Click and drag to scroll.<br>
+        Click and drag to scroll.
+        <button id="toggle-zoom-mode" class="btn btn-sm btn-default">Enable Box Zoom</button>
+        <button id="reset-zoom" class="btn btn-sm btn-secondary">Reset Zoom</button><br>
         Add a tile by clicking the plus symbol on the grid OR by using the "Add Tile" button.
     </div>
 
@@ -40,12 +42,34 @@
                 style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
         </object>
     </div>
+    <style>
+        .tippy-box[data-theme~='light'] .tippy-arrow {
+            color: white;
+        }
+        .tippy-box[data-theme~='light'] {
+            background-color: white;
+            color: #333;
+            box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.15);
+        }
+    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const svgImage = document.getElementById("floor-plan-svg");
             var isPanning = false;
             var startPoint = {x: 0, y: 0};
             var endPoint = {x: 0, y: 0};
+            let zoomMode = false;
+            let selectionRect = null;
+
+            // Add toggle button event listener
+            const toggleButton = document.getElementById('toggle-zoom-mode');
+            if (toggleButton) {
+                toggleButton.addEventListener('click', function() {
+                    zoomMode = !zoomMode;
+                    this.textContent = zoomMode ? 'Switch to Pan Mode' : 'Enable Box Zoom';
+                    this.classList.toggle('btn-info');
+                });
+            }
 
             // Because svgImage is an '<object>', we have to wait until it loads before attaching actions to it.
             svgImage.onload = function(e) {
@@ -88,6 +112,24 @@
                     return newViewBox;
                 }
 
+                // Function to reset zoom to default view
+                function resetZoom() {
+                    viewBox = {
+                        x: 0,
+                        y: 0,
+                        w: svgActualSize.w,
+                        h: svgActualSize.h,
+                    };
+                    viewBox = updateViewBox(viewBox);
+                    scale = svgDisplaySize.w / viewBox.w;
+                }
+
+                // Connect reset button to resetZoom function
+                const resetButton = document.getElementById('reset-zoom');
+                if (resetButton) {
+                    resetButton.onclick = resetZoom;
+                }
+
                 // Create a container for our tooltip triggers that scales with the SVG
                 const tooltipContainer = document.createElement('div');
                 tooltipContainer.style.position = 'absolute';
@@ -128,8 +170,11 @@
                         interactive: true,
                         theme: 'light',
                         arrow: true,
+                        arrowType: 'round',
+                        animation: 'fade',
                         offset: [0, 5],
                         trigger: 'manual',
+                        appendTo: document.body,
                         popperOptions: {
                             modifiers: [{
                                 name: 'preventOverflow',
@@ -234,36 +279,143 @@
                     scale = svgDisplaySize.w/viewBox.w;
                 }, { passive: false });
 
-                // On click in the SVG, record the click location and begin panning.
+                // On click in the SVG, record the click location and begin panning or box selection
                 svgImage.contentDocument.onmousedown = function(e){
                     e.preventDefault();
-                    isPanning = true;
-                    startPoint = {x: e.x, y: e.y};
+                    
+                    // Get the SVG element
+                    const svg = svgDoc.querySelector("svg");
+                    
+                    // Create an SVG point at the mouse position
+                    const pt = svg.createSVGPoint();
+                    pt.x = e.clientX;
+                    pt.y = e.clientY;
+                    
+                    // Convert to SVG document coordinates
+                    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+                    
+                    startPoint = {x: svgP.x, y: svgP.y};
+                    
+                    if (zoomMode) {
+                        // Create selection rectangle
+                        selectionRect = svgDoc.createElementNS("http://www.w3.org/2000/svg", "rect");
+                        selectionRect.setAttribute("x", startPoint.x);
+                        selectionRect.setAttribute("y", startPoint.y);
+                        selectionRect.setAttribute("width", 0);
+                        selectionRect.setAttribute("height", 0);
+                        selectionRect.setAttribute("fill", "rgba(0, 123, 255, 0.2)");
+                        selectionRect.setAttribute("stroke", "#007bff");
+                        selectionRect.setAttribute("stroke-width", "1");
+                        selectionRect.setAttribute("pointer-events", "none");
+                        svg.appendChild(selectionRect);
+                    } else {
+                        isPanning = true;
+                    }
                 };
 
-                // On dragging the mouse, update the panning location in real time but do not update the viewBox variable.
+                // On dragging the mouse, update the panning location or selection rectangle
                 svgImage.contentDocument.onmousemove = function(e){
                     e.preventDefault();
-                    if (isPanning) {
-                        endPoint = {x: e.x, y: e.y};
-                        var dx = (startPoint.x - endPoint.x) / scale;
-                        var dy = (startPoint.y - endPoint.y) / scale;
-                        var movedViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w, h: viewBox.h};
+                    
+                    // Get the SVG element
+                    const svg = svgDoc.querySelector("svg");
+                    
+                    // Create an SVG point at the mouse position
+                    const pt = svg.createSVGPoint();
+                    pt.x = e.clientX;
+                    pt.y = e.clientY;
+                    
+                    // Convert to SVG document coordinates
+                    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+                    
+                    endPoint = {x: svgP.x, y: svgP.y};
+                    
+                    if (zoomMode && selectionRect) {
+                        // Update selection rectangle
+                        const width = endPoint.x - startPoint.x;
+                        const height = endPoint.y - startPoint.y;
+                        
+                        selectionRect.setAttribute("width", Math.abs(width));
+                        selectionRect.setAttribute("height", Math.abs(height));
+                        
+                        if (width < 0) selectionRect.setAttribute("x", endPoint.x);
+                        if (height < 0) selectionRect.setAttribute("y", endPoint.y);
+                    } else if (isPanning) {
+                        // For panning, we need to convert back to screen coordinates
+                        const dx = (startPoint.x - endPoint.x);
+                        const dy = (startPoint.y - endPoint.y);
+                        
+                        var movedViewBox = {
+                            x: viewBox.x + dx,
+                            y: viewBox.y + dy,
+                            w: viewBox.w,
+                            h: viewBox.h
+                        };
+                        
                         updateViewBox(movedViewBox);
+                        
+                        // Update startPoint for smoother panning
+                        startPoint = endPoint;
                     }
                 };
 
-                // On releasing the mouse button, update the panning location and update the stored viewBox variable.
+                // On releasing the mouse button, update the panning location or zoom to selection
                 svgImage.contentDocument.onmouseup = function(e){
                     e.preventDefault();
-                    if (isPanning) {
-                        endPoint = {x: e.x, y: e.y};
-                        var dx = (startPoint.x - endPoint.x) / scale;
-                        var dy = (startPoint.y - endPoint.y) / scale;
-                        var movedViewBox = {x: viewBox.x + dx, y: viewBox.y + dy, w: viewBox.w, h: viewBox.h};
-                        viewBox = updateViewBox(movedViewBox);
+                    
+                    // Get the SVG element
+                    const svg = svgDoc.querySelector("svg");
+                    
+                    // Create an SVG point at the mouse position
+                    const pt = svg.createSVGPoint();
+                    pt.x = e.clientX;
+                    pt.y = e.clientY;
+                    
+                    // Convert to SVG document coordinates
+                    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+                    
+                    endPoint = {x: svgP.x, y: svgP.y};
+                    
+                    if (zoomMode && selectionRect) {
+                        // Get the selection rectangle dimensions
+                        let selWidth = Math.abs(endPoint.x - startPoint.x);
+                        let selHeight = Math.abs(endPoint.y - startPoint.y);
+                        
+                        // Minimum selection size check
+                        if (selWidth > 10 && selHeight > 10) {
+                            // Get the top-left corner of the selection
+                            const minX = Math.min(startPoint.x, endPoint.x);
+                            const minY = Math.min(startPoint.y, endPoint.y);
+                            
+                            // The coordinates are already in SVG space, so we can use them directly
+                            viewBox = updateViewBox({
+                                x: minX,
+                                y: minY,
+                                w: selWidth,
+                                h: selHeight
+                            });
+                            
+                            // Update scale after zooming
+                            scale = svgDisplaySize.w / viewBox.w;
+                        }
+                        
+                        // Remove the selection rectangle
+                        if (selectionRect && selectionRect.parentNode) {
+                            selectionRect.parentNode.removeChild(selectionRect);
+                        }
+                        selectionRect = null;
                     }
+                    
                     isPanning = false;
+                };
+                
+                // Handle mouse leaving the SVG area
+                svgImage.contentDocument.onmouseleave = function(e) {
+                    isPanning = false;
+                    if (selectionRect && selectionRect.parentNode) {
+                        selectionRect.parentNode.removeChild(selectionRect);
+                    }
+                    selectionRect = null;
                 };
             };
         });

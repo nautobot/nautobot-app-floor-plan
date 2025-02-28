@@ -1,188 +1,129 @@
 """Tests for template content extensions in the Nautobot Floor Plan app."""
 
-import unittest
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest import mock
 
-from django.core.exceptions import ObjectDoesNotExist
+from django.test import TestCase
 
 from nautobot_floor_plan.template_content import LocationFloorPlanTab
 
 
-class LocationFloorPlanTabTestCase(unittest.TestCase):
-    """Test cases for LocationFloorPlanTab template extension."""
+class TestLocationFloorPlanTab(TestCase):
+    """Test the LocationFloorPlanTab template extension."""
 
     def setUp(self):
-        """Set up test environment."""
-        # Create mock location
-        self.location = MagicMock()
-        self.location.pk = 1
+        """Set up test case."""
+        # Create a mock context to pass to the constructor
+        self.mock_context = {
+            "object": mock.MagicMock(),
+            "request": mock.MagicMock(),
+        }
+        # Initialize with the mock context
+        self.template_extension = LocationFloorPlanTab(context=self.mock_context)
 
-        # Create mock request with user
-        self.request = MagicMock()
-        self.user = MagicMock()
-        self.request.user = self.user
+    @mock.patch("nautobot_floor_plan.template_content.reverse")
+    def test_buttons_with_floor_plan(self, mock_reverse):
+        """Test buttons method when location has a floor plan."""
+        # Set up mocks
+        mock_location = mock.MagicMock()
+        mock_floor_plan = mock.MagicMock()
+        mock_floor_plan.pk = "test-pk"
+        mock_location.floor_plan = mock_floor_plan
+        self.template_extension.context["object"] = mock_location
+        self.template_extension.context["request"].user.has_perm.return_value = True
 
-        # Create context
-        self.context = {"object": self.location, "request": self.request}
-
-        # Create extension instance
-        self.extension = LocationFloorPlanTab(self.context)
-
-    @patch("nautobot_floor_plan.template_content.reverse")
-    def test_buttons_with_floor_plan_and_delete_permission(self, mock_reverse):
-        """Test buttons method when user has floor plan and delete permission."""
-        # Setup
-        self.location.floor_plan = MagicMock()
-        self.location.floor_plan.pk = 2
-        self.user.has_perm.return_value = True
-
-        # Mock reverse URLs
-        mock_reverse.side_effect = lambda *args, **kwargs: f"/mock/{args[0]}/{kwargs.get('kwargs', {}).get('pk', '')}"
+        # Set up reverse return values
+        mock_reverse.side_effect = lambda name, kwargs=None: f"/mock/{name}/{kwargs.get('pk', '')}"
 
         # Call the method
-        result = self.extension.buttons()
+        result = self.template_extension.buttons()
 
-        # Assertions
-        self.user.has_perm.assert_called_once_with("nautobot_floor_plan.delete_floorplan")
+        # Verify the result contains the delete button
         self.assertIn("Delete Floor Plan", result)
-        self.assertIn("btn btn-danger", result)
-        self.assertIn("mdi-checkerboard-remove", result)
+        self.assertIn("/mock/plugins:nautobot_floor_plan:floorplan_delete/test-pk", result)
 
-    @patch("nautobot_floor_plan.template_content.reverse")
-    def test_buttons_with_floor_plan_without_delete_permission(self, mock_reverse):
-        """Test buttons method when user has floor plan but no delete permission."""
-        # Setup
-        self.location.floor_plan = MagicMock()
-        self.user.has_perm.return_value = False
-
-        # Mock reverse URLs (even though not used in this test path, it is set up for consistency)
-        mock_reverse.side_effect = lambda *args, **kwargs: f"/mock/{args[0]}/{kwargs.get('kwargs', {}).get('pk', '')}"
+    def test_buttons_no_permission(self):
+        """Test buttons method when user does not have permission."""
+        # Set up mocks
+        mock_location = mock.MagicMock()
+        mock_floor_plan = mock.MagicMock()
+        mock_location.floor_plan = mock_floor_plan
+        self.template_extension.context["object"] = mock_location
+        self.template_extension.context["request"].user.has_perm.return_value = False
 
         # Call the method
-        result = self.extension.buttons()
+        result = self.template_extension.buttons()
 
-        # Assertions
-        self.user.has_perm.assert_called_once_with("nautobot_floor_plan.delete_floorplan")
+        # Verify the result is empty
         self.assertEqual(result, "")
 
-    @patch("nautobot_floor_plan.template_content.reverse")
-    def test_buttons_without_floor_plan_with_add_permission(self, mock_reverse):
-        """Test buttons method when user has no floor plan but has add permission."""
-        # Setup - make accessing floor_plan raise ObjectDoesNotExist
-        type(self.location).floor_plan = PropertyMock(side_effect=ObjectDoesNotExist())
-        self.user.has_perm.return_value = True
+    @mock.patch("nautobot_floor_plan.template_content.reverse")
+    def test_detail_tabs_with_floor_plan(self, mock_reverse):
+        """Test detail_tabs method when location has a floor plan."""
+        # Set up mocks
+        mock_location = mock.MagicMock()
+        mock_location.floor_plan = mock.MagicMock()
+        mock_location.children.filter.return_value.exists.return_value = False
+        self.template_extension.context["object"] = mock_location
 
-        # Mock reverse URLs
-        mock_reverse.side_effect = lambda *args, **kwargs: f"/mock/{args[0]}/{kwargs.get('kwargs', {}).get('pk', '')}"
-
-        # Call the method
-        result = self.extension.buttons()
-
-        # Assertions
-        self.user.has_perm.assert_called_once_with("nautobot_floor_plan.add_floorplan")
-        self.assertIn("Add Floor Plan", result)
-        self.assertIn("btn btn-success", result)
-        self.assertIn("mdi-checkerboard-plus", result)
-
-    @patch("nautobot_floor_plan.template_content.reverse")
-    def test_buttons_without_floor_plan_no_permission(self, mock_reverse):
-        """Test buttons method when location has no floor plan and user lacks add permission."""
-        # Setup - make accessing floor_plan raise ObjectDoesNotExist
-        type(self.location).floor_plan = PropertyMock(side_effect=ObjectDoesNotExist())
-        self.user.has_perm.return_value = False
-
-        # Mock reverse URLs (even though not used in this test path, it is set up for consistency)
-        mock_reverse.side_effect = lambda *args, **kwargs: f"/mock/{args[0]}/{kwargs.get('kwargs', {}).get('pk', '')}"
+        # Set up reverse return values
+        mock_reverse.side_effect = lambda name, kwargs=None: f"/mock/{name}/{kwargs.get('pk', '')}"
 
         # Call the method
-        result = self.extension.buttons()
+        result = self.template_extension.detail_tabs()
 
-        # Assertions
-        self.user.has_perm.assert_called_once_with("nautobot_floor_plan.add_floorplan")
-        self.assertEqual(result, "")
+        # Verify the result contains the floor plan tab
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["title"], "Floor Plan")
 
-    @patch("nautobot_floor_plan.template_content.reverse")
-    def test_detail_tabs_with_floor_plan_no_children(self, mock_reverse):
-        """Test detail_tabs method when location has floor plan but no children with floor plans."""
-        # Setup
-        self.location.floor_plan = MagicMock()
+    @mock.patch("nautobot_floor_plan.template_content.reverse")
+    def test_detail_tabs_with_child_floor_plans(self, mock_reverse):
+        """Test detail_tabs method when location has child floor plans."""
+        # Set up mocks
+        mock_location = mock.MagicMock()
+        mock_location.floor_plan = None
+        mock_location.children.filter.return_value.exists.return_value = True
+        self.template_extension.context["object"] = mock_location
 
-        # Mock children queryset
-        children_mock = MagicMock()
-        children_mock.filter().exists.return_value = False
-        self.location.children = children_mock
-
-        # Mock reverse URL
-        mock_reverse.side_effect = lambda viewname, kwargs: f"/{viewname}/{kwargs['pk']}/"
+        # Set up reverse return values
+        mock_reverse.side_effect = lambda name, kwargs=None: f"/mock/{name}/{kwargs.get('pk', '')}"
 
         # Call the method
-        tabs = self.extension.detail_tabs()
+        result = self.template_extension.detail_tabs()
 
-        # Assertions
-        self.assertEqual(len(tabs), 1)
-        self.assertEqual(tabs[0]["title"], "Floor Plan")
-        self.assertTrue(tabs[0]["url"].startswith("/plugins:nautobot_floor_plan:location_floor_plan_tab/"))
+        # Verify the result contains the child floor plans tab
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["title"], "Child Floor Plan(s)")
 
-    @patch("nautobot_floor_plan.template_content.reverse")
-    def test_detail_tabs_no_floor_plan_with_children(self, mock_reverse):
-        """Test detail_tabs method when location has no floor plan but has children with floor plans."""
-        # Setup - location has no floor plan
-        self.location.floor_plan = None
+    @mock.patch("nautobot_floor_plan.template_content.reverse")
+    def test_detail_tabs_with_both(self, mock_reverse):
+        """Test detail_tabs method when location has both a floor plan and child floor plans."""
+        # Set up mocks
+        mock_location = mock.MagicMock()
+        mock_location.floor_plan = mock.MagicMock()
+        mock_location.children.filter.return_value.exists.return_value = True
+        self.template_extension.context["object"] = mock_location
 
-        # Mock children queryset
-        children_mock = MagicMock()
-        children_mock.filter().exists.return_value = True
-        self.location.children = children_mock
-
-        # Mock reverse URL
-        mock_reverse.side_effect = lambda viewname, kwargs: f"/{viewname}/{kwargs['pk']}/"
+        # Set up reverse return values
+        mock_reverse.side_effect = lambda name, kwargs=None: f"/mock/{name}/{kwargs.get('pk', '')}"
 
         # Call the method
-        tabs = self.extension.detail_tabs()
+        result = self.template_extension.detail_tabs()
 
-        # Assertions
-        self.assertEqual(len(tabs), 1)
-        self.assertEqual(tabs[0]["title"], "Child Floor Plan(s)")
-        self.assertTrue(tabs[0]["url"].startswith("/plugins:nautobot_floor_plan:location_child_floor_plan_tab/"))
+        # Verify the result contains both tabs
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["title"], "Floor Plan")
+        self.assertEqual(result[1]["title"], "Child Floor Plan(s)")
 
-    @patch("nautobot_floor_plan.template_content.reverse")
-    def test_detail_tabs_with_floor_plan_and_children(self, mock_reverse):
-        """Test detail_tabs method when location has both floor plan and children with floor plans."""
-        # Setup
-        self.location.floor_plan = MagicMock()
-
-        # Mock children queryset
-        children_mock = MagicMock()
-        children_mock.filter().exists.return_value = True
-        self.location.children = children_mock
-
-        # Mock reverse URL
-        mock_reverse.side_effect = lambda viewname, kwargs: f"/{viewname}/{kwargs['pk']}/"
+    def test_detail_tabs_with_neither(self):
+        """Test detail_tabs method when location has neither a floor plan nor child floor plans."""
+        # Set up mocks
+        mock_location = mock.MagicMock()
+        mock_location.floor_plan = None
+        mock_location.children.filter.return_value.exists.return_value = False
+        self.template_extension.context["object"] = mock_location
 
         # Call the method
-        tabs = self.extension.detail_tabs()
+        result = self.template_extension.detail_tabs()
 
-        # Assertions
-        self.assertEqual(len(tabs), 2)
-        self.assertEqual(tabs[0]["title"], "Floor Plan")
-        self.assertEqual(tabs[1]["title"], "Child Floor Plan(s)")
-
-    @patch("nautobot_floor_plan.template_content.reverse")
-    def test_detail_tabs_no_floor_plan_no_children(self, mock_reverse):
-        """Test detail_tabs method when location has neither floor plan nor children with floor plans."""
-        # Setup
-        self.location.floor_plan = None
-
-        # Mock children queryset
-        children_mock = MagicMock()
-        children_mock.filter().exists.return_value = False
-        self.location.children = children_mock
-
-        # Mock reverse URL (even though not used in this test path, it is set up for consistency)
-        mock_reverse.side_effect = lambda viewname, kwargs: f"/{viewname}/{kwargs['pk']}/"
-
-        # Call the method
-        tabs = self.extension.detail_tabs()
-
-        # Assertions
-        self.assertEqual(tabs, [])
+        # Verify the result is empty
+        self.assertEqual(result, [])

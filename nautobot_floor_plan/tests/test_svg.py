@@ -7,7 +7,6 @@ from django.test import TestCase
 from nautobot_floor_plan.choices import ObjectOrientationChoices
 from nautobot_floor_plan.svg import FloorPlanSVG
 
-# It's acceptable to access protected members in tests to verify their functionality
 # pylint: disable=protected-access
 
 
