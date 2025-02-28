@@ -7,7 +7,6 @@ from nautobot.apps.urls import NautobotUIViewSetRouter
 
 from nautobot_floor_plan import views
 
-
 app_name = "nautobot_floor_plan"
 router = NautobotUIViewSetRouter()
 
