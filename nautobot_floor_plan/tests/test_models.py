@@ -842,38 +842,3 @@ class TestFloorPlanTilePower(TestCase):
         )
         with self.assertRaises(ValidationError):
             invalid_panel_tile.validated_save()
-
-    def test_power_feed_in_rack_cannot_be_placed_on_tile(self):
-        """Test that a PowerFeed connected to a rack cannot be placed directly on a FloorPlanTile."""
-        # Create necessary objects
-        rack = Rack.objects.create(
-            name="Test Rack",
-            status=self.status,
-            location=self.floor_plans[3].location,
-        )
-        power_panel = PowerPanel.objects.create(
-            name="Test Power Panel",
-            location=self.floor_plans[3].location,
-        )
-        power_feed = PowerFeed.objects.create(
-            name="Test Power Feed",
-            status=self.status,
-            power_panel=power_panel,
-            rack=rack,
-        )
-
-        # Attempt to place the racked power feed on a tile
-        feed_tile = models.FloorPlanTile(
-            floor_plan=self.floor_plans[3],
-            status=self.status,
-            x_origin=2,
-            y_origin=2,
-            power_feed=power_feed,
-            allocation_type=models.AllocationTypeChoices.OBJECT,
-        )
-        with self.assertRaises(ValidationError) as context:
-            feed_tile.validated_save()
-
-        self.assertIn("power_feed", str(context.exception))
-        self.assertIn("is installed in Rack", str(context.exception))
-        self.assertIn("Please remove it from the rack before placing on the floor plan", str(context.exception))

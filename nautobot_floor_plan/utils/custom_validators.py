@@ -6,7 +6,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from nautobot.apps.models import CustomValidator
-from nautobot.dcim.models import Rack
+from nautobot.dcim.models import Device, Rack
 
 from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.utils import general
@@ -356,6 +356,33 @@ class ValidateNotZero(BaseValidator):
             )
 
 
+class DeviceValidator(CustomValidator):
+    """Custom Validator to verify a Device is not installed on a Floor Plan before allowing the changing of Location."""
+
+    model = "dcim.device"
+
+    def clean(self):
+        """
+        Validate that the Device's location is not changed if it is installed on a Floor Plan.
+
+        Raises:
+            ValidationError: If the Device is installed on a Floor Plan and its location is being changed.
+        """
+        device = self.context["object"]
+
+        # Skip validation if the Device is new
+        if device.present_in_database:
+            # Get the original instance of the device
+            original_instance = Device.objects.get(pk=device.pk)
+
+            # Check if the location is being changed
+            if (
+                original_instance.location_id != device.location_id
+                and models.FloorPlanTile.objects.filter(device=device).exists()
+            ):
+                self.validation_error({"location": "Cannot move Device as it is currently installed in a FloorPlan."})
+
+
 class RackValidator(CustomValidator):
     """Custom Validator to verify a Rack is not installed on a Floor Plan before allowing the changing of Location."""
 
@@ -383,4 +410,4 @@ class RackValidator(CustomValidator):
                 self.validation_error({"location": "Cannot move Rack as it is currently installed in a FloorPlan."})
 
 
-custom_validators = [RackValidator]
+custom_validators = [DeviceValidator, RackValidator]

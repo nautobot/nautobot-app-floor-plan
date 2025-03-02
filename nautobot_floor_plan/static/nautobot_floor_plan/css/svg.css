@@ -57,16 +57,54 @@ text {
 .delete-tile-button {
     fill: #d9534f;
     stroke: #d43f3a;
+    stroke-width: 1px;
 }
 .delete-tile-button:hover {
     fill: #c12e2a;
+    stroke: #d43f3a;
+    stroke-width: 1px;
+}
+
+/* This section was required to prevent the links from being underlined. */
+svg a, svg a:hover, svg a:focus, svg a:active {
+    text-decoration: none;
+}
+
+/* Target all elements in links */
+svg a * {
+    text-decoration: none;
+}
+
+/* Specifically target text in links */
+svg a text, svg a text:hover {
+    stroke: none;
+    stroke-width: 0;
+    text-decoration: none;
+}
+
+/* This was added to allow the grid lines to be visible. */
+svg a line {
+    display: none;
+    visibility: hidden;
+    stroke: transparent;
+    stroke-width: 0;
+}
+
+/* This was added to prevent the text in the buttons from having a stroke. */
+a text {
+    stroke: none;
+    stroke-width: 0;
 }
 
 .object {
-    stroke: black;
+    stroke: #cccccc;
     stroke-width: 2px;
 }
 
+rect.object-orientation {
+    fill: white;
+    stroke: none;
+}
 /* Tooltip styling */
 .tippy-box[data-theme~='light'] {
     background-color: white;

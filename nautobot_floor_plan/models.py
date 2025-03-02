@@ -479,14 +479,6 @@ class FloorPlanTile(PrimaryModel):
                 }
             )
 
-        if self.power_feed and self.power_feed.rack:
-            raise ValidationError(
-                {
-                    "power_feed": f"Power Feed '{self.power_feed}' is installed in Rack '{self.power_feed.rack}'. "
-                    "Please remove it from the rack before placing on the floor plan."
-                }
-            )
-
     def _validate_object_locations(self):
         """Validate location for all assigned objects."""
         assigned_objects = {
@@ -585,7 +577,8 @@ class FloorPlanTile(PrimaryModel):
                 and self.y_origin <= tile.y_origin + tile.y_size - 1
                 and tile.y_origin <= self.y_origin + self.y_size - 1
             ):
-                if self.rack.rack_group != tile.rack_group:
+                # Only validate if the overlapping tile has a rack_group
+                if tile.rack_group and self.rack.rack_group != tile.rack_group:
                     raise ValidationError(
                         f"Rack {self.rack} cannot be placed on rack group tile for {tile.rack_group} "
                         f"as it belongs to {self.rack.rack_group}"

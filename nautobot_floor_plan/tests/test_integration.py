@@ -105,16 +105,16 @@ class FloorPlanZoomTestCase(SeleniumTestCase):
         """Test the box zoom functionality."""
         # Get the initial viewBox using JavaScript
         initial_viewbox = self.browser.evaluate_script(
-            "document.getElementById('floor-plan-svg').contentDocument.querySelector('svg').getAttribute('viewBox')"
+            "document.querySelector('#floor-plan-svg svg').getAttribute('viewBox')"
         )
         if not initial_viewbox:
-            self.skipTest("Could not access SVG document, skipping test")
+            self.skipTest("Could not access SVG element, skipping test")
 
         # Instead of trying to simulate the box zoom interaction, directly modify the viewBox
         # This simulates what would happen after a successful box zoom
         self.browser.execute_script(
             """
-            const svg = document.getElementById('floor-plan-svg').contentDocument.querySelector('svg');
+            const svg = document.querySelector('#floor-plan-svg svg');
             svg.setAttribute('viewBox', '50 50 100 100');
             """
         )
@@ -124,7 +124,7 @@ class FloorPlanZoomTestCase(SeleniumTestCase):
 
         # Get the new viewBox using JavaScript
         new_viewbox = self.browser.evaluate_script(
-            "document.getElementById('floor-plan-svg').contentDocument.querySelector('svg').getAttribute('viewBox')"
+            "document.querySelector('#floor-plan-svg svg').getAttribute('viewBox')"
         )
 
         # Verify that the viewBox has changed
@@ -135,15 +135,15 @@ class FloorPlanZoomTestCase(SeleniumTestCase):
         """Test the reset zoom functionality."""
         # Get the initial viewBox using JavaScript
         initial_viewbox = self.browser.evaluate_script(
-            "document.getElementById('floor-plan-svg').contentDocument.querySelector('svg').getAttribute('viewBox')"
+            "document.querySelector('#floor-plan-svg svg').getAttribute('viewBox')"
         )
         if not initial_viewbox:
-            self.skipTest("Could not access SVG document, skipping test")
+            self.skipTest("Could not access SVG element, skipping test")
 
         # Directly modify the viewBox to simulate a zoom
         self.browser.execute_script(
             """
-            const svg = document.getElementById('floor-plan-svg').contentDocument.querySelector('svg');
+            const svg = document.querySelector('#floor-plan-svg svg');
             svg.setAttribute('viewBox', '50 50 100 100');
             """
         )
@@ -153,7 +153,7 @@ class FloorPlanZoomTestCase(SeleniumTestCase):
 
         # Get the zoomed viewBox using JavaScript
         zoomed_viewbox = self.browser.evaluate_script(
-            "document.getElementById('floor-plan-svg').contentDocument.querySelector('svg').getAttribute('viewBox')"
+            "document.querySelector('#floor-plan-svg svg').getAttribute('viewBox')"
         )
 
         # Verify that the viewBox has changed
@@ -169,7 +169,7 @@ class FloorPlanZoomTestCase(SeleniumTestCase):
 
         # Get the reset viewBox using JavaScript
         reset_viewbox = self.browser.evaluate_script(
-            "document.getElementById('floor-plan-svg').contentDocument.querySelector('svg').getAttribute('viewBox')"
+            "document.querySelector('#floor-plan-svg svg').getAttribute('viewBox')"
         )
 
         # Normalize viewBox values by replacing commas with spaces for comparison
@@ -178,3 +178,238 @@ class FloorPlanZoomTestCase(SeleniumTestCase):
 
         # Verify that the viewBox has reset to initial
         self.assertEqual(normalized_initial, normalized_reset, "ViewBox should reset to initial after reset zoom")
+
+    def test_toggle_zoom_mode(self):
+        """Test toggling between zoom and pan modes."""
+        # Find the toggle button
+        toggle_button = self.browser.find_by_id("toggle-zoom-mode").first
+
+        # Check initial state (should be pan mode by default)
+        initial_text = toggle_button.text
+        self.assertIn("Enable Box Zoom", initial_text, "Initial mode should be pan mode")
+
+        # Click to toggle to zoom mode
+        toggle_button.click()
+        time.sleep(0.5)
+
+        # Check that button text and class changed
+        toggled_text = toggle_button.text
+        self.assertIn("Switch to Pan Mode", toggled_text, "Mode should change to zoom mode after toggle")
+        self.assertTrue(toggle_button.has_class("btn-info"), "Button should have btn-info class in zoom mode")
+
+        # Toggle back to pan mode
+        toggle_button.click()
+        time.sleep(0.5)
+
+        # Check that button text and class changed back
+        final_text = toggle_button.text
+        self.assertIn("Enable Box Zoom", final_text, "Mode should change back to pan mode after second toggle")
+        self.assertFalse(toggle_button.has_class("btn-info"), "Button should not have btn-info class in pan mode")
+
+    def test_wheel_zoom_functionality(self):
+        """Test the wheel zoom functionality with shift key."""
+        # Get the initial viewBox
+        initial_viewbox = self.browser.evaluate_script(
+            "document.querySelector('#floor-plan-svg svg').getAttribute('viewBox')"
+        )
+        if not initial_viewbox:
+            self.skipTest("Could not access SVG element, skipping test")
+
+        # Create a wheel event with shift key
+        # Since we can't directly trigger a wheel event with Selenium, we'll simulate it with JavaScript
+        self.browser.execute_script(
+            """
+            const svg = document.querySelector('#floor-plan-svg svg');
+            const rect = svg.getBoundingClientRect();
+            const event = new WheelEvent('wheel', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                deltaY: -100,  // Negative for zoom in
+                clientX: rect.left + rect.width / 2,
+                clientY: rect.top + rect.height / 2,
+                shiftKey: true
+            });
+            svg.dispatchEvent(event);
+            """
+        )
+
+        # Wait for the zoom to take effect
+        time.sleep(1)
+
+        # Get the new viewBox
+        zoomed_viewbox = self.browser.evaluate_script(
+            "document.querySelector('#floor-plan-svg svg').getAttribute('viewBox')"
+        )
+
+        # Verify that the viewBox has changed (zoomed in)
+        self.assertNotEqual(initial_viewbox, zoomed_viewbox, "ViewBox should change after wheel zoom")
+
+    def test_panning_functionality(self):
+        """Test the panning functionality."""
+        # Get the initial viewBox
+        initial_viewbox = self.browser.evaluate_script(
+            "document.querySelector('#floor-plan-svg svg').getAttribute('viewBox')"
+        )
+        if not initial_viewbox:
+            self.skipTest("Could not access SVG element, skipping test")
+
+        # Simulate a pan operation using JavaScript
+        # We'll simulate mousedown, mousemove, and mouseup events
+        self.browser.execute_script(
+            """
+            const svg = document.querySelector('#floor-plan-svg svg');
+            const rect = svg.getBoundingClientRect();
+
+            // Create mousedown event
+            const mousedownEvent = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                clientX: rect.left + rect.width / 2,
+                clientY: rect.top + rect.height / 2
+            });
+            svg.dispatchEvent(mousedownEvent);
+
+            // Create mousemove event (move right and down)
+            const mousemoveEvent = new MouseEvent('mousemove', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                clientX: rect.left + rect.width / 2 + 50,
+                clientY: rect.top + rect.height / 2 + 50
+            });
+            svg.dispatchEvent(mousemoveEvent);
+
+            // Create mouseup event
+            const mouseupEvent = new MouseEvent('mouseup', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                clientX: rect.left + rect.width / 2 + 50,
+                clientY: rect.top + rect.height / 2 + 50
+            });
+            svg.dispatchEvent(mouseupEvent);
+            """
+        )
+
+        # Wait for the pan to take effect
+        time.sleep(1)
+
+        # Get the new viewBox
+        panned_viewbox = self.browser.evaluate_script(
+            "document.querySelector('#floor-plan-svg svg').getAttribute('viewBox')"
+        )
+
+        # Verify that the viewBox has changed (panned)
+        self.assertNotEqual(initial_viewbox, panned_viewbox, "ViewBox should change after panning")
+
+
+@unittest.skipIf(is_nautobot_version_less_than("2.3.1"), "Nautobot version is less than 2.3.1")
+class FloorPlanTileTabsTestCase(SeleniumTestCase):
+    """Test the tab functionality in the floor plan tile interface."""
+
+    def setUp(self):
+        """Login and navigate to a floor plan tile add page."""
+        super().setUp()
+
+        self.user.is_superuser = True
+        self.user.save()
+        self.login(self.user.username, self.password)
+
+        # Create test data using fixtures
+        prerequisites = create_prerequisites(floor_count=1)
+        floors = prerequisites["floors"]
+        floor_plans = create_floor_plans(floors)
+        self.floor_plan = floor_plans[0]
+
+        # Navigate to the floor plan tile add page
+        self.browser.visit(
+            f"{self.live_server_url}{reverse('plugins:nautobot_floor_plan:floorplantile_add')}?floor_plan={self.floor_plan.pk}"
+        )
+
+        # Wait for the page to load
+        WebDriverWait(self.browser, 10).until(lambda driver: driver.is_text_present("Add a new floor plan tile"))
+
+    def test_tab_switching(self):
+        """Test switching between tabs in the floor plan tile form."""
+
+        has_active_class = self.browser.execute_script(
+            "return document.querySelector('a[href=\"#rack\"]').parentElement.classList.contains('active')"
+        )
+        self.assertTrue(has_active_class, "Rack tab should be active by default")
+
+        # Click on the device tab
+        device_tab = self.browser.find_by_css("a[href='#device']").first
+        device_tab.click()
+        time.sleep(0.5)
+
+        # Check that the device tab is now active
+        device_tab_active = self.browser.execute_script(
+            "return document.querySelector('a[href=\"#device\"]').parentElement.classList.contains('active')"
+        )
+        rack_tab_active = self.browser.execute_script(
+            "return document.querySelector('a[href=\"#rack\"]').parentElement.classList.contains('active')"
+        )
+        self.assertTrue(device_tab_active, "Device tab should be active after clicking")
+        self.assertFalse(rack_tab_active, "Rack tab should not be active")
+
+        # Click on the power panel tab
+        power_panel_tab = self.browser.find_by_css("a[href='#power-panel']").first
+        power_panel_tab.click()
+        time.sleep(0.5)
+
+        # Check that the power panel tab is now active
+        power_panel_tab_active = self.browser.execute_script(
+            "return document.querySelector('a[href=\"#power-panel\"]').parentElement.classList.contains('active')"
+        )
+        device_tab_active = self.browser.execute_script(
+            "return document.querySelector('a[href=\"#device\"]').parentElement.classList.contains('active')"
+        )
+        self.assertTrue(power_panel_tab_active, "Power panel tab should be active after clicking")
+        self.assertFalse(device_tab_active, "Device tab should not be active")
+
+        # Click on the power feed tab
+        power_feed_tab = self.browser.find_by_css("a[href='#power-feed']").first
+        power_feed_tab.click()
+        time.sleep(0.5)
+
+        # Check that the power feed tab is now active
+        power_feed_tab_active = self.browser.execute_script(
+            "return document.querySelector('a[href=\"#power-feed\"]').parentElement.classList.contains('active')"
+        )
+        power_panel_tab_active = self.browser.execute_script(
+            "return document.querySelector('a[href=\"#power-panel\"]').parentElement.classList.contains('active')"
+        )
+        self.assertTrue(power_feed_tab_active, "Power feed tab should be active after clicking")
+        self.assertFalse(power_panel_tab_active, "Power panel tab should not be active")
+
+    def test_tab_content_visibility(self):
+        """Test that the correct content is visible when switching tabs."""
+        # Check that the rack tab content is visible by default
+        rack_pane_active = self.browser.execute_script(
+            "return document.getElementById('rack').classList.contains('active')"
+        )
+        self.assertTrue(rack_pane_active, "Rack pane should be active by default")
+
+        # Click on the device tab
+        device_tab = self.browser.find_by_css("a[href='#device']").first
+        device_tab.click()
+        time.sleep(0.5)
+
+        # Check that the device tab content is now visible
+        device_pane_active = self.browser.execute_script(
+            "return document.getElementById('device').classList.contains('active')"
+        )
+        rack_pane_active = self.browser.execute_script(
+            "return document.getElementById('rack').classList.contains('active')"
+        )
+        self.assertTrue(device_pane_active, "Device pane should be active after clicking device tab")
+        self.assertFalse(rack_pane_active, "Rack pane should not be active")
+
+        # Check that device-specific fields are visible
+        device_select_visible = self.browser.execute_script(
+            "const el = document.querySelector('#device select[name=\"device\"]'); "
+            + "return el && (el.offsetWidth > 0 || el.offsetHeight > 0);"
+        )
+        self.assertTrue(device_select_visible, "Device select field should be visible when device tab is active")

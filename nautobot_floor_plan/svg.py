@@ -344,8 +344,7 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
                 ),
                 rx=self.CORNER_RADIUS,
                 class_="object",
-                style=f"fill: #{obj.status.color if hasattr(obj, 'status') else tile.status.color}; "
-                f"stroke: {fgcolor(tile.status.color)}",
+                style=f"fill: #{obj.status.color if hasattr(obj, 'status') else tile.status.color}; ",
             )
         )
 
@@ -371,8 +370,7 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
                         self.OBJECT_FRONT_DEPTH,
                     ),
                     rx=self.CORNER_RADIUS,
-                    class_="object",
-                    style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
+                    class_="object-orientation",
                 )
             )
         elif tile.object_orientation == ObjectOrientationChoices.DOWN:
@@ -390,8 +388,7 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
                         self.OBJECT_FRONT_DEPTH,
                     ),
                     rx=self.CORNER_RADIUS,
-                    class_="object",
-                    style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
+                    class_="object-orientation",
                 )
             )
         elif tile.object_orientation == ObjectOrientationChoices.LEFT:
@@ -406,8 +403,7 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
                         - self.OBJECT_ORIENTATION_OFFSET,
                     ),
                     rx=self.CORNER_RADIUS,
-                    class_="object",
-                    style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
+                    class_="object-orientation",
                 )
             )
         elif tile.object_orientation == ObjectOrientationChoices.RIGHT:
@@ -425,8 +421,7 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
                         - self.OBJECT_ORIENTATION_OFFSET,
                     ),
                     rx=self.CORNER_RADIUS,
-                    class_="object",
-                    style=f"fill: {fgcolor(tile.status.color)}; stroke: {fgcolor(tile.status.color)}",
+                    class_="object-orientation",
                 )
             )
 

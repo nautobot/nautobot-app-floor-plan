@@ -427,7 +427,6 @@ class FloorPlanTileForm(NautobotModelForm):
         query_params={
             "nautobot_floor_plan_floor_plan": "$floor_plan",
             "nautobot_floor_plan_has_floor_plan_tile": False,
-            "location": "$floor_plan__location",
         },
     )
     rack = DynamicModelChoiceField(
@@ -445,7 +444,7 @@ class FloorPlanTileForm(NautobotModelForm):
         query_params={
             "nautobot_floor_plan_floor_plan": "$floor_plan",
             "nautobot_floor_plan_has_floor_plan_tile": False,
-            "location": "$floor_plan__location",
+            "rack_group": "$rack_group",
         },
     )
     power_feed = DynamicModelChoiceField(
@@ -465,6 +464,8 @@ class FloorPlanTileForm(NautobotModelForm):
         "x_size",
         "y_size",
         "status",
+        "rack_group",
+        "object_orientation",
     ]
 
     class Meta:
@@ -475,11 +476,18 @@ class FloorPlanTileForm(NautobotModelForm):
         exclude = ["allocation_type", "on_group_tile"]  # pylint: disable=modelform-uses-exclude
 
     fieldsets = (
-        ("General", ("floor_plan", "x_origin", "y_origin", "x_size", "y_size", "status")),
-        ("Device", ("device", "object_orientation")),
-        ("Rack", ("rack", "rack_group", "object_orientation")),
-        ("Power Panel", ("power_panel", "rack_group", "object_orientation")),
-        ("Power Feed", ("power_feed", "object_orientation")),
+        (
+            "Floor Plan Tile",
+            (
+                "floor_plan",
+                "x_origin",
+                "y_origin",
+                "x_size",
+                "y_size",
+                "status",
+                "rack_group",
+            ),
+        ),
     )
 
     def __init__(self, *args, **kwargs):
