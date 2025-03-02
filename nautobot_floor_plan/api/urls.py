@@ -10,4 +10,5 @@ router = OrderedDefaultRouter()
 router.register("floor-plans", views.FloorPlanViewSet)
 router.register("floor-plan-tiles", views.FloorPlanTileViewSet)
 
+app_name = "nautobot_floor_plan-api"
 urlpatterns = router.urls
