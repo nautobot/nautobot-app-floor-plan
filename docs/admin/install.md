@@ -92,7 +92,7 @@ The app behavior can be customized with the following configuration settings:
 !!! note
     Default statuses are configured as follows:
 
-    ```python
+```python
     "default_statuses": {
         "FloorPlanTile": [
             {"name": "Active", "color": "4caf50"},
@@ -102,7 +102,7 @@ The app behavior can be customized with the following configuration settings:
             {"name": "Planned", "color": "00bcd4"},
         ],
     }
-    ```
+```
 
 ## Custom Labels
 

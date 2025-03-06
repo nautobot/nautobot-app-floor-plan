@@ -12,6 +12,8 @@ See [Getting Started with the App](./app_getting_started.md) for the basic workf
 
 ![Creating Custom Labels](../images/custom_axis_label_preview.png)
 
+## THESE TWO IMAGES NEED UPDATED
+
 ![Add Tile form](../images/add-tile-form.png)
 
 ![Populated floor plan](../images/floor-plan-populated.png)

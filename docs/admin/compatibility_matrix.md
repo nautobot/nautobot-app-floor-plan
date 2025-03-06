@@ -9,3 +9,7 @@ Because this App depends on Nautobot's `Location` data model, which was introduc
 | 2.1.X                       | 2.0.0                          | 2.2.99                        |
 | 2.2.X                       | 2.0.0                          | 2.2.99                        |
 | 2.3.X                       | 2.0.0                          | 2.99.99                       |
+| 2.4.X                       | 2.0.0                          | 2.99.99                       |
+| 2.5.X                       | 2.0.0                          | 2.99.99                       |
+| 2.6.X                       | 2.0.0                          | 2.99.99                       |
+| 2.7.X                       | 2.0.0                          | 2.99.99                       |

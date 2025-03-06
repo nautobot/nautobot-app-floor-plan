@@ -34,13 +34,13 @@ Clicking this button will open a standard Nautobot create/edit form. This form a
 
 - **Tile Width** and **Tile Depth**:
   Define the relative proportions of each tile when rendered in the Nautobot UI.
-    - You can use the default settings for a square grid.
-    - Alternatively, customize these parameters for a rectangular grid.
+  - You can use the default settings for a square grid.
+  - Alternatively, customize these parameters for a rectangular grid.
 
 - **Movable Tiles**:
   Determine if you want tiles to be movable once placed.
-    - This feature is a optional setting to assist with Custom Label creation
-    - Default: `"True"`
+  - This feature is a optional setting to assist with Custom Label creation
+  - Default: `"True"`
 
 ![Add Floor Plan form](../images/add-floor-plan-form.png)
 
@@ -146,47 +146,101 @@ After clicking **Create**, you will be presented with a newly rendered floor pla
 
 ### Tile management on the Floor Plan
 
+To add a tile, either click the:
+
+- Green **"+"** icon in the center of any rectangle in the grid.
+- The blue **"+ Add Tile"** button in the upper right of the floor plan.
+
 To edit information on a tile, either click the:
-* Yellow pencil button in the upper left to edit it.
-* Box within the tile to view the existing rack assigned.
-* Green **"+"** icon in the center of any rectangle in the grid.
-* The blue **"+ Add Tile"** button in the upper right of the floor plan.
 
-![Add Tile form part 1](../images/add-tile-form.png)
-
-
-### Floorplan Navigation
-
-If you've defined a large floor plan or have a small display, you can use your mouse wheel to zoom in for a better view. While zoomed in, click and drag to pan around the grid.
+- Yellow pencil button in the upper left to edit it.
+- Box within the tile to view the existing object assigned.
 
 ### Tile Options
 
 For each tile, you can:
 
 - **Assign a Status**: Choose from the predefined Statuses (e.g., "Active", "Reserved").
-- **Assign a Rack or RackGroup**: Specify the rack or rack group associated with the tile.
-- **Specify Rack Orientation**: Define the orientation of the rack relative to the floor plan.
+- **Assign a Object or RackGroup**: Specify the object or rack group associated with the tile.
+- **Specify Rack Orientation**: Define the orientation of the object relative to the floor plan.
 - **Adjust Tile Size**: Expand a tile to cover multiple spaces.
   - Useful for documenting larger-than-usual racks or marking sections of the floor plan as "Reserved" or "Unavailable."
 
 !!! note
-    Once a Rack has been placed on a **Floor Plan Tile** you cannot update the **Location** of the Rack until it has been removed from the Floor Plan or the Floor Plan has been deleted.
+    Once a Object has been placed on a **Floor Plan Tile** you cannot update the **Location** of the Object until it has been removed from the Floor Plan or the Floor Plan has been deleted.
+
+![Add Tile form part 1](../images/add-tile-form.png)
 
 ### Working with RackGroup and Status Tiles
 
 When tiles cover multiple spaces:
 
-- You can place racks within these tiles.
-- For RackGroup tiles, racks must be added to the appropriate RackGroup.
+- You can place objects within these tiles.
+- For RackGroup tiles, objects must be added to the appropriate RackGroup before they can be placed on a tile.
 - Tile size can be increased or decreased, as long as they do not overlap with other tiles.
+
+Device, Power Panels, Power Feeds and Devices can be assigned directly to tiles using the Floor plan tile form.
+
+![Add device to tile](../images/floorplan-tile-device.png)
+
+![Add power panel to tile](../images/floorplan-tile-powerpanel.png)
+
+![Add power feed to tile](../images/floorplan-tile-powerfeed.png)
+
+![Add rack to tile](../images/floorplan-tile-rack.png)
 
 ### Additional Tile Information
 
-When a rack is assigned to a tile, the display of the tile will also include:
+![Addtional Tile information and Tool tip](../images/floorplan-tile-tooltip.png)
 
-- **Tenant Information**: The tenant and tenant group associated with the rack.
+When a object is assigned to a tile, the display of the tile includes:
+
+- **Name**: The name of the object.
+- **Type**: The type of the object.
+
+Hovering your mouse over a tile will render a tooltip that will display specific information about the object.
+
+Device:
+
+- **Manufacturer**: The manufacturer of the device object.
+- **Model**: The model of the Device object.
+- **Serial**: The serial number of the device if there is one configured.
+
+Power Panel:
+
+- **Feeds**: The name of the feeds if any are connected to the panel.
+- **RackGroup**: Assigned RackGroup if there is one assigned to the panel.
+
+Power Feed:
+
+- **Panel**: The name of the Power Feed.
+- **Voltage**: The Voltage assigned to the PFeed.
+- **Amperage**: The Amperage assigned to the Feed.
+- **Phase**: The Phase of the Phase (single or three)
+
+Rack:
+
+- **Utilization**: The total utilization of the Rack. ie. 7/42 RU
+- **RackGroup**: Assigned RackGroup if there is one assigned to the rack.
+
+Common Data:
+
+- **Name**: The name of the object.
+- **Type**: The type of the object.
+- **Status**: The status of the object.
+- **Tenant**: Assigned tenant for the object if one is assigned.
+- **TenantGroup**: Assigned TenantGroup for the object if one is assigned.
 
 ![Populated floor plan](../images/floor-plan-populated.png)
+
+### Floorplan Navigation
+
+If you've defined a large floor plan or have a small display, you can use your mouse wheel to zoom in for a better view. While zoomed in, click and drag to pan around the grid.
+
+Additional you can use the Enable Box Zoom/Switch to Pan Mode button to left click and drag a zoom box while Zoom is enabled, or pan in any direction when the Pan is enable. The Reset View button will reset the view back to the original rendered floor plan.
+
+![Floor plan zoom box button](../images/floorplan-click-drag-zoom.png)
+![Floor plan zoomed in](../images/floorplan-zoomed.png)
 
 ### Resizing the Floor Plan
 
