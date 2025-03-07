@@ -863,7 +863,7 @@ def unittest_coverage(context):
 @task(pre=[unittest])
 def unittest_xml_coverage(context):
     """Produce an XML coverage report that can be ingested into other tools."""
-    produce_xml_cmd = "coverage xml --include 'nautobot_floor_plan/*'"
+    produce_xml_cmd = "coverage xml -o coverage.xml"
     run_command(context, produce_xml_cmd)
 
     # Since the container runs from a different working dir,

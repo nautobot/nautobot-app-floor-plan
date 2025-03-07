@@ -1,8 +1,7 @@
 """Extensions to Nautobot core models' filtering functionality."""
 
 import django_filters
-from nautobot.apps.filters import RelatedMembershipBooleanFilter
-from nautobot.extras.plugins import FilterExtension
+from nautobot.apps.filters import FilterExtension, RelatedMembershipBooleanFilter
 
 from nautobot_floor_plan import models
 from nautobot_floor_plan.models import FloorPlan
