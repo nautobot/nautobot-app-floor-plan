@@ -34,13 +34,13 @@ Clicking this button will open a standard Nautobot create/edit form. This form a
 
 - **Tile Width** and **Tile Depth**:
   Define the relative proportions of each tile when rendered in the Nautobot UI.
-  - You can use the default settings for a square grid.
-  - Alternatively, customize these parameters for a rectangular grid.
+    - You can use the default settings for a square grid.
+    - Alternatively, customize these parameters for a rectangular grid.
 
 - **Movable Tiles**:
   Determine if you want tiles to be movable once placed.
-  - This feature is a optional setting to assist with Custom Label creation
-  - Default: `"True"`
+    - This feature is a optional setting to assist with Custom Label creation
+    - Default: `"True"`
 
 ![Add Floor Plan form](../images/add-floor-plan-form.png)
 
@@ -167,19 +167,19 @@ For each tile, you can:
   - Useful for documenting larger-than-usual racks or marking sections of the floor plan as "Reserved" or "Unavailable."
 
 !!! note
-    Once a Object has been placed on a **Floor Plan Tile** you cannot update the **Location** of the Object until it has been removed from the Floor Plan or the Floor Plan has been deleted.
+    Once a Object (Device, Power Panel, Power Feed, or Rack) has been placed on a **Floor Plan Tile** you cannot update the **Location** of the Object until it has been removed from the Floor Plan or the Floor Plan has been deleted.
 
 ![Add Tile form part 1](../images/add-tile-form.png)
 
 ### Working with RackGroup and Status Tiles
+
+Device, Power Panels, Power Feeds and Racks can be assigned directly to tiles using the Floor plan tile form.
 
 When tiles cover multiple spaces:
 
 - You can place objects within these tiles.
 - For RackGroup tiles, objects must be added to the appropriate RackGroup before they can be placed on a tile.
 - Tile size can be increased or decreased, as long as they do not overlap with other tiles.
-
-Device, Power Panels, Power Feeds and Devices can be assigned directly to tiles using the Floor plan tile form.
 
 ![Add device to tile](../images/floorplan-tile-device.png)
 
