@@ -214,8 +214,8 @@ Power Panel:
 Power Feed:
 
 - **Panel**: The name of the Power Feed.
-- **Voltage**: The Voltage assigned to the PFeed.
-- **Amperage**: The Amperage assigned to the Feed.
+- **Voltage**: The Voltage assigned to the Power Feed.
+- **Amperage**: The Amperage assigned to the Power Feed.
 - **Phase**: The Phase of the Phase (single or three)
 
 Rack:
