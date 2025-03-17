@@ -4,7 +4,6 @@ import django_filters
 from nautobot.apps.filters import FilterExtension, RelatedMembershipBooleanFilter
 
 from nautobot_floor_plan import models
-from nautobot_floor_plan.models import FloorPlan
 
 
 class RackFilterExtension(FilterExtension):
@@ -46,7 +45,7 @@ class PowerPanelFilterExtension(FilterExtension):
 
     filterset_fields = {
         "nautobot_floor_plan_floor_plan": django_filters.ModelChoiceFilter(
-            queryset=FloorPlan.objects.all(),
+            queryset=models.FloorPlan.objects.all(),
             field_name="location__floor_plan",
             label="Floor plan",
         ),
@@ -64,7 +63,7 @@ class PowerFeedFilterExtension(FilterExtension):
 
     filterset_fields = {
         "nautobot_floor_plan_floor_plan": django_filters.ModelChoiceFilter(
-            queryset=FloorPlan.objects.all(),
+            queryset=models.FloorPlan.objects.all(),
             field_name="power_panel__location__floor_plan",
             label="Floor plan",
         ),
@@ -82,7 +81,7 @@ class DeviceFilterExtension(FilterExtension):
 
     filterset_fields = {
         "nautobot_floor_plan_floor_plan": django_filters.ModelChoiceFilter(
-            queryset=FloorPlan.objects.all(),
+            queryset=models.FloorPlan.objects.all(),
             field_name="location__floor_plan",
             label="Floor plan",
         ),

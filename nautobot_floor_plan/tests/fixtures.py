@@ -23,17 +23,21 @@ def create_prerequisites(floor_count=4):
     location_type_site = LocationType.objects.create(name="Site")
     parent_location_type = LocationType.objects.create(name="Building")
     location_type = LocationType.objects.create(name="Floor", parent=parent_location_type)
-    location_type.content_types.add(ContentType.objects.get_for_model(Device))
-    location_type.content_types.add(ContentType.objects.get_for_model(PowerFeed))
-    location_type.content_types.add(ContentType.objects.get_for_model(PowerPanel))
-    location_type.content_types.add(ContentType.objects.get_for_model(Rack))
-    location_type.content_types.add(ContentType.objects.get_for_model(RackGroup))
+    location_type.content_types.add(
+        ContentType.objects.get_for_model(Device),
+        ContentType.objects.get_for_model(PowerFeed),
+        ContentType.objects.get_for_model(PowerPanel),
+        ContentType.objects.get_for_model(Rack),
+        ContentType.objects.get_for_model(RackGroup),
+    )
 
     active_status = Status.objects.get(name="Active")
-    active_status.content_types.add(ContentType.objects.get_for_model(FloorPlanTile))
-    active_status.content_types.add(ContentType.objects.get_for_model(Device))
-    active_status.content_types.add(ContentType.objects.get_for_model(PowerFeed))
-    active_status.content_types.add(ContentType.objects.get_for_model(Rack))
+    active_status.content_types.add(
+        ContentType.objects.get_for_model(FloorPlanTile),
+        ContentType.objects.get_for_model(Device),
+        ContentType.objects.get_for_model(PowerFeed),
+        ContentType.objects.get_for_model(Rack),
+    )
 
     # Create manufacturer
     manufacturer = Manufacturer.objects.create(name="Test Manufacturer")

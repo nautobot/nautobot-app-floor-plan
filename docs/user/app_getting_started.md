@@ -216,7 +216,7 @@ Power Feed:
 - **Panel**: The name of the Power Feed.
 - **Voltage**: The Voltage assigned to the Power Feed.
 - **Amperage**: The Amperage assigned to the Power Feed.
-- **Phase**: The Phase of the Phase (single or three)
+- **Phase**: The Phase of the Feed (single or three)
 
 Rack:
 
@@ -229,7 +229,7 @@ Common Data:
 - **Type**: The type of the object.
 - **Status**: The status of the object.
 - **Tenant**: Assigned tenant for the object if one is assigned.
-- **TenantGroup**: Assigned TenantGroup for the object if one is assigned.
+- **TenantGroup**: The TenantGroup of the assigned Tenant if one is assigned.
 
 ![Populated floor plan](../images/floor-plan-populated.png)
 

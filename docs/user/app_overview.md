@@ -7,7 +7,7 @@ This document provides an overview of the App including critical information and
 
 ## Description
 
-This App is designed to extend Nautobot's built-in Location data model to allow you to define a Floor Plan for each relevant Location, consisting of a grid of Tiles, each of which has coordinates, an optional Status, and an optional association to a Object belonging to that Location in order to show the Object's position within the Floor Plan. The Floor Plan will be displayed in the Nautobot UI as a rendered SVG with built in pan/zoom capabilities using your mouse either using the shift mouse wheel or a click and left click drag box.
+This App is designed to extend Nautobot's built-in Location data model to allow you to define a Floor Plan for each relevant Location, consisting of a grid of Tiles, each of which has coordinates, an optional Status, and an optional association to an Object belonging to that Location in order to show the Object's position within the Floor Plan. The Floor Plan will be displayed in the Nautobot UI as a rendered SVG with built-in pan/zoom capabilities using your mouse either using the shift mouse wheel or a click and left click drag box.
 
 ## Audience (User Personas) - Who should use this App?
 
@@ -21,9 +21,9 @@ This App is primarily developed and maintained by Network to Code, LLC.
 
 Included is a non-exhaustive list of capabilities beyond a standard MVC (model view controller) paradigm.
 
-- Provides visualization of objects (devices, power panels, power feeds and racks) on a floor map.
-- Provides visualization of power panels, and racks being assigned to a rack group on a floor map.
-- Provides visualization of tenant and tenant groups for objects on a floor map.
+- Provides visualization of Objects (Devices, Power Panels, Power Feeds and Racks) on a floor map.
+- Provides visualization of Power Panels, and Racks being assigned to a Rack Group on a floor map.
+- Provides visualization of Tenant and Tenant Groups for objects on a floor map.
 - Provides easy navigation from floor map to object and subsequently device from Rack.
 - Provides the ability to assign Objects to coordinates / tiles.
   - From the Floor Plan UI
@@ -32,8 +32,8 @@ Included is a non-exhaustive list of capabilities beyond a standard MVC (model v
 - Provides ability to map status to color for many use cases.
   - Leveraging this you can depict hot / cold aisle.
 - Provides the ability to set the direction of the Objects and show up.
-- Provides the ability to span multiple adjacent tiles by a single object.
-- Provides the ability to place objects in a group that spans multiple tiles.
+- Provides the ability to span multiple adjacent tiles by a single Object.
+- Provides the ability to place Objects in a group that spans multiple tiles.
 - Provides custom layout size in any rectangular shape using X & Y axis.
 - Provides the ability to resize the Floor Plan until Tiles have been placed. Once a Tile has been placed the Floor Plan cannot be resized until the Tiles have been removed.
 - Provide the ability to make Tile objects movable or immovable.

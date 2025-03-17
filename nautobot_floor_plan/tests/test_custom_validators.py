@@ -69,7 +69,9 @@ class DeviceValidatorTest(TestCase):
         self.device.location = self.location2  # Attempt to change the location
         with self.assertRaises(ValidationError) as cm:
             self.device.validated_save()  # Triggers the custom validator
-        self.assertIn("Cannot move Device as it is currently installed in a FloorPlan.", str(cm.exception))
+        self.assertIn(
+            f"Cannot move Device {self.device} as it is currently installed in a FloorPlan", str(cm.exception)
+        )
 
     def test_location_unchanged_allowed(self):
         # No exception should be raised when location remains unchanged

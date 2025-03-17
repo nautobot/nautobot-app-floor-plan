@@ -380,7 +380,12 @@ class DeviceValidator(CustomValidator):
                 original_instance.location_id != device.location_id
                 and models.FloorPlanTile.objects.filter(device=device).exists()
             ):
-                self.validation_error({"location": "Cannot move Device as it is currently installed in a FloorPlan."})
+                floorplan = models.FloorPlanTile.objects.filter(device=device).first()
+                self.validation_error(
+                    {
+                        "location": f"Cannot move Device {device} as it is currently installed in a FloorPlan {floorplan}."
+                    }
+                )
 
 
 class RackValidator(CustomValidator):

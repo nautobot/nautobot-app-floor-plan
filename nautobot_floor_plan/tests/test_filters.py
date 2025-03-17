@@ -89,14 +89,15 @@ class TestFloorPlanTileFilterSet(TestCase):
             for y in range(1, floor_plan.y_size + 1):
                 for x in range(1, floor_plan.x_size + 1):
                     if (x + y) % 2 == 0:
+                        rack_group = RackGroup.objects.create(
+                            name=f"RackGroup ({x}, {y}) for floor {floor_plan.location}",
+                            location=floor_plan.location,
+                        )
                         rack = Rack.objects.create(
                             name=f"Rack ({x}, {y}) for floor {floor_plan.location}",
                             status=cls.active_status,
                             location=floor_plan.location,
-                        )
-                        rack_group = RackGroup.objects.create(
-                            name=f"RackGroup ({x}, {y}) for floor {floor_plan.location}",
-                            location=floor_plan.location,
+                            rack_group=rack_group,
                         )
                     else:
                         rack = None

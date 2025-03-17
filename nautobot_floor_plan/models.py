@@ -407,8 +407,6 @@ class FloorPlanTile(PrimaryModel):
             self.allocation_type = AllocationTypeChoices.RACKGROUP
         if any([self.rack, self.device, self.power_panel, self.power_feed]):
             self.allocation_type = AllocationTypeChoices.OBJECT
-            if not self.on_group_tile:
-                self.rack_group = None
 
         # Ensure new tiles with just a status get an allocation type
         if not self.allocation_type and self.status:
@@ -470,7 +468,7 @@ class FloorPlanTile(PrimaryModel):
         self._validate_single_object_assignment()
 
     def _validate_installed_objects(self):
-        """Validate that devices and power feeds aren't installed in racks."""
+        """Validate that devices aren't installed in racks."""
         if self.device and self.device.rack:
             raise ValidationError(
                 {
@@ -495,12 +493,14 @@ class FloorPlanTile(PrimaryModel):
                     if obj.power_panel.location != self.floor_plan.location:
                         raise ValidationError(
                             {
-                                obj_type: f"Must belong to Location {self.floor_plan.location}, not Location {obj.power_panel.location}"
+                                obj_type: f"{obj.power_panel} must belong to Location {self.floor_plan.location}, not Location {obj.power_panel.location}"
                             }
                         )
                 elif hasattr(obj, "location") and obj.location != self.floor_plan.location:
                     raise ValidationError(
-                        {obj_type: f"Must belong to Location {self.floor_plan.location}, not Location {obj.location}"}
+                        {
+                            obj_type: f"{obj} must belong to Location {self.floor_plan.location}, not Location {obj.location}"
+                        }
                     )
 
     def _validate_tile_overlaps(self):

@@ -4,7 +4,7 @@ from nautobot.apps.choices import ChoiceSet
 
 
 class ObjectOrientationChoices(ChoiceSet):
-    """Choices for the orientation of a Rack relative to its associated FloorPlan."""
+    """Choices for the orientation of a FloorPlan-eligible Object relative to its associated FloorPlan."""
 
     UP = "up"
     DOWN = "down"

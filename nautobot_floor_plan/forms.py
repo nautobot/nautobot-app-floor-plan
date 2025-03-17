@@ -5,8 +5,10 @@
 """Forms for nautobot_floor_plan."""
 
 import json
+import logging
 
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms import formset_factory
 from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.forms import (
@@ -25,6 +27,8 @@ from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.utils import general
 from nautobot_floor_plan.utils.custom_validators import RangeValidator, ValidateNotZero
 from nautobot_floor_plan.utils.label_converters import LabelToPositionConverter, PositionToLabelConverter
+
+logger = logging.getLogger(__name__)
 
 
 class FloorPlanForm(NautobotModelForm):
@@ -503,7 +507,13 @@ class FloorPlanTileForm(NautobotModelForm):
         if not fp_id:
             return
 
-        fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
+        try:
+            fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
+        except ObjectDoesNotExist:
+            logger.error("Floor plan with ID %s does not exist", fp_id)
+            self.add_error("floor_plan", f"Floor plan with ID {fp_id} does not exist")
+            return
+
         self._configure_axis_settings(fp_obj)
         self._handle_origin_values(fp_obj)
 
@@ -612,7 +622,13 @@ class FloorPlanTileForm(NautobotModelForm):
         if not fp_id:
             return 0
 
-        fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
+        try:
+            fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
+        except ObjectDoesNotExist:
+            logger.error("Floor plan with ID %s does not exist", fp_id)
+            self.add_error("floor_plan", f"Floor plan with ID {fp_id} does not exist")
+            return 0
+
         value = self.cleaned_data.get(field_name)
 
         # Determine if letters are being used for x or y axis labels
