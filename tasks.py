@@ -859,6 +859,13 @@ def unittest_coverage(context):
     run_command(context, command)
 
 
+@task(pre=[unittest])
+def unittest_xml_coverage(context):
+    """Produce an XML coverage report that can be ingested into other tools."""
+    produce_xml_cmd = "coverage xml"
+    run_command(context, produce_xml_cmd)
+
+
 @task(
     help={
         "failfast": "fail as soon as a single test fails don't run the entire test suite. (default: False)",
@@ -888,10 +895,10 @@ def tests(context, failfast=False, keepdb=False, lint_only=False):
     print("Checking app config schema...")
     validate_app_config(context)
     if not lint_only:
-        print("Running unit tests...")
-        unittest(context, failfast=failfast, keepdb=keepdb)
         print("Running integ tests...")
         unittest(context, failfast=failfast, keepdb=keepdb, tags=["integration"])
+        print("Running unit tests...")
+        unittest(context, failfast=failfast, keepdb=keepdb)
         unittest_coverage(context)
     print("All tests have passed!")
 

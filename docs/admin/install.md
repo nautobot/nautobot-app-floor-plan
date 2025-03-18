@@ -93,15 +93,15 @@ The app behavior can be customized with the following configuration settings:
     Default statuses are configured as follows:
 
     ```python
-    "default_statuses": {
-        "FloorPlanTile": [
-            {"name": "Active", "color": "4caf50"},
-            {"name": "Reserved", "color": "00bcd4"},
-            {"name": "Decommissioning", "color": "ffc107"},
-            {"name": "Unavailable", "color": "111111"},
-            {"name": "Planned", "color": "00bcd4"},
-        ],
-    }
+        "default_statuses": {
+            "FloorPlanTile": [
+                {"name": "Active", "color": "4caf50"},
+                {"name": "Reserved", "color": "00bcd4"},
+                {"name": "Decommissioning", "color": "ffc107"},
+                {"name": "Unavailable", "color": "111111"},
+                {"name": "Planned", "color": "00bcd4"},
+            ],
+        }
     ```
 
 ## Custom Labels

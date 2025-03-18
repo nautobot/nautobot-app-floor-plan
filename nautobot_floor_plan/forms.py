@@ -5,8 +5,10 @@
 """Forms for nautobot_floor_plan."""
 
 import json
+import logging
 
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms import formset_factory
 from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.forms import (
@@ -19,12 +21,14 @@ from nautobot.apps.forms import (
     TagsBulkEditFormMixin,
     add_blank_choice,
 )
-from nautobot.dcim.models import Location, Rack, RackGroup
+from nautobot.dcim.models import Device, Location, PowerFeed, PowerPanel, Rack, RackGroup
 
 from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.utils import general
 from nautobot_floor_plan.utils.custom_validators import RangeValidator, ValidateNotZero
 from nautobot_floor_plan.utils.label_converters import LabelToPositionConverter, PositionToLabelConverter
+
+logger = logging.getLogger(__name__)
 
 
 class FloorPlanForm(NautobotModelForm):
@@ -411,6 +415,24 @@ class FloorPlanTileForm(NautobotModelForm):
     """FloorPlanTile creation/edit form."""
 
     floor_plan = DynamicModelChoiceField(queryset=models.FloorPlan.objects.all())
+    rack_group = DynamicModelChoiceField(
+        queryset=RackGroup.objects.all(),
+        required=False,
+        query_params={"nautobot_floor_plan_floor_plan": "$floor_plan", "racks": "$rack"},
+    )
+
+    x_origin = forms.CharField()
+    y_origin = forms.CharField()
+
+    # Object selection fields (only one will be used per tab)
+    device = DynamicModelChoiceField(
+        queryset=Device.objects.all(),
+        required=False,
+        query_params={
+            "nautobot_floor_plan_floor_plan": "$floor_plan",
+            "nautobot_floor_plan_has_floor_plan_tile": False,
+        },
+    )
     rack = DynamicModelChoiceField(
         queryset=Rack.objects.all(),
         required=False,
@@ -420,13 +442,24 @@ class FloorPlanTileForm(NautobotModelForm):
             "rack_group": "$rack_group",
         },
     )
-    rack_group = DynamicModelChoiceField(
-        queryset=RackGroup.objects.all(),
+    power_panel = DynamicModelChoiceField(
+        queryset=PowerPanel.objects.all(),
         required=False,
-        query_params={"nautobot_floor_plan_floor_plan": "$floor_plan", "racks": "$rack"},
+        query_params={
+            "nautobot_floor_plan_floor_plan": "$floor_plan",
+            "nautobot_floor_plan_has_floor_plan_tile": False,
+            "rack_group": "$rack_group",
+        },
     )
-    x_origin = forms.CharField()
-    y_origin = forms.CharField()
+    power_feed = DynamicModelChoiceField(
+        queryset=PowerFeed.objects.all(),
+        required=False,
+        query_params={
+            "nautobot_floor_plan_floor_plan": "$floor_plan",
+            "nautobot_floor_plan_has_floor_plan_tile": False,
+            "power_panel__location": "$floor_plan__location",
+        },
+    )
 
     field_order = [
         "floor_plan",
@@ -435,9 +468,8 @@ class FloorPlanTileForm(NautobotModelForm):
         "x_size",
         "y_size",
         "status",
-        "rack",
         "rack_group",
-        "rack_orientation",
+        "object_orientation",
     ]
 
     class Meta:
@@ -446,6 +478,83 @@ class FloorPlanTileForm(NautobotModelForm):
         model = models.FloorPlanTile
         fields = "__all__"
         exclude = ["allocation_type", "on_group_tile"]  # pylint: disable=modelform-uses-exclude
+
+    fieldsets = (
+        (
+            "Floor Plan Tile",
+            (
+                "floor_plan",
+                "x_origin",
+                "y_origin",
+                "x_size",
+                "y_size",
+                "status",
+                "rack_group",
+            ),
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the form, handling both the object-type field setup and custom label conversions."""
+        super().__init__(*args, **kwargs)
+        self._setup_custom_label_conversions()
+
+    def _setup_custom_label_conversions(self):
+        """Setup custom label conversions and handle axis letter configurations."""
+        self.axis_letters = {"x": False, "y": False}
+
+        fp_id = self.initial.get("floor_plan") or self.data.get("floor_plan")
+        if not fp_id:
+            return
+
+        try:
+            fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
+        except ObjectDoesNotExist:
+            logger.error("Floor plan with ID %s does not exist", fp_id)
+            self.add_error("floor_plan", f"Floor plan with ID {fp_id} does not exist")
+            return
+
+        self._configure_axis_settings(fp_obj)
+        self._handle_origin_values(fp_obj)
+
+    def _configure_axis_settings(self, fp_obj):
+        """Configure axis settings and handle immovable tiles."""
+        self.axis_letters["x"] = fp_obj.x_axis_labels == choices.AxisLabelsChoices.LETTERS
+        self.axis_letters["y"] = fp_obj.y_axis_labels == choices.AxisLabelsChoices.LETTERS
+
+        if not fp_obj.is_tile_movable:
+            self.fields["x_origin"].disabled = True
+            self.fields["y_origin"].disabled = True
+
+    def _handle_origin_values(self, fp_obj):
+        """Handle origin values for both axes."""
+        if not (self.instance.x_origin or self.instance.y_origin):
+            return
+
+        for axis in ["X", "Y"]:
+            self._process_axis_origin(fp_obj, axis)
+
+    def _process_axis_origin(self, fp_obj, axis):
+        """Process origin value for a specific axis."""
+        lower_axis = axis.lower()
+        origin_value = getattr(self.instance, f"{lower_axis}_origin")
+
+        if fp_obj.custom_labels.filter(axis=axis).exists():
+            converter = PositionToLabelConverter(origin_value, axis, fp_obj)
+            if label := converter.convert():
+                self.initial[f"{lower_axis}_origin"] = label
+        else:
+            value = (
+                general.grid_number_to_letter(origin_value)
+                if self.axis_letters[lower_axis]
+                else self.initial.get(f"{lower_axis}_origin")
+            )
+            self.initial[f"{lower_axis}_origin"] = general.axis_init_label_conversion(
+                getattr(fp_obj, f"{lower_axis}_origin_seed"),
+                value,
+                getattr(fp_obj, f"{lower_axis}_axis_step"),
+                self.axis_letters[lower_axis],
+            )
 
     def _convert_label_to_position(self, value, axis, fp_obj):
         """Wrapper for the LabelToPositionConverter."""
@@ -492,47 +601,6 @@ class FloorPlanTileForm(NautobotModelForm):
             return self._clean_custom_origin("y_origin", "Y")
         return self._clean_origin("y_origin", "Y")
 
-    def __init__(self, *args, **kwargs):
-        """Initialize the form and handle custom label conversions."""
-        super().__init__(*args, **kwargs)
-        self.axis_letters = {"x": False, "y": False}
-
-        if fp_id := self.initial.get("floor_plan") or self.data.get("floor_plan"):
-            fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
-            self.axis_letters["x"] = fp_obj.x_axis_labels == choices.AxisLabelsChoices.LETTERS
-            self.axis_letters["y"] = fp_obj.y_axis_labels == choices.AxisLabelsChoices.LETTERS
-            if not fp_obj.is_tile_movable:
-                self.fields["x_origin"].disabled = True
-                self.fields["y_origin"].disabled = True
-
-            if self.instance.x_origin or self.instance.y_origin:
-                if fp_obj.custom_labels.filter(axis="X").exists():
-                    converter = PositionToLabelConverter(self.instance.x_origin, "X", fp_obj)
-                    if label := converter.convert():
-                        self.initial["x_origin"] = label
-                else:
-                    self.initial["x_origin"] = general.axis_init_label_conversion(
-                        fp_obj.x_origin_seed,
-                        general.grid_number_to_letter(self.instance.x_origin)
-                        if self.axis_letters["x"]
-                        else self.initial.get("x_origin"),
-                        fp_obj.x_axis_step,
-                        self.axis_letters["x"],
-                    )
-                if fp_obj.custom_labels.filter(axis="Y").exists():
-                    converter = PositionToLabelConverter(self.instance.y_origin, "Y", fp_obj)
-                    if label := converter.convert():
-                        self.initial["y_origin"] = label
-                else:
-                    self.initial["y_origin"] = general.axis_init_label_conversion(
-                        fp_obj.y_origin_seed,
-                        general.grid_number_to_letter(self.instance.y_origin)
-                        if self.axis_letters["y"]
-                        else self.initial.get("y_origin"),
-                        fp_obj.y_axis_step,
-                        self.axis_letters["y"],
-                    )
-
     def letter_validator(self, field, value, axis):
         """Validate that origin uses combination of letters."""
         if not str(value).isupper():
@@ -554,7 +622,13 @@ class FloorPlanTileForm(NautobotModelForm):
         if not fp_id:
             return 0
 
-        fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
+        try:
+            fp_obj = self.fields["floor_plan"].queryset.get(id=fp_id)
+        except ObjectDoesNotExist:
+            logger.error("Floor plan with ID %s does not exist", fp_id)
+            self.add_error("floor_plan", f"Floor plan with ID {fp_id} does not exist")
+            return 0
+
         value = self.cleaned_data.get(field_name)
 
         # Determine if letters are being used for x or y axis labels

@@ -2,7 +2,7 @@
 
 import django_filters
 from nautobot.apps.filters import NaturalKeyOrPKMultipleChoiceFilter, NautobotFilterSet, SearchFilter
-from nautobot.dcim.models import Location, Rack, RackGroup
+from nautobot.dcim.models import Device, Location, PowerFeed, PowerPanel, Rack, RackGroup
 
 from nautobot_floor_plan import models
 
@@ -56,6 +56,21 @@ class FloorPlanTileFilterSet(NautobotFilterSet):
         label="Rack (name or ID)",
     )
 
+    device = NaturalKeyOrPKMultipleChoiceFilter(
+        queryset=Device.objects.all(),
+        to_field_name="name",
+        label="Device (name or ID)",
+    )
+    power_panel = NaturalKeyOrPKMultipleChoiceFilter(
+        queryset=PowerPanel.objects.all(),
+        to_field_name="name",
+        label="Power Panel (name or ID)",
+    )
+    power_feed = NaturalKeyOrPKMultipleChoiceFilter(
+        queryset=PowerFeed.objects.all(),
+        to_field_name="name",
+        label="Power Feed (name or ID)",
+    )
     rack_group = NaturalKeyOrPKMultipleChoiceFilter(
         queryset=RackGroup.objects.all(),
         to_field_name="name",
