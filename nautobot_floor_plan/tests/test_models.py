@@ -496,7 +496,7 @@ class TestFloorPlanTile(TestCase):
             y_origin=2,
             rack_group=self._test_data["valid_rack_group"],
         )
-        tile.clean()
+        tile.validated_save()
         self.assertEqual(tile.allocation_type, models.AllocationTypeChoices.RACKGROUP)
 
     def test_allocation_type_assignment_object(self):
@@ -515,7 +515,7 @@ class TestFloorPlanTile(TestCase):
             y_origin=2,
             rack=rack,
         )
-        tile.clean()
+        tile.validated_save()
         self.assertEqual(tile.allocation_type, models.AllocationTypeChoices.OBJECT)
 
     def test_allocation_type_assignment_status_only(self):
@@ -526,7 +526,7 @@ class TestFloorPlanTile(TestCase):
             x_origin=2,
             y_origin=2,
         )
-        tile.clean()
+        tile.validated_save()
         self.assertEqual(tile.allocation_type, models.AllocationTypeChoices.RACKGROUP)
 
     def test_rack_on_rackgroup_tile_valid(self):
@@ -558,7 +558,7 @@ class TestFloorPlanTile(TestCase):
             y_origin=2,
             rack=rack,
         )
-        rack_tile.clean()  # Should not raise ValidationError
+        rack_tile.validated_save()  # Should not raise ValidationError
         self.assertTrue(rack_tile.on_group_tile)
         self.assertEqual(rack_tile.rack_group, self._test_data["valid_rack_group"])
 
@@ -597,7 +597,9 @@ class TestFloorPlanTile(TestCase):
             y_origin=2,
             rack=rack,
         )
-        with self.assertRaises(ValidationError):
+        with self.assertRaisesRegex(
+            ValidationError, "Object tile with Rack .* cannot overlap with RackGroup tile for different group"
+        ):
             rack_tile.clean()
 
     def test_object_tile_within_rackgroup_bounds(self):
@@ -608,21 +610,33 @@ class TestFloorPlanTile(TestCase):
             status=self.status,
             x_origin=2,
             y_origin=2,
-            x_size=2,
-            y_size=2,
+            x_size=1,
+            y_size=1,
             rack_group=self._test_data["valid_rack_group"],
             allocation_type=models.AllocationTypeChoices.RACKGROUP,
+        ).validated_save()
+
+        # Create a rack in the correct location for this test
+        rack = Rack.objects.create(
+            name="Test Rack in Floor 4",
+            status=self.status,
+            location=self.floor_plans[3].location,
         )
 
         # Try to create an object tile that extends beyond the rack group tile
         object_tile = models.FloorPlanTile(
             floor_plan=self.floor_plans[3],
             status=self.status,
-            x_origin=1,  # Extends beyond the rack group tile
+            x_origin=2,
             y_origin=2,
-            rack=self.rack,
+            x_size=2,
+            y_size=3,
+            rack=rack,
         )
-        with self.assertRaises(ValidationError):
+
+        with self.assertRaisesRegex(
+            ValidationError, "Object tile must not extend beyond the boundary of the rack group tile"
+        ):
             object_tile.clean()
 
     def test_rackgroup_tiles_cannot_overlap(self):
@@ -652,7 +666,8 @@ class TestFloorPlanTile(TestCase):
             rack_group=other_rack_group,
             allocation_type=models.AllocationTypeChoices.RACKGROUP,
         )
-        with self.assertRaises(ValidationError):
+
+        with self.assertRaisesRegex(ValidationError, "RackGroup tiles cannot overlap"):
             overlapping_tile.clean()
 
     def test_object_tiles_cannot_overlap(self):
@@ -688,7 +703,8 @@ class TestFloorPlanTile(TestCase):
             device=device,
             allocation_type=models.AllocationTypeChoices.OBJECT,
         )
-        with self.assertRaises(ValidationError):
+
+        with self.assertRaisesRegex(ValidationError, "Object tiles cannot overlap"):
             overlapping_tile.clean()
 
 
@@ -747,7 +763,7 @@ class TestFloorPlanTilePower(TestCase):
             power_feed=power_feed,
             allocation_type=models.AllocationTypeChoices.OBJECT,
         )
-        with self.assertRaises(ValidationError):
+        with self.assertRaisesRegex(ValidationError, "Object tiles cannot overlap"):
             feed_tile_overlapping.clean()
 
         # Place power feed on a different tile - should succeed
@@ -781,7 +797,7 @@ class TestFloorPlanTilePower(TestCase):
             device=device,
             allocation_type=models.AllocationTypeChoices.OBJECT,
         )
-        with self.assertRaises(ValidationError):
+        with self.assertRaisesRegex(ValidationError, "Object tiles cannot overlap"):
             device_tile.clean()
 
     def test_power_panel_with_rack_group(self):
@@ -840,5 +856,5 @@ class TestFloorPlanTilePower(TestCase):
             power_panel=other_power_panel,
             allocation_type=models.AllocationTypeChoices.OBJECT,
         )
-        with self.assertRaises(ValidationError):
-            invalid_panel_tile.validated_save()
+        with self.assertRaisesRegex(ValidationError, "Object tiles cannot overlap"):
+            invalid_panel_tile.clean()

@@ -356,7 +356,7 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
         self._draw_object_text(drawing, tile, link, origin)
 
         # Add buttons for editing and deleting the tile definition
-        if tile.on_group_tile is True:
+        if tile.on_group_tile:
             self._draw_edit_delete_button(drawing, tile, self.OBJECT_BUTTON_OFFSET, self.GRID_OFFSET)
 
     def _draw_object_orientation(self, drawing, tile, link, origin):
@@ -503,10 +503,10 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
         elif isinstance(obj, Device):
             data.update(
                 {
-                    "Manufacturer": obj.device_type.manufacturer.name if obj.device_type else None,
-                    "Model": obj.device_type.model if obj.device_type else None,
-                    "Serial": obj.serial,
-                    "Asset_tag": obj.asset_tag,
+                    "Manufacturer": obj.device_type.manufacturer.name,
+                    "Model": obj.device_type.model,
+                    "Serial": obj.serial if obj.serial else None,
+                    "Asset_tag": obj.asset_tag if obj.asset_tag else None,
                 }
             )
 
@@ -523,8 +523,6 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
             data.update(
                 {
                     "Panel": obj.power_panel.name,
-                    "Status": obj.status.name if obj.status else None,
-                    "Type": obj.type,
                     "Voltage": f"{obj.voltage}V" if obj.voltage else None,
                     "Amperage": f"{obj.amperage}A" if obj.amperage else None,
                     "Phase": f"{obj.phase}-phase" if obj.phase else None,

@@ -23,8 +23,8 @@ Included is a non-exhaustive list of capabilities beyond a standard MVC (model v
 
 - Provides visualization of Objects (Devices, Power Panels, Power Feeds and Racks) on a floor map.
 - Provides visualization of Power Panels, and Racks being assigned to a Rack Group on a floor map.
-- Provides visualization of Tenant and Tenant Groups for objects on a floor map.
-- Provides easy navigation from floor map to object and subsequently device from Rack.
+- Provides visualization of Tenant and Tenant Groups for Objects on a floor map.
+- Provides easy navigation from floor map to Object and subsequently device from Rack.
 - Provides the ability to assign Objects to coordinates / tiles.
   - From the Floor Plan UI
   - From the Object UI.
@@ -36,7 +36,7 @@ Included is a non-exhaustive list of capabilities beyond a standard MVC (model v
 - Provides the ability to place Objects in a group that spans multiple tiles.
 - Provides custom layout size in any rectangular shape using X & Y axis.
 - Provides the ability to resize the Floor Plan until Tiles have been placed. Once a Tile has been placed the Floor Plan cannot be resized until the Tiles have been removed.
-- Provide the ability to make Tile objects movable or immovable.
+- Provide the ability to make Tile Objects movable or immovable.
 - Provides the ability to choose Numbers or Letters for grid labels.
 - Provides the ability to define custom labels for grid labels.
 - Provides the ability for a user to define a specific number or letter as a starting point for grid labels.

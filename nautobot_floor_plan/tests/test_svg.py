@@ -7,10 +7,9 @@ from django.test import TestCase
 from nautobot_floor_plan.choices import ObjectOrientationChoices
 from nautobot_floor_plan.svg import FloorPlanSVG
 
-# pylint: disable=protected-access
+# pylint: disable=protected-access,too-many-instance-attributes
 
 
-@patch("nautobot_floor_plan.svg.reverse", return_value="/mock/url/")
 class FloorPlanSVGTestCase(TestCase):
     """Test cases for FloorPlanSVG class."""
 
@@ -39,17 +38,26 @@ class FloorPlanSVGTestCase(TestCase):
         # Mock drawing
         self.drawing = MagicMock()
 
-    def test_setup_drawing(self, _):
-        """Test the _setup_drawing method."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
+        # Start the patch for reverse
+        self.reverse_patcher = patch("nautobot_floor_plan.svg.reverse", return_value="/mock/url/")
+        self.mock_reverse = self.reverse_patcher.start()
 
+        # Create the SVG instance once with the patch applied
+        self.svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
+
+    def tearDown(self):
+        """Clean up test environment."""
+        # Stop the patch
+        self.reverse_patcher.stop()
+
+    def test_setup_drawing(self):
+        """Test the _setup_drawing method."""
         # Call method
         with patch("svgwrite.Drawing") as mock_drawing_class:
             mock_drawing = MagicMock()
             mock_drawing_class.return_value = mock_drawing
 
-            result = svg._setup_drawing(width=500, depth=500)
+            result = self.svg._setup_drawing(width=500, depth=500)
 
             # Assertions
             mock_drawing_class.assert_called_once_with(size=(500, 500), debug=False)
@@ -58,11 +66,8 @@ class FloorPlanSVGTestCase(TestCase):
 
             self.assertEqual(result, mock_drawing)
 
-    def test_setup_drawing_adds_stylesheet(self, _):
+    def test_setup_drawing_adds_stylesheet(self):
         """Test that _setup_drawing adds the CSS stylesheet."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
-
         # Setup mocks
         with patch("os.path.join") as mock_path_join, patch("builtins.open") as mock_open, patch(
             "svgwrite.Drawing"
@@ -78,7 +83,7 @@ class FloorPlanSVGTestCase(TestCase):
             mock_drawing.style.return_value = mock_style
 
             # Call method
-            svg._setup_drawing(width=500, depth=500)
+            self.svg._setup_drawing(width=500, depth=500)
 
             # Assertions
             mock_path_join.assert_called()
@@ -86,34 +91,28 @@ class FloorPlanSVGTestCase(TestCase):
             mock_drawing.style.assert_called_with("mock css content")
             mock_drawing.defs.add.assert_called_with(mock_style)
 
-    def test_draw_grid(self, _):
+    def test_draw_grid(self):
         """Test the _draw_grid method."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
-
         # Setup
         mock_drawing = MagicMock()
 
         # Mock the methods called by _draw_grid
-        svg._draw_grid_lines = MagicMock()
-        svg._generate_axis_labels = MagicMock(return_value=(["A", "B", "C"], ["1", "2", "3"]))
-        svg._draw_axis_labels = MagicMock()
-        svg._draw_tile_links = MagicMock()
+        self.svg._draw_grid_lines = MagicMock()
+        self.svg._generate_axis_labels = MagicMock(return_value=(["A", "B", "C"], ["1", "2", "3"]))
+        self.svg._draw_axis_labels = MagicMock()
+        self.svg._draw_tile_links = MagicMock()
 
         # Call method
-        svg._draw_grid(mock_drawing)
+        self.svg._draw_grid(mock_drawing)
 
         # Assertions
-        svg._draw_grid_lines.assert_called_once_with(mock_drawing)
-        svg._generate_axis_labels.assert_called_once()
-        svg._draw_axis_labels.assert_called_once_with(mock_drawing, ["A", "B", "C"], ["1", "2", "3"])
-        svg._draw_tile_links.assert_called_once_with(mock_drawing, ["A", "B", "C"], ["1", "2", "3"])
+        self.svg._draw_grid_lines.assert_called_once_with(mock_drawing)
+        self.svg._generate_axis_labels.assert_called_once()
+        self.svg._draw_axis_labels.assert_called_once_with(mock_drawing, ["A", "B", "C"], ["1", "2", "3"])
+        self.svg._draw_tile_links.assert_called_once_with(mock_drawing, ["A", "B", "C"], ["1", "2", "3"])
 
-    def test_generate_axis_labels(self, _):
+    def test_generate_axis_labels(self):
         """Test the _generate_axis_labels method."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
-
         # Setup
         self.floor_plan.generate_labels = MagicMock()
         self.floor_plan.generate_labels.side_effect = lambda axis, _: (
@@ -121,7 +120,7 @@ class FloorPlanSVGTestCase(TestCase):
         )
 
         # Call method
-        x_labels, y_labels = svg._generate_axis_labels()
+        x_labels, y_labels = self.svg._generate_axis_labels()
 
         # Assertions
         self.assertEqual(x_labels, ["A", "B", "C", "D", "E"])
@@ -129,45 +128,36 @@ class FloorPlanSVGTestCase(TestCase):
         self.floor_plan.generate_labels.assert_any_call("X", 5)
         self.floor_plan.generate_labels.assert_any_call("Y", 5)
 
-    def test_draw_grid_lines(self, _):
+    def test_draw_grid_lines(self):
         """Test the _draw_grid_lines method."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
-
         # Setup
         mock_drawing = MagicMock()
 
         # Call method
-        svg._draw_grid_lines(mock_drawing)
+        self.svg._draw_grid_lines(mock_drawing)
 
         # Assertions - should draw x_size + y_size + 2 lines
         expected_calls = self.floor_plan.x_size + 1 + self.floor_plan.y_size + 1
         self.assertEqual(mock_drawing.line.call_count, expected_calls)
         self.assertEqual(mock_drawing.add.call_count, expected_calls)
 
-    def test_draw_axis_labels(self, _):
+    def test_draw_axis_labels(self):
         """Test the _draw_axis_labels method."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
-
         # Setup
         mock_drawing = MagicMock()
         x_labels = ["A", "B", "C", "D", "E"]
         y_labels = ["1", "2", "3", "4", "5"]
 
         # Call method
-        svg._draw_axis_labels(mock_drawing, x_labels, y_labels)
+        self.svg._draw_axis_labels(mock_drawing, x_labels, y_labels)
 
         # Assertions - should add text for each label
         expected_calls = len(x_labels) + len(y_labels)
         self.assertEqual(mock_drawing.text.call_count, expected_calls)
         self.assertEqual(mock_drawing.add.call_count, expected_calls)
 
-    def test_draw_tile_link(self, _):
+    def test_draw_tile_link(self):
         """Test the _draw_tile_link method."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
-
         # Setup
         mock_drawing = MagicMock()
         axis = {"x": "A", "y": "1", "x_idx": 0, "y_idx": 0}
@@ -177,18 +167,15 @@ class FloorPlanSVGTestCase(TestCase):
         mock_drawing.add.return_value = mock_link
 
         # Call method
-        svg._draw_tile_link(mock_drawing, axis)
+        self.svg._draw_tile_link(mock_drawing, axis)
 
         # Assertions
         mock_drawing.a.assert_called_once()  # Should create an anchor
         mock_drawing.add.assert_called_once()  # Should add the anchor to the drawing
         mock_link.add.assert_called()  # Should add elements to the link
 
-    def test_draw_tile(self, _):
+    def test_draw_tile(self):
         """Test the _draw_tile method."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
-
         # Setup
         mock_drawing = MagicMock()
         mock_tile = MagicMock()
@@ -199,23 +186,20 @@ class FloorPlanSVGTestCase(TestCase):
         mock_tile.power_feed = None
 
         # Mock the methods called by _draw_tile
-        svg._draw_defined_rackgroup_tile = MagicMock()
-        svg._draw_edit_delete_button = MagicMock()
-        svg._draw_object_tile = MagicMock()
+        self.svg._draw_defined_rackgroup_tile = MagicMock()
+        self.svg._draw_edit_delete_button = MagicMock()
+        self.svg._draw_object_tile = MagicMock()
 
         # Call method
-        svg._draw_tile(mock_drawing, mock_tile)
+        self.svg._draw_tile(mock_drawing, mock_tile)
 
         # Assertions
-        svg._draw_defined_rackgroup_tile.assert_called_once_with(mock_drawing, mock_tile)
-        svg._draw_edit_delete_button.assert_called_once_with(mock_drawing, mock_tile, 0, 0)
-        svg._draw_object_tile.assert_not_called()  # No objects on this tile
+        self.svg._draw_defined_rackgroup_tile.assert_called_once_with(mock_drawing, mock_tile)
+        self.svg._draw_edit_delete_button.assert_called_once_with(mock_drawing, mock_tile, 0, 0)
+        self.svg._draw_object_tile.assert_not_called()  # No objects on this tile
 
-    def test_draw_object_tile(self, _):
+    def test_draw_object_tile(self):
         """Test the _draw_object_tile method with different object types."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
-
         # Setup
         mock_drawing = MagicMock()
 
@@ -260,24 +244,20 @@ class FloorPlanSVGTestCase(TestCase):
             mock_tile.status = mock_tile_status
 
             # Mock methods called by _draw_object_tile
-            svg._draw_object_orientation = MagicMock()
-            svg._draw_object_text = MagicMock()
-            svg._draw_edit_delete_button = MagicMock()
+            self.svg._draw_object_orientation = MagicMock()
+            self.svg._draw_object_text = MagicMock()
+            self.svg._draw_edit_delete_button = MagicMock()
 
             # Call method
-            svg._draw_object_tile(mock_drawing, mock_tile)
+            self.svg._draw_object_tile(mock_drawing, mock_tile)
 
             # Assertions
-            mock_drawing.a.assert_called()  # Should create an anchor
-            mock_drawing.add.assert_called()  # Should add the anchor to the drawing
-            svg._draw_object_text.assert_called_once()  # Should add text
-            svg._draw_edit_delete_button.assert_called_once()  # Should add buttons
+            self.svg._draw_object_orientation.assert_called()  # Should call draw_object_orientation
+            self.svg._draw_object_text.assert_called()  # Should call draw_object_text
+            self.svg._draw_edit_delete_button.assert_called()  # Should call draw_edit_delete_button
 
-    def test_draw_object_orientation(self, _):
+    def test_draw_object_orientation(self):
         """Test the _draw_object_orientation method with different orientations."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
-
         # Setup
         mock_drawing = MagicMock()
         mock_link = MagicMock()
@@ -301,16 +281,13 @@ class FloorPlanSVGTestCase(TestCase):
             mock_tile.object_orientation = orientation
 
             # Call method
-            svg._draw_object_orientation(mock_drawing, mock_tile, mock_link, origin)
+            self.svg._draw_object_orientation(mock_drawing, mock_tile, mock_link, origin)
 
             # Assertions
             mock_link.add.assert_called()  # Should add orientation indicator
 
-    def test_render(self, _):
+    def test_render(self):
         """Test the complete render method."""
-        # Create SVG renderer with mocked reverse
-        svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
-
         # Setup
         mock_drawing = MagicMock()
 
@@ -320,17 +297,17 @@ class FloorPlanSVGTestCase(TestCase):
         self.floor_plan.tiles.all.return_value = [mock_tile1, mock_tile2]
 
         # Mock methods called by render
-        svg._setup_drawing = MagicMock(return_value=mock_drawing)
-        svg._draw_underlay_tiles = MagicMock()
-        svg._draw_grid = MagicMock()
-        svg._draw_tile = MagicMock()
+        self.svg._setup_drawing = MagicMock(return_value=mock_drawing)
+        self.svg._draw_underlay_tiles = MagicMock()
+        self.svg._draw_grid = MagicMock()
+        self.svg._draw_tile = MagicMock()
 
         # Call method
-        result = svg.render()
+        result = self.svg.render()
 
         # Assertions
-        svg._setup_drawing.assert_called_once()
-        self.assertEqual(svg._draw_underlay_tiles.call_count, 2)  # Called for each tile
-        svg._draw_grid.assert_called_once_with(mock_drawing)
-        self.assertEqual(svg._draw_tile.call_count, 2)  # Called for each tile
+        self.svg._setup_drawing.assert_called_once()
+        self.assertEqual(self.svg._draw_underlay_tiles.call_count, 2)
+        self.svg._draw_grid.assert_called_once_with(mock_drawing)
+        self.assertEqual(self.svg._draw_tile.call_count, 2)
         self.assertEqual(result, mock_drawing)

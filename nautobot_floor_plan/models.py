@@ -450,7 +450,7 @@ class FloorPlanTile(PrimaryModel):
         - Ensure that the bounds of this FloorPlanTile lie within the parent FloorPlan's bounds.
         - Ensure that assigned objects belong to the correct Location.
         - Ensure that this FloorPlanTile doesn't overlap with any other FloorPlanTile in this FloorPlan.
-        - Ensure that devices and power feeds aren't currently installed in racks.
+        - Ensure that devices aren't currently installed in racks.
         - Ensure that racks belong to the correct rack group when placed on rack group tiles.
         - Ensure that object tiles don't extend beyond their containing rack group tiles.
         - Ensure that rack group tiles from different groups don't overlap.
@@ -547,7 +547,7 @@ class FloorPlanTile(PrimaryModel):
             if other.allocation_type == AllocationTypeChoices.RACKGROUP:
                 # Prevent any rack group tiles from overlapping
                 raise ValidationError("RackGroup tiles cannot overlap")
-            if other.allocation_type == AllocationTypeChoices.OBJECT:
+            if other.allocation_type == AllocationTypeChoices.OBJECT and current.rack_group:
                 other_tile = other.tile
                 if other_tile.rack and other_tile.rack.rack_group and other_tile.rack.rack_group != current.rack_group:
                     raise ValidationError(
