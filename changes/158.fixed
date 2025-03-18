@@ -1,1 +1,0 @@
-Fixed a bug when placing FloorPlanTiles when custom labels didn't cover the full X or Y range.
