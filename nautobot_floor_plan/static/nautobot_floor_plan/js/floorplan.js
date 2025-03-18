@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const svgUrl = svgContainer.getAttribute('data-svg-url');
     if (!svgUrl) return;
     
-    var isPanning = false;
+    var isPanning = true;
     var startPoint = {x: 0, y: 0};
     var endPoint = {x: 0, y: 0};
     let zoomMode = false; // Start in PAN mode by default
