@@ -2,10 +2,10 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
-from nautobot.extras.plugins import PluginTemplateExtension
+from nautobot.extras.plugins import TemplateExtension
 
 
-class LocationFloorPlanTab(PluginTemplateExtension):  # pylint: disable=abstract-method
+class LocationFloorPlanTab(TemplateExtension):  # pylint: disable=abstract-method
     """App extensions for Location model detail view."""
 
     model = "dcim.location"

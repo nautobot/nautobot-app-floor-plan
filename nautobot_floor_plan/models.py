@@ -1,6 +1,7 @@
 """Models for Nautobot Floor Plan."""
 
 import logging
+from dataclasses import dataclass
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -11,7 +12,7 @@ from nautobot_floor_plan.choices import (
     AllocationTypeChoices,
     AxisLabelsChoices,
     CustomAxisLabelsChoices,
-    RackOrientationChoices,
+    ObjectOrientationChoices,
 )
 from nautobot_floor_plan.svg import FloorPlanSVG
 from nautobot_floor_plan.templatetags.seed_helpers import (
@@ -21,6 +22,34 @@ from nautobot_floor_plan.utils.custom_validators import ValidateNotZero
 from nautobot_floor_plan.utils.label_generator import FloorPlanLabelGenerator
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TileOverlapData:
+    """Data container for tile overlap validation."""
+
+    x_min: int
+    y_min: int
+    x_max: int
+    y_max: int
+    allocation_type: str
+    rack_group: object
+    tile: "FloorPlanTile"
+
+    @classmethod
+    def from_tile(cls, tile: "FloorPlanTile"):
+        """Create TileOverlapData from a FloorPlanTile instance."""
+        x_min, y_min, x_max, y_max, allocation_type, rack_group = tile.bounds
+        return cls(x_min, y_min, x_max, y_max, allocation_type, rack_group, tile)
+
+    def overlaps_with(self, other: "TileOverlapData") -> bool:
+        """Check if this tile overlaps with another tile."""
+        return (
+            self.x_min <= other.x_max
+            and other.x_min <= self.x_max
+            and self.y_min <= other.y_max
+            and other.y_min <= self.y_max
+        )
 
 
 @extras_features(
@@ -308,7 +337,27 @@ class FloorPlanTile(PrimaryModel):
         default=1,
         help_text="Number of tile spaces that this spans vertically",
     )
-
+    device = models.OneToOneField(
+        to="dcim.Device",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="floor_plan_tile",
+    )
+    power_panel = models.OneToOneField(
+        to="dcim.PowerPanel",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="floor_plan_tile",
+    )
+    power_feed = models.OneToOneField(
+        to="dcim.PowerFeed",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="floor_plan_tile",
+    )
     rack = models.OneToOneField(
         to="dcim.Rack",
         on_delete=models.CASCADE,
@@ -324,17 +373,18 @@ class FloorPlanTile(PrimaryModel):
         null=True,
         related_name="rack_groups",
     )
-    rack_orientation = models.CharField(
+
+    object_orientation = models.CharField(
         max_length=10,
-        choices=RackOrientationChoices,
+        choices=ObjectOrientationChoices,
         blank=True,
-        help_text="Direction the rack's front is facing on the floor plan",
+        help_text="Direction the object's front is facing on the floor plan",
     )
     allocation_type = models.CharField(
         choices=AllocationTypeChoices,
         max_length=10,
         blank=True,
-        help_text="Assigns a type of either Rack or RackGroup to a tile",
+        help_text="Assigns a type of either Object or RackGroup to a tile",
     )
 
     on_group_tile = models.BooleanField(
@@ -349,12 +399,18 @@ class FloorPlanTile(PrimaryModel):
 
     def allocation_type_assignment(self):
         """Assign the appropriate tile allocation type when saving in clean."""
-        # Assign Allocation type based off of Tile Assignemnt
+        # Reset on_group_tile to False by default
+        self.on_group_tile = False
+
+        # Assign Allocation type based off of Tile Assignment
         if self.rack_group is not None or self.status is not None:
             self.allocation_type = AllocationTypeChoices.RACKGROUP
-        if self.rack is not None:
-            self.allocation_type = AllocationTypeChoices.RACK
-            self.on_group_tile = False
+        if any([self.rack, self.device, self.power_panel, self.power_feed]):
+            self.allocation_type = AllocationTypeChoices.OBJECT
+
+        # Ensure new tiles with just a status get an allocation type
+        if not self.allocation_type and self.status:
+            self.allocation_type = AllocationTypeChoices.RACKGROUP
 
     def validate_tile_placement(self):
         """Check that tile fits within the floorplan."""
@@ -392,72 +448,166 @@ class FloorPlanTile(PrimaryModel):
         Validate parameters above and beyond what the database can provide.
 
         - Ensure that the bounds of this FloorPlanTile lie within the parent FloorPlan's bounds.
-        - Ensure that the Rack if any belongs to the correct Location.
+        - Ensure that assigned objects belong to the correct Location.
         - Ensure that this FloorPlanTile doesn't overlap with any other FloorPlanTile in this FloorPlan.
+        - Ensure that devices aren't currently installed in racks.
+        - Ensure that racks belong to the correct rack group when placed on rack group tiles.
+        - Ensure that object tiles don't extend beyond their containing rack group tiles.
+        - Ensure that rack group tiles from different groups don't overlap.
+        - Ensure proper allocation type assignment and group tile status.
+        - Ensure only one object is assigned to the tile.
         """
         super().clean()
         FloorPlanTile.allocation_type_assignment(self)
         FloorPlanTile.validate_tile_placement(self)
 
-        def group_tile_bounds(rack, rack_group):
-            """Validate the overlapping of group tiles."""
-            if rack is not None:
-                # Set the tile rack_group equal to the rack.rack_group if the rack is in a rack_group
-                if rack.rack_group is not None:
-                    rack_group = rack.rack_group
-                    self.rack_group = rack.rack_group
-                if x_max > ox_max or x_min < ox_min:
-                    raise ValidationError(
-                        {f"Rack {self.rack} must not extend beyond the boundary of the defined group tiles"}
-                    )
-                if y_max > oy_max or y_min < oy_min:
-                    raise ValidationError(
-                        {f"Rack {self.rack} must not extend beyond the boundary of the defined group tiles"}
-                    )
-                self.on_group_tile = True
-                if orack_group is not None:
-                    if orack_group != rack_group or rack.rack_group != orack_group:
-                        # Is tile assigned to a rack_group? Racks must be assigned to the same rack_group
-                        raise ValidationError({"rack_group": f"Rack {self.rack} must belong to {orack_group}"})
-            if rack is None:
-                # RACKGROUP tiles can grow and shrink but not overlap other RACKGROUP tiles or Racks that are not assigned to the correct rackgroup
-                if x_max > ox_max or x_min < ox_min:
-                    if oallocation_type == AllocationTypeChoices.RACK and orack_group != rack_group:
-                        raise ValidationError("Tile overlaps a Rack that is not in the specified RackGroup")
-                if y_max > oy_max or y_min < oy_min:
-                    if oallocation_type == AllocationTypeChoices.RACK and orack_group != rack_group:
-                        raise ValidationError("Tile overlaps a Rack that is not in the specified RackGroup")
-                if allocation_type == oallocation_type:
-                    raise ValidationError("Tile overlaps with another defined tile.")
+        self._validate_installed_objects()
+        self._validate_object_locations()
+        self._validate_tile_overlaps()
+        self._validate_rack_rackgroup()
+        self._validate_single_object_assignment()
 
-        if self.rack is not None:
-            if self.rack.location != self.floor_plan.location:
-                raise ValidationError(
-                    {"rack": f"Must belong to Location {self.floor_plan.location}, not Location {self.rack.location}"}
-                )
-        # Check for overlapping tiles.
-        # TODO: this would be a lot more efficient using something like GeoDjango,
-        # but since this is only checked at write time it's acceptable for now.
-        x_min, y_min, x_max, y_max, allocation_type, rack_group = self.bounds
+    def _validate_installed_objects(self):
+        """Validate that devices aren't installed in racks."""
+        if self.device and self.device.rack:
+            raise ValidationError(
+                {
+                    "device": f"Device '{self.device}' is installed in Rack '{self.device.rack}'. "
+                    "Please remove it from the rack before placing on the floor plan."
+                }
+            )
+
+    def _validate_object_locations(self):
+        """Validate location for all assigned objects."""
+        assigned_objects = {
+            "device": self.device,
+            "rack": self.rack,
+            "power_panel": self.power_panel,
+            "power_feed": self.power_feed,
+        }
+
+        for obj_type, obj in assigned_objects.items():
+            if obj is not None:
+                # Power Feeds location is not required so we will check the connected power panel location instead
+                if obj_type == "power_feed":
+                    if obj.power_panel.location != self.floor_plan.location:
+                        raise ValidationError(
+                            {
+                                obj_type: f"{obj.power_panel} must belong to Location {self.floor_plan.location}, not Location {obj.power_panel.location}"
+                            }
+                        )
+                elif hasattr(obj, "location") and obj.location != self.floor_plan.location:
+                    raise ValidationError(
+                        {
+                            obj_type: f"{obj} must belong to Location {self.floor_plan.location}, not Location {obj.location}"
+                        }
+                    )
+
+    def _validate_tile_overlaps(self):
+        """Validate that this FloorPlanTile doesn't overlap with any other FloorPlanTile in this FloorPlan."""
+        current_tile_data = TileOverlapData.from_tile(self)
+
         for other in FloorPlanTile.objects.filter(floor_plan=self.floor_plan).exclude(pk=self.pk):
-            ox_min, oy_min, ox_max, oy_max, oallocation_type, orack_group = other.bounds
-            # Is either bounds rectangle completely to the right of the other?
-            if x_min > ox_max or ox_min > x_max:
-                continue
-            # Is either bounds rectangle completely below the other?
-            if y_min > oy_max or oy_min > y_max:
-                continue
-            # Are tiles in the same rackgroup?
-            # If they are in the same rackgroup, do they overlap tiles?
-            if allocation_type != oallocation_type:
-                if self.rack is not None:
-                    group_tile_bounds(self.rack, rack_group)
-                    continue
-                if self.rack is None:
-                    group_tile_bounds(self.rack, rack_group)
-                    continue
-            # Else they must overlap
-            raise ValidationError("Tile overlaps with another defined tile.")
+            other_tile_data = TileOverlapData.from_tile(other)
+
+            if current_tile_data.overlaps_with(other_tile_data):
+                # Validate based on allocation types
+                self._validate_object_tile_overlap(current_tile_data, other_tile_data)
+                self._validate_rackgroup_tile_overlap(current_tile_data, other_tile_data)
+
+    def _validate_object_tile_overlap(self, current: TileOverlapData, other: TileOverlapData):
+        """Validate overlaps for object tiles."""
+        if current.allocation_type == AllocationTypeChoices.OBJECT:
+            if other.allocation_type == AllocationTypeChoices.OBJECT:
+                raise ValidationError("Object tiles cannot overlap")
+            if other.allocation_type == AllocationTypeChoices.RACKGROUP:
+                # Set on_group_tile for any object type overlapping with a RackGroup
+                self.on_group_tile = True
+
+                # Special handling for racks to ensure they belong to the correct rack group
+                if self.rack and self.rack.rack_group:
+                    if other.rack_group != self.rack.rack_group:
+                        raise ValidationError(
+                            f"Object tile with Rack {self.rack} cannot overlap with RackGroup tile for different group"
+                        )
+                    self.rack_group = self.rack.rack_group
+
+                # Validate object tile fits within rack group bounds
+                if (
+                    current.x_min < other.x_min
+                    or current.x_max > other.x_max
+                    or current.y_min < other.y_min
+                    or current.y_max > other.y_max
+                ):
+                    raise ValidationError("Object tile must not extend beyond the boundary of the rack group tile")
+
+    def _validate_rackgroup_tile_overlap(self, current: TileOverlapData, other: TileOverlapData):
+        """Validate overlaps for rack group tiles."""
+        if current.allocation_type == AllocationTypeChoices.RACKGROUP:
+            if other.allocation_type == AllocationTypeChoices.RACKGROUP:
+                # Prevent any rack group tiles from overlapping
+                raise ValidationError("RackGroup tiles cannot overlap")
+            if other.allocation_type == AllocationTypeChoices.OBJECT and current.rack_group:
+                other_tile = other.tile
+                if other_tile.rack and other_tile.rack.rack_group and other_tile.rack.rack_group != current.rack_group:
+                    raise ValidationError(
+                        f"RackGroup tile cannot overlap with Rack {other_tile.rack} from different group"
+                    )
+
+    def _validate_rack_rackgroup(self):
+        """Validate that racks belong to the correct rack group when placed on rack group tiles."""
+        if not self.rack:
+            return
+
+        # If this tile has a rack_group, the rack must belong to it
+        if self.rack_group and self.rack.rack_group != self.rack_group:
+            raise ValidationError(
+                f"Rack {self.rack} must belong to rack group {self.rack_group}, not {self.rack.rack_group}"
+            )
+
+        # Check if this rack overlaps with any rack group tiles
+        overlapping_tiles = FloorPlanTile.objects.filter(
+            floor_plan=self.floor_plan, allocation_type=AllocationTypeChoices.RACKGROUP
+        ).exclude(pk=self.pk)
+
+        for tile in overlapping_tiles:
+            if (
+                self.x_origin <= tile.x_origin + tile.x_size - 1
+                and tile.x_origin <= self.x_origin + self.x_size - 1
+                and self.y_origin <= tile.y_origin + tile.y_size - 1
+                and tile.y_origin <= self.y_origin + self.y_size - 1
+            ):
+                # Only validate if the overlapping tile has a rack_group
+                if tile.rack_group and self.rack.rack_group != tile.rack_group:
+                    raise ValidationError(
+                        f"Rack {self.rack} cannot be placed on rack group tile for {tile.rack_group} "
+                        f"as it belongs to {self.rack.rack_group}"
+                    )
+
+    def _validate_single_object_assignment(self):
+        """Validate that only one object is assigned to the tile."""
+        assigned_objects = []
+        object_fields = ["device", "rack", "power_panel", "power_feed"]
+
+        for field in object_fields:
+            if getattr(self, field) is not None:
+                assigned_objects.append(field)
+
+        if len(assigned_objects) > 1:
+            object_names = {
+                "device": "Device",
+                "rack": "Rack",
+                "power_panel": "Power Panel",
+                "power_feed": "Power Feed",
+            }
+
+            # Add error to each selected field except the first one
+            raise ValidationError(
+                {
+                    field: f"Only one object can be selected. You have already selected a {object_names[assigned_objects[0]]}."
+                    for field in assigned_objects[1:]
+                }
+            )
 
     def __str__(self):
         """Stringify instance."""

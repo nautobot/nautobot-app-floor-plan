@@ -1,0 +1,79 @@
+{% extends 'generic/object_edit.html' %}
+{% load static %}
+{% load buttons %}
+{% load form_helpers %}
+{% load seed_helpers %}
+
+{% block form %}
+    <!-- General Fields Panel -->
+    <div class="panel panel-default">
+        <div class="panel-heading"><strong>General</strong></div>
+        <div class="panel-body">
+            {% for field_name in form.fieldsets.0.1 %}
+                {% render_field form|get_fieldset_field:field_name %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading"><strong>Object Configuration</strong></div>
+        <div class="panel-body">  
+            {% with power_feed_errors=form.power_feed.errors device_errors=form.device.errors power_panel_errors=form.power_panel.errors rack_errors=form.rack.errors %}
+            
+            {# Add data attributes for JavaScript to use on a container div instead of body #}
+            <div id="object-tabs-container"
+                data-rack-errors="{{ rack_errors|yesno:'true,false' }}"
+                data-device-errors="{{ device_errors|yesno:'true,false' }}"
+                data-power-panel-errors="{{ power_panel_errors|yesno:'true,false' }}"
+                data-power-feed-errors="{{ power_feed_errors|yesno:'true,false' }}"
+                data-has-rack="{{ obj.rack|yesno:'true,false' }}"
+                data-has-device="{{ obj.device|yesno:'true,false' }}"
+                data-has-power-panel="{{ obj.power_panel|yesno:'true,false' }}"
+                data-has-power-feed="{{ obj.power_feed|yesno:'true,false' }}"
+            >
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation">
+                        <a href="#rack" aria-controls="rack" role="tab" data-toggle="tab">Rack</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#device" aria-controls="device" role="tab" data-toggle="tab">Device</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#power-panel" aria-controls="power-panel" role="tab" data-toggle="tab">Power Panel</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#power-feed" aria-controls="power-feed" role="tab" data-toggle="tab">Power Feed</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane" id="rack">
+                        {% render_field form.rack %}
+                    </div>
+                
+                    <div role="tabpanel" class="tab-pane" id="device">
+                        {% render_field form.device %}
+                    </div>
+                
+                    <div role="tabpanel" class="tab-pane" id="power-panel">
+                        {% render_field form.power_panel %}
+                    </div>
+                
+                    <div role="tabpanel" class="tab-pane" id="power-feed">
+                        {% render_field form.power_feed %}
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+            
+            <!-- Object orientation field outside of tabs so it's always available -->
+            {% render_field form.object_orientation %}
+        </div>
+    </div>
+    {% include 'inc/extras_features_edit_form_fields.html' %}
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+<script src="{% static 'nautobot_floor_plan/js/floorplantile.js' %}"></script>
+{% endblock %}

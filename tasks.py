@@ -815,8 +815,10 @@ def check_migrations(context):
         "failfast": "fail as soon as a single test fails don't run the entire test suite",
         "buffer": "Discard output from passing tests",
         "pattern": "Run specific test methods, classes, or modules instead of all tests",
+        "tags": "Unittest tags to target",
         "verbose": "Enable verbose test output.",
-    }
+    },
+    iterable=["tags"],
 )
 def unittest(  # noqa: PLR0913
     context,
@@ -824,6 +826,7 @@ def unittest(  # noqa: PLR0913
     label="nautobot_floor_plan",
     failfast=False,
     buffer=True,
+    tags=[],
     pattern="",
     verbose=False,
 ):
@@ -840,7 +843,11 @@ def unittest(  # noqa: PLR0913
         command += f" -k='{pattern}'"
     if verbose:
         command += " --verbosity 2"
+    for t in tags:
+        command += f" --tag={t}"
 
+    if "integration" in tags:
+        start(context, service="nautobot")
     run_command(context, command)
 
 
@@ -850,6 +857,13 @@ def unittest_coverage(context):
     command = "coverage report --skip-covered --include 'nautobot_floor_plan/*' --omit *migrations*"
 
     run_command(context, command)
+
+
+@task(pre=[unittest])
+def unittest_xml_coverage(context):
+    """Produce an XML coverage report that can be ingested into other tools."""
+    produce_xml_cmd = "coverage xml"
+    run_command(context, produce_xml_cmd)
 
 
 @task(
@@ -881,6 +895,8 @@ def tests(context, failfast=False, keepdb=False, lint_only=False):
     print("Checking app config schema...")
     validate_app_config(context)
     if not lint_only:
+        print("Running integ tests...")
+        unittest(context, failfast=failfast, keepdb=keepdb, tags=["integration"])
         print("Running unit tests...")
         unittest(context, failfast=failfast, keepdb=keepdb)
         unittest_coverage(context)

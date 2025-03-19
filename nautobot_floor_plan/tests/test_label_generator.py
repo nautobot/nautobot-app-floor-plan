@@ -5,6 +5,7 @@ from nautobot.core.testing import TestCase
 from nautobot_floor_plan import models
 from nautobot_floor_plan.tests import fixtures
 from nautobot_floor_plan.utils.custom_validators import RangeValidator
+from nautobot_floor_plan.utils.label_generator import FloorPlanLabelGenerator
 
 
 class TestNumericLabelGenerator(TestCase):
@@ -351,3 +352,33 @@ def test_custom_range_order_mixed_types(self):
     labels = self.floor_plan.generate_labels("X", 15)
     expected = ["A01", "A02", "A03", "A04", "A05", "01", "02", "03", "04", "05", "02A", "02B", "02C", "02D", "02E"]
     self.assertEqual(labels, expected)
+
+
+class TestFloorPlanLabelGenerator(TestCase):
+    """Test cases for the FloorPlanLabelGenerator."""
+
+    def setUp(self):
+        """Create a FloorPlan instance for testing."""
+        data = fixtures.create_prerequisites()
+        self.floors = data["floors"]
+        self.floor_plan = models.FloorPlan(location=self.floors[0], x_size=10, y_size=10)
+        self.floor_plan.validated_save()
+        self.generator = FloorPlanLabelGenerator(self.floor_plan)
+
+    def test_generate_labels(self):
+        """Test generating labels using the public method."""
+        # Create a custom range
+        custom_range = models.FloorPlanCustomAxisLabel(
+            start_label="1", end_label="5", step=1, increment_letter=False, label_type="numbers"
+        )
+        self.floor_plan.custom_labels.create(
+            start_label=custom_range.start_label,
+            end_label=custom_range.end_label,
+            step=custom_range.step,
+            increment_letter=custom_range.increment_letter,
+            label_type=custom_range.label_type,
+        )
+
+        labels = self.generator.generate_labels(axis="X", count=5)
+        expected = ["1", "2", "3", "4", "5"]
+        self.assertEqual(labels, expected)

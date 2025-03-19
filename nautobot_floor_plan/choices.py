@@ -3,8 +3,8 @@
 from nautobot.apps.choices import ChoiceSet
 
 
-class RackOrientationChoices(ChoiceSet):
-    """Choices for the orientation of a Rack relative to its associated FloorPlan."""
+class ObjectOrientationChoices(ChoiceSet):
+    """Choices for the orientation of a FloorPlan-eligible Object relative to its associated FloorPlan."""
 
     UP = "up"
     DOWN = "down"
@@ -32,14 +32,14 @@ class CustomAxisLabelsChoices(ChoiceSet):
     NUMBERS = "numbers"
 
     CHOICES = (
+        (NUMBERS, "Numbers (e.g. 1, 2, 3)"),
+        (LETTERS, "Letters (e.g., A, B, C)"),
+        (NUMALPHA, "Numalpha (e.g., 02A)"),
+        (ALPHANUMERIC, "Alphanumeric (e.g., A01, B02)"),
         (ROMAN, "Roman (e.g., I, II, III)"),
         (GREEK, "Greek (e.g., α, β, γ)"),
         (BINARY, "Binary (e.g., 1, 10, 11)"),
         (HEX, "Hexadecimal (e.g., 1, A, F)"),
-        (NUMALPHA, "numalpha (e.g., 02A)"),
-        (LETTERS, "Letters (e.g., A, B, C)"),
-        (ALPHANUMERIC, "Alphanumeric (e.g., A01, B02)"),
-        (NUMBERS, "Numbers (e.g. 1, 2, 3)"),
     )
 
 
@@ -56,12 +56,29 @@ class AxisLabelsChoices(ChoiceSet):
 
 
 class AllocationTypeChoices(ChoiceSet):
-    """Choices for tile allocation type."""
+    """Choices for tile allocation types."""
 
-    RACK = "rack"
+    OBJECT = "object"
     RACKGROUP = "rackgroup"
 
     CHOICES = (
-        (RACK, "Rack"),
+        (OBJECT, "Object"),
         (RACKGROUP, "RackGroup"),
+    )
+
+
+class ObjectTypeChoices(ChoiceSet):
+    """Choices for FloorPlanTile object types."""
+
+    DEVICE = "device"
+    POWER_PANEL = "power_panel"
+    POWER_FEED = "power_feed"
+    RACK = "rack"
+
+    CHOICES = (
+        ("", "---------"),
+        (DEVICE, "Device"),
+        (POWER_PANEL, "Power Panel"),
+        (POWER_FEED, "Power Feed"),
+        (RACK, "Rack"),
     )

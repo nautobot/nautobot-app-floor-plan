@@ -5,8 +5,10 @@ from dataclasses import dataclass
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
+from nautobot.apps.models import CustomValidator
+from nautobot.dcim.models import Device, Rack
 
-from nautobot_floor_plan import choices
+from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.utils import general
 from nautobot_floor_plan.utils.label_converters import LabelConverterFactory
 
@@ -129,6 +131,24 @@ class RangeValidator:
                         f"Use label_type '{choices.CustomAxisLabelsChoices.NUMBERS}' if no letters are needed."
                     )
 
+                increment_letter = current_range.get("increment_letter", False)
+
+                start_prefix, start_number = general.extract_prefix_and_number(start)
+                end_prefix, end_number = general.extract_prefix_and_number(end)
+
+                if increment_letter:
+                    # When increment_letter is True, the number must stay the same
+                    if start_number != end_number:
+                        raise ValidationError(
+                            f"Invalid alphanumeric range: '{start}' to '{end}' - number portion must remain the same when increment_letter is True."
+                        )
+                else:
+                    # When increment_letter is False, the prefix must stay the same
+                    if start_prefix != end_prefix:
+                        raise ValidationError(
+                            f"Invalid alphanumeric range: '{start}' to '{end}' - prefix must remain the same when increment_letter is False."
+                        )
+
             effective_size = self._calculate_effective_size(range_data)
 
             if effective_size > self.max_size:
@@ -202,7 +222,7 @@ class RangeValidator:
         if label_type == choices.CustomAxisLabelsChoices.LETTERS:
             increment_letter = label_range.get("increment_letter")
             if increment_letter is not None and not isinstance(increment_letter, bool):
-                raise forms.ValidationError("increment_letter at must be a boolean value.")
+                raise forms.ValidationError("increment_letter must be a boolean value.")
 
     def check_range_overlap(self, range1, range2):
         """Check if two ranges overlap."""
@@ -334,3 +354,65 @@ class ValidateNotZero(BaseValidator):
                 self.message,
                 code=self.code,
             )
+
+
+class DeviceValidator(CustomValidator):
+    """Custom Validator to verify a Device is not installed on a Floor Plan before allowing the changing of Location."""
+
+    model = "dcim.device"
+
+    def clean(self):
+        """
+        Validate that the Device's location is not changed if it is installed on a Floor Plan.
+
+        Raises:
+            ValidationError: If the Device is installed on a Floor Plan and its location is being changed.
+        """
+        device = self.context["object"]
+
+        # Skip validation if the Device is new
+        if device.present_in_database:
+            # Get the original instance of the device
+            original_instance = Device.objects.get(pk=device.pk)
+
+            # Check if the location is being changed
+            if (
+                original_instance.location_id != device.location_id
+                and models.FloorPlanTile.objects.filter(device=device).exists()
+            ):
+                floorplan = models.FloorPlanTile.objects.filter(device=device).first()
+                self.validation_error(
+                    {
+                        "location": f"Cannot move Device {device} as it is currently installed in a FloorPlan {floorplan}."
+                    }
+                )
+
+
+class RackValidator(CustomValidator):
+    """Custom Validator to verify a Rack is not installed on a Floor Plan before allowing the changing of Location."""
+
+    model = "dcim.rack"
+
+    def clean(self):
+        """
+        Validate that the Rack's location is not changed if it is installed on a Floor Plan.
+
+        Raises:
+            ValidationError: If the Rack is installed on a Floor Plan and its location is being changed.
+        """
+        rack = self.context["object"]
+
+        # Skip validation if the Rack is new
+        if rack.present_in_database:
+            # Get the original instance of the rack
+            original_instance = Rack.objects.get(pk=rack.pk)
+
+            # Check if the location is being changed
+            if (
+                original_instance.location_id != rack.location_id
+                and models.FloorPlanTile.objects.filter(rack=rack).exists()
+            ):
+                self.validation_error({"location": "Cannot move Rack as it is currently installed in a FloorPlan."})
+
+
+custom_validators = [DeviceValidator, RackValidator]
