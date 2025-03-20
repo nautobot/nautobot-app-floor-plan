@@ -116,7 +116,7 @@ class RackFloorPlanExtension(TemplateExtension):  # pylint: disable=abstract-met
 
     model = "dcim.rack"
 
-    def object_detail_buttons(self):
+    def buttons(self):
         """Add a 'View on Floor Plan' button to the rack detail view."""
         rack = self.context["object"]
         user = self.context["request"].user
