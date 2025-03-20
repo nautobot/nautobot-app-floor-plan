@@ -13,6 +13,7 @@ from nautobot.core.templatetags.helpers import fgcolor
 from nautobot.dcim.models import Device, PowerFeed, PowerPanel, Rack
 
 from nautobot_floor_plan.choices import AllocationTypeChoices, ObjectOrientationChoices
+from nautobot_floor_plan.templatetags.seed_helpers import render_axis_origin
 
 logger = logging.getLogger(__name__)
 
@@ -313,26 +314,37 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
             (tile.y_origin - self.floor_plan.y_origin_seed) * self.GRID_SIZE_Y + self.GRID_OFFSET,
         )
 
-        # Determine the object and its URL
+        # Determine the object
         if tile.rack is not None:
             obj = tile.rack
-            obj_url = reverse("dcim:rack", kwargs={"pk": obj.pk})
+            obj_type = "rack"
+            obj_id = obj.pk
         elif tile.device is not None:
             obj = tile.device
-            obj_url = reverse("dcim:device", kwargs={"pk": obj.pk})
+            obj_type = "device"
+            obj_id = obj.pk
         elif tile.power_panel is not None:
             obj = tile.power_panel
-            obj_url = reverse("dcim:powerpanel", kwargs={"pk": obj.pk})
+            obj_type = "powerpanel"
+            obj_id = obj.pk
         elif tile.power_feed is not None:
             obj = tile.power_feed
-            obj_url = reverse("dcim:powerfeed", kwargs={"pk": obj.pk})
+            obj_type = "powerfeed"
+            obj_id = obj.pk
         else:
             return  # No object to draw
 
+        obj_url = reverse("dcim:" + obj_type, kwargs={"pk": obj_id})
         obj_url = f"{self.base_url}{obj_url}"
 
-        # Add link to the detail view of the object
-        link = drawing.add(drawing.a(href=obj_url, target="_top"))
+        # Create the link with enhanced attributes for highlighting
+        link = drawing.add(
+            drawing.a(
+                href=obj_url,
+                target="_top",
+                id=f"{obj_type}-{obj_id}",
+            )
+        )
 
         # Draw the main object rectangle
         link.add(
@@ -470,7 +482,26 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
             origin,
             tile,
         )
+        # When Zooming in to a highlighted object on large floor plans the labels are not visible.
+        # Adding the labels to the Tiles will make it easier to see where they are located.
+        # Use render_axis_origin to retrieve the converted labels for x and y origins
+        x_label = render_axis_origin(tile, "X")
+        y_label = render_axis_origin(tile, "Y")
 
+        # Display grid coordinates using the converted labels
+        grid_coordinates = f"({x_label}, {y_label})"
+
+        self._add_text_element(
+            drawing,
+            TextElement(
+                text=grid_coordinates,
+                line_offset=2,  # This will position it below the type text
+                class_name="label-text-grid",
+                color=obj.status.color if hasattr(obj, "status") else tile.status.color,
+            ),
+            origin,
+            tile,
+        )
         # Add tooltip data
         tooltip_data = self._get_tooltip_data(obj, obj_type)
         # Add tooltip data to the link element using proper SVG attribute setting
