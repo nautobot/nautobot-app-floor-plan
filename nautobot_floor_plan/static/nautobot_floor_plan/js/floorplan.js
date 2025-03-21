@@ -627,7 +627,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 ], {
                     duration: 3000,
                     iterations: Infinity
+                const spotlightAnim = spotlight.animate([
+                    { opacity: 0.5 },
+                    { opacity: 0.3 },
+                    { opacity: 0.1 },
+                    { opacity: 0.3 },
+                    { opacity: 0.5 },
+                    { opacity: 0.1 },
+                ], {
+                    delay: 300,
+                    duration: 3000,
+                    iterations: Infinity
                 });
+                effectAnimations.push(spotlightAnim);
                 effectAnimations.push(spotlightAnim);
             } catch (animError) {
                 console.log("Spotlight animation not supported:", animError);
