@@ -122,7 +122,7 @@ class RackFloorPlanExtension(TemplateExtension):  # pylint: disable=abstract-met
         user = self.context["request"].user
 
         # Only display the button if the rack has a location with a floor plan
-        if not rack.location or not hasattr(rack.location, "floor_plan") or not rack.location.floor_plan:
+        if not hasattr(rack.location, "floor_plan") or not rack.location.floor_plan:
             return ""
 
         # Use the helper function to create the button
@@ -146,7 +146,7 @@ class DeviceFloorPlanExtension(TemplateExtension):  # pylint: disable=abstract-m
         user = self.context["request"].user
 
         # Only display the button if the device has a location with a floor plan
-        if not device.location or not hasattr(device.location, "floor_plan") or not device.location.floor_plan:
+        if not hasattr(device.location, "floor_plan") or not device.location.floor_plan:
             return ""
 
         # Use the helper function to create the button
@@ -171,8 +171,7 @@ class PowerPanelFloorPlanExtension(TemplateExtension):  # pylint: disable=abstra
 
         # Only display the button if the power panel has a location with a floor plan
         if (
-            not power_panel.location
-            or not hasattr(power_panel.location, "floor_plan")
+            not hasattr(power_panel.location, "floor_plan")
             or not power_panel.location.floor_plan
         ):
             return ""
@@ -200,7 +199,6 @@ class PowerFeedFloorPlanExtension(TemplateExtension):  # pylint: disable=abstrac
         # Only display the button if the power feed is linked to a power panel with a location with a floor plan
         if (
             not power_feed.power_panel
-            or not power_feed.power_panel.location
             or not hasattr(power_feed.power_panel.location, "floor_plan")
             or not power_feed.power_panel.location.floor_plan
         ):

@@ -216,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
         svgElement.addEventListener("wheel", function(e) {
             if (!e.shiftKey) return;
 
+            // Prevent default scrolling behavior
             e.preventDefault();
             e.stopPropagation();
 
