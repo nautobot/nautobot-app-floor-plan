@@ -80,7 +80,7 @@ class RomanConverter extends LabelConverter {
 
     toNumeric(label) {
         if (!label) throw new Error("Roman numeral cannot be empty");
-        
+
         let result = 0;
         let index = 0;
         label = label.toUpperCase();
@@ -141,14 +141,14 @@ class GreekConverter extends LabelConverter {
 
     toNumeric(label) {
         if (!label) throw new Error("Greek letter cannot be empty");
-        
+
         const greekPart = label.toLowerCase();
         const index = this.greekLetters.indexOf(greekPart);
-        
+
         if (index === -1) {
             throw new Error(`Invalid Greek letter: ${label}`);
         }
-        
+
         return index + 1; // Return the numeric position of the Greek letter
     }
 
@@ -177,7 +177,7 @@ class NumalphaConverter extends LabelConverter {
         const [prefix, letters] = extractPrefixAndLetter(label);
         if (!letters) throw new Error(`Invalid numalpha label: ${label}`);
         this._prefix = prefix;
-        
+
         if (this._increment_prefix) {
             // When incrementing last letter only, convert just the last letter
             const lastLetter = letters[letters.length - 1];
@@ -190,9 +190,9 @@ class NumalphaConverter extends LabelConverter {
 
     fromNumeric(number) {
         if (number < 1) throw new Error("Number must be positive");
-        
+
         const [_, startLetters] = extractPrefixAndLetter(this._start_label);
-        
+
         let letters;
         if (this._increment_prefix) {
             // Keep all but last letter from start label, only increment last letter
@@ -205,7 +205,7 @@ class NumalphaConverter extends LabelConverter {
             // Use the length from the start label
             letters = letter.repeat(startLetters.length);
         }
-        
+
         return `${this._prefix}${letters}`;
     }
 
@@ -255,32 +255,32 @@ class AlphanumericConverter extends LabelConverter {
         this._useLeadingZeros = number.length > 1 && number[0] === "0"; // Check for leading zeros
 
         // If incrementing prefix, return the letter value, otherwise return the number
-        return this._incrementPrefix ? 
-            gridLetterToNumber(prefix || "A") : 
+        return this._incrementPrefix ?
+            gridLetterToNumber(prefix || "A") :
             parseInt(number, 10);
     }
 
     fromNumeric(number) {
         console.log(`Converting number: ${number}, incrementPrefix: ${this._incrementPrefix}, useLeadingZeros: ${this._useLeadingZeros}, number: ${this._number}`);
-        
+
         if (this._numberOnly) {
-            return this._useLeadingZeros ? 
-                number.toString().padStart(2, '0') : 
+            return this._useLeadingZeros ?
+                number.toString().padStart(2, '0') :
                 number.toString(); // Return formatted number
         }
 
         if (this._incrementPrefix) {
             // When incrementing prefix, keep the original number part
             const prefix = gridNumberToLetter(number);
-            const numericPart = this._useLeadingZeros ? 
-                this._number : 
+            const numericPart = this._useLeadingZeros ?
+                this._number :
                 parseInt(this._number, 10).toString();
             return prefix + numericPart; // Return incremented label
         }
 
         // When not incrementing prefix, keep the original prefix
-        return this._prefix + (this._useLeadingZeros ? 
-            number.toString().padStart(2, '0') : 
+        return this._prefix + (this._useLeadingZeros ?
+            number.toString().padStart(2, '0') :
             number.toString()); // Return formatted label
     }
 
@@ -308,14 +308,14 @@ class LettersConverter extends LabelConverter {
         if (!label) {
             throw new Error("Label must be a non-empty string");
         }
-        
+
         // Convert to uppercase before validation
         const upperLabel = label.toUpperCase();
-        
+
         if (!/^[A-Z]+$/.test(upperLabel)) {
             throw new Error("Label must contain only letters");
         }
-        
+
         return gridLetterToNumber(upperLabel); // Convert letter label to numeric value
     }
 
@@ -325,7 +325,7 @@ class LettersConverter extends LabelConverter {
             number += this.MAX_VALUE;
         }
         number = ((number - 1) % this.MAX_VALUE) + 1;
-        
+
         return gridNumberToLetter(number); // Convert numeric value back to letter label
     }
 }
@@ -397,7 +397,7 @@ function generateLabels(start, end, step = 1, labelType, incrementLetter = false
 
     const converter = new ConverterClass();
     converter.setIncrementPrefix(incrementLetter);
-    
+
     if (labelType === 'numbers') {
         converter.setNumberOnly(true);
     }
@@ -427,7 +427,7 @@ function generateLabels(start, end, step = 1, labelType, incrementLetter = false
             // we only care about the last letter's range
             const [startPrefix, startLetters] = extractPrefixAndLetter(start);
             const [endPrefix, endLetters] = extractPrefixAndLetter(end);
-            
+
             if (startPrefix !== endPrefix) {
                 throw new Error(`Prefix mismatch: ${startPrefix} != ${endPrefix}`);
             }
@@ -453,8 +453,8 @@ function generateLabels(start, end, step = 1, labelType, incrementLetter = false
             }
 
             let current = startNum;
-            const condition = step > 0 ? 
-                () => current <= endNum : 
+            const condition = step > 0 ?
+                () => current <= endNum :
                 () => current >= endNum;
 
             while (condition()) {
@@ -487,8 +487,8 @@ function generateLabels(start, end, step = 1, labelType, incrementLetter = false
         }
 
         for (
-            let i = startNum; 
-            step > 0 ? i <= endNum : i >= endNum; 
+            let i = startNum;
+            step > 0 ? i <= endNum : i >= endNum;
             i += step
         ) {
             labels.push(converter.fromNumeric(i));

@@ -119,3 +119,25 @@ rect.object-orientation {
     color: #666;
     text-transform: capitalize;
 }
+
+.highlighted {
+    stroke: #ff9900; /* Override stroke color */
+    stroke-width: 4px; /* Override stroke width */
+    stroke-opacity: 1; /* Full opacity for the stroke */
+    filter: drop-shadow(0 0 10px rgba(255, 153, 0, 0.9)); /* Add glow effect */
+    /* Note: We're not overriding fill or fill-opacity here */
+}
+
+/* Keep object and object-orientation styling intact */
+.object.highlighted, 
+.object-orientation.highlighted {
+    /* Add highlighting without disrupting object properties */
+    /* Original object and object-orientation rules still apply */
+}
+
+/* Make sure all effect elements don't interfere with clicks */
+.spotlight-effect,
+.highlight-border,
+.indicator-arrow {
+    pointer-events: none;
+}
