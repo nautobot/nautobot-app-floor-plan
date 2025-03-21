@@ -586,13 +586,6 @@ document.addEventListener('DOMContentLoaded', function() {
             element.removeAttribute('data-highlighted');
         }
     
-        // Clean up SVG and restore original viewBox (if needed)
-        const svg = element?.ownerSVGElement || effectElements[0]?.ownerSVGElement;
-        if (svg && svg.dataset.originalViewBox) {
-            svg.setAttribute('viewBox', svg.dataset.originalViewBox);
-            svg.removeAttribute('data-original-view-box');
-        }
-    
         console.log("Cleanup complete");
     }
 
