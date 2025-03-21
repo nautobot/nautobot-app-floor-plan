@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var minZoom = 10; // Minimum zoom to prevent going too small
             var newW = Math.max(minZoom, Math.min(candidateViewBox.w, svgActualSize.w));
             var newH = Math.max(minZoom, Math.min(candidateViewBox.h, svgActualSize.h));
-        
+
             // Don't allow panning beyond the edges of the SVG either.
             var newViewBox = {
                 x: Math.min(Math.max(candidateViewBox.x, 0), svgActualSize.w - newW),
@@ -170,10 +170,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 w: newW,
                 h: newH,
             };
-        
+
             // Set the viewBox on the SVG element
             svgElement.setAttribute('viewBox', `${newViewBox.x} ${newViewBox.y} ${newViewBox.w} ${newViewBox.h}`);
-        
+
             // Update the current viewBox
             viewBox = {
                 x: newViewBox.x,
@@ -184,10 +184,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Update scale after changing viewBox
             scale = Math.min(svgDisplaySize.w / viewBox.w, svgDisplaySize.h / viewBox.h);
-        
+
             return newViewBox;
         }
-        
+
 
         // Function to reset zoom to default view
         window.resetZoom = function() {
@@ -215,28 +215,28 @@ document.addEventListener('DOMContentLoaded', function() {
         // On scroll wheel in the SVG, zoom in or out
         svgElement.addEventListener("wheel", function(e) {
             if (!e.shiftKey) return;
-        
+
             e.preventDefault();
             e.stopPropagation();
-        
+
             const rect = svgContainer.getBoundingClientRect();
             const mx = e.clientX - rect.left;
             const my = e.clientY - rect.top;
-        
+
             const zoomPercentage = 0.05; // 5% zoom per wheel tick
             const dw = viewBox.w * Math.sign(e.deltaY) * -zoomPercentage;
             const dh = viewBox.h * Math.sign(e.deltaY) * -zoomPercentage;
-        
+
             const dx = dw * mx / svgDisplaySize.w;
             const dy = dh * my / svgDisplaySize.h;
-        
+
             const scaledViewBox = {
                 x: viewBox.x + dx,
                 y: viewBox.y + dy,
                 w: viewBox.w - dw,
                 h: viewBox.h - dh
             };
-        
+
             // Animate the viewBox update with GSAP
             gsap.to(svgElement, {
                 duration: 0.3,
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 ease: "power2.out"
             });
-        
+
             viewBox = scaledViewBox;
         }, { passive: false });
 
@@ -318,12 +318,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!ctm) return;
                 // Convert to SVG document coordinates
                 const svgP = pt.matrixTransform(ctm.inverse());
-        
+
                 endPoint = {x: svgP.x, y: svgP.y};
                 // Update selection rectangle
                 const width = endPoint.x - startPoint.x;
                 const height = endPoint.y - startPoint.y;
-        
+
                 // Animate the rectangle size and position with GSAP
                 gsap.to(selectionRect, {
                     duration: 0.2,
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const dy = startPoint.y - e.clientY;
                 // Calculate the movement factor based on the current zoom level
                 const panFactor = viewBox.w / svgDisplaySize.w;
-                // Calculate movement in SVG coordinates        
+                // Calculate movement in SVG coordinates
                 const movedViewBox = {
                     x: endPoint.x + (dx * panFactor),
                     y: endPoint.y + (dy * panFactor),
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const maxY = svgActualSize.h - viewBox.h;
                 movedViewBox.x = Math.max(0, Math.min(movedViewBox.x, maxX));
                 movedViewBox.y = Math.max(0, Math.min(movedViewBox.y, maxY));
-        
+
                 // Animate panning with GSAP
                 gsap.to(svgElement, {
                     duration: 0.3,
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     ease: "power2.out"
                 });
-        
+
                 viewBox = movedViewBox;
             }
         };
@@ -380,18 +380,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 const pt = svgElement.createSVGPoint();
                 pt.x = e.clientX;
                 pt.y = e.clientY;
-        
+
                 // Get the CTM
                 const ctm = svgElement.getScreenCTM();
                 if (!ctm) return;
                 // Convert to SVG document coordinates
                 const svgP = pt.matrixTransform(ctm.inverse());
-        
+
                 endPoint = {x: svgP.x, y: svgP.y};
                 // Get the selection rectangle dimensions
                 let selWidth = Math.abs(endPoint.x - startPoint.x);
                 let selHeight = Math.abs(endPoint.y - startPoint.y);
-        
+
                 // Minimum selection size check
                 if (selWidth > 10 && selHeight > 10) {
                     // Get the top-left corner of the selection
@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         w: selWidth,
                         h: selHeight
                     });
-        
+
                     // Animate final zoom with GSAP
                     gsap.to(svgElement, {
                         duration: 0.3,
@@ -414,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ease: "power2.out"
                     });
                 }
-        
+
                 // Remove the selection rectangle with GSAP
                 gsap.to(selectionRect, {
                     duration: 0.2,
@@ -427,14 +427,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             }
-        
+
             isPanning = false;
         };
 
         // Handle mouse leaving the SVG area
         svgElement.onmouseleave = function (e) {
             isPanning = false;
-        
+
             if (selectionRect && selectionRect.parentNode) {
                 gsap.to(selectionRect, {
                     duration: 0.2,
@@ -465,65 +465,65 @@ document.addEventListener('DOMContentLoaded', function() {
     function highlightElement(elementId) {
         const svg = document.getElementById("floor-plan-svg").querySelector("svg");
         if (!svg) return;
-    
+
         let element = svg.getElementById(elementId) || svg.querySelector(`[data-id="${elementId}"]`);
         if (!element) {
             console.log(`Could not find element: ${elementId}`);
             return;
         }
-    
+
         console.log(`Found element to highlight: ${elementId}`);
 
         const bbox = element.getBBox();
         console.log("Element BBox:", bbox);
-    
+
         const originalViewBox = svg.dataset.originalViewBox;
         console.log("Original ViewBox:", originalViewBox);
-    
+
         if (originalViewBox) {
             const [origX, origY, origW, origH] = originalViewBox.split(' ').map(Number);
-    
+
             // Ensure origW and origH are valid
             const safeOrigW = isNaN(origW) || origW <= 0 ? 15046 : origW;
             const safeOrigH = isNaN(origH) || origH <= 0 ? 15046 : origH;
-    
+
             // Ensure bbox values are valid
             const bboxX = isNaN(bbox.x) ? 0 : Number(bbox.x);
             const bboxY = isNaN(bbox.y) ? 0 : Number(bbox.y);
             const bboxW = isNaN(bbox.width) ? 10 : Number(bbox.width);
             const bboxH = isNaN(bbox.height) ? 10 : Number(bbox.height);
-    
+
             console.log(`BBox Values: x=${bboxX}, y=${bboxY}, width=${bboxW}, height=${bboxH}`);
-    
+
             // Dynamically adjust padding factor based on floor plan size
             const paddingFactor = Math.max(1, Math.min(10, (bboxW + bboxH) / 100)); // Dynamically adjust padding factor
             let startX = bboxX - bboxW * paddingFactor;
             let startY = bboxY - bboxH * paddingFactor;
             let endX = bboxX + bboxW * (1 + paddingFactor);
             let endY = bboxY + bboxH * (1 + paddingFactor);
-    
+
             // Compute width and height safely
             let computedW = isNaN(endX - startX) ? 100 : Math.max(10, endX - startX);
             let computedH = isNaN(endY - startY) ? 100 : Math.max(10, endY - startY);
-    
+
             let newW = Math.min(safeOrigW, computedW);
             let newH = Math.min(safeOrigH, computedH);
-    
+
             console.log(`Final Computed ViewBox: ${startX} ${startY} ${newW} ${newH}`)
 
             // Disable zoom and pan during highlight operation
-            disableZoomAndPan();        
+            disableZoomAndPan();
             // Apply zoom with animation
             if (!isNaN(startX) && !isNaN(startY) && !isNaN(newW) && !isNaN(newH)) {
-                gsap.to(svg, { 
-                    duration: 1, 
-                    attr: { viewBox: `${startX} ${startY} ${newW} ${newH}` }, 
+                gsap.to(svg, {
+                    duration: 1,
+                    attr: { viewBox: `${startX} ${startY} ${newW} ${newH}` },
                     ease: "power2.inOut"
                 });
 
                 // Apply highlight effects
                 const effects = createHighlightEffects(element, svg);
-    
+
                 // Restore original view after 5s
                 setTimeout(() => {
                     console.log("Resetting viewBox using resetZoom() function.");
@@ -531,11 +531,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Re-enable zoom and pan after highlight is complete
                     enableZoomAndPan();
                 }, 5000);
-    
+
                 // Clean up effects after 20s
                 setTimeout(() => {
                     console.log("Cleanup triggered after 20 seconds");
-                    completeCleanup(element, effects.elements, effects.animations);                
+                    completeCleanup(element, effects.elements, effects.animations);
                 }, 20000);
             } else {
                 console.error("Invalid viewBox values. Skipping update.");
@@ -564,28 +564,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function for complete cleanup of all highlighting effects
     function completeCleanup(element, effectElements, animations) {
         console.log("Performing complete cleanup of highlighting");
-    
+
         // Stop all animations
         animations.forEach(anim => {
             if (anim && typeof anim.cancel === 'function') {
                 anim.cancel();
             }
         });
-    
+
         // Remove all visual effect elements
         effectElements.forEach(el => {
             if (el && el.parentNode) {
                 el.parentNode.removeChild(el);
             }
         });
-    
+
         // If element exists, restore its original styling
         if (element) {
             element.classList.remove('highlighted');
             element.classList.remove('static-highlight');
             element.removeAttribute('data-highlighted');
         }
-    
+
         console.log("Cleanup complete");
     }
 
@@ -605,14 +605,14 @@ document.addEventListener('DOMContentLoaded', function() {
             spotlight.setAttribute("cx", centerX);
             spotlight.setAttribute("cy", centerY);
             spotlight.setAttribute("r", Math.max(bbox.width, bbox.height) * 1.5);
-            spotlight.setAttribute("fill", "rgba(255, 255, 0, 0.15)");
+            spotlight.setAttribute("fill", "rgba(255, 255, 0, 0.8)");
             spotlight.setAttribute("class", "spotlight-effect");
             spotlight.setAttribute("pointer-events", "none");
             spotlight.setAttribute("data-highlight-effect", "true");
 
             // Insert spotlight at the beginning of SVG
             if (svg.firstChild) {
-            spotlight.setAttribute("fill", "rgba(255, 255, 0, 0.8)");
+                svg.insertBefore(spotlight, svg.firstChild);
             } else {
                 svg.appendChild(spotlight);
             }
@@ -620,13 +620,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Animate the spotlight - using opacity only to avoid r animation errors
             try {
-                const spotlightAnim = spotlight.animate([
-                    { opacity: 0.1 },
-                    { opacity: 0.3 },
-                    { opacity: 0.1 }
-                ], {
-                    duration: 3000,
-                    iterations: Infinity
                 const spotlightAnim = spotlight.animate([
                     { opacity: 0.5 },
                     { opacity: 0.3 },
@@ -639,7 +632,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     duration: 3000,
                     iterations: Infinity
                 });
-                effectAnimations.push(spotlightAnim);
                 effectAnimations.push(spotlightAnim);
             } catch (animError) {
                 console.log("Spotlight animation not supported:", animError);
@@ -738,4 +730,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Call the function when the page loads
     highlightElementFromURL();
-}); 
+});
