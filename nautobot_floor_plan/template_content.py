@@ -170,10 +170,7 @@ class PowerPanelFloorPlanExtension(TemplateExtension):  # pylint: disable=abstra
         user = self.context["request"].user
 
         # Only display the button if the power panel has a location with a floor plan
-        if (
-            not hasattr(power_panel.location, "floor_plan")
-            or not power_panel.location.floor_plan
-        ):
+        if not hasattr(power_panel.location, "floor_plan") or not power_panel.location.floor_plan:
             return ""
 
         # Use the helper function to create the button
