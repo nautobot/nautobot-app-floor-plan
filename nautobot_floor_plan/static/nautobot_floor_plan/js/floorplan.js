@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Insert spotlight at the beginning of SVG
             if (svg.firstChild) {
-                svg.insertBefore(spotlight, svg.firstChild);
+            spotlight.setAttribute("fill", "rgba(255, 255, 0, 0.8)");
             } else {
                 svg.appendChild(spotlight);
             }
