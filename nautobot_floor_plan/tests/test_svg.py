@@ -2,14 +2,22 @@
 
 from unittest.mock import ANY, MagicMock, patch
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 from nautobot.dcim.models import Device, PowerFeed, PowerPanel, Rack, RackGroup
+from nautobot.users.models import Token
+from rest_framework import status
+from rest_framework.test import APIClient
 
+from nautobot_floor_plan import models, svg
 from nautobot_floor_plan.choices import ObjectOrientationChoices
-from nautobot_floor_plan.svg import FloorPlanSVG, TextElement
+from nautobot_floor_plan.tests import fixtures
 from nautobot_floor_plan.tests.fixtures import create_prerequisites
 
 # pylint: disable=protected-access,too-many-instance-attributes
+
+User = get_user_model()
 
 
 class FloorPlanSVGTestCase(TestCase):
@@ -45,7 +53,7 @@ class FloorPlanSVGTestCase(TestCase):
         self.mock_reverse = self.reverse_patcher.start()
 
         # Create the SVG instance once with the patch applied
-        self.svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
+        self.svg = svg.FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
 
     def tearDown(self):
         """Clean up test environment."""
@@ -416,7 +424,7 @@ class FloorPlanSVGTestCase(TestCase):
         mock_tile.y_size = 2
         origin = (50, 50)
 
-        text_element = TextElement(text="Test Text", line_offset=1, class_name="test-class", color="ff0000")
+        text_element = svg.TextElement(text="Test Text", line_offset=1, class_name="test-class", color="ff0000")
 
         # Call method
         self.svg._add_text_element(mock_drawing, text_element, origin, mock_tile)
@@ -504,3 +512,42 @@ class FloorPlanSVGTestCase(TestCase):
         self.assertEqual(mock_drawing.text.call_count, 2)
         # Should add all elements to the drawing
         self.assertEqual(mock_drawing.add.call_count, 2)  # One for each button group
+
+
+class FloorPlanThemeTests(TestCase):
+    """Test cases for SVG rendering based on user theme settings."""
+
+    def setUp(self):
+        """Set up test environment using fixtures."""
+        # Create prerequisites using the fixture
+        data = fixtures.create_prerequisites()
+        self.floors = data["floors"]
+        self.floor_plan = models.FloorPlan.objects.create(
+            location=self.floors[0], x_size=5, y_size=5, x_origin_seed=1, y_origin_seed=1
+        )
+        self.user = User.objects.create(username="testuser", is_superuser=True)
+        self.token = Token.objects.create(user=self.user)
+        self.client = APIClient()
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
+
+    def test_svg_rendering_light_theme(self):
+        """Test SVG rendering with light theme."""
+        url = reverse("plugins-api:nautobot_floor_plan-api:floorplan-svg", kwargs={"pk": self.floor_plan.pk})
+        response = self.client.get(url, **{"HTTP_COOKIE": "theme=light"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('<style type="text/css">', response.content.decode())  # Check for CSS inclusion
+        self.assertNotIn(
+            "filter: invert(1) hue-rotate(180deg);", response.content.decode()
+        )  # Check that invert filter is not in use
+
+    def test_svg_rendering_dark_theme(self):
+        """Test SVG rendering with dark theme and check for invert filter on .object."""
+        url = reverse("plugins-api:nautobot_floor_plan-api:floorplan-svg", kwargs={"pk": self.floor_plan.pk})
+        response = self.client.get(url, **{"HTTP_COOKIE": "theme=dark"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('<style type="text/css">', response.content.decode())  # Check for CSS inclusion
+        self.assertIn(
+            "filter: invert(1) hue-rotate(180deg);", response.content.decode()
+        )  # Check that invert filter is being used

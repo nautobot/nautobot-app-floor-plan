@@ -45,7 +45,7 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
     RACKGROUP_TEXT_OFFSET = 12
     Y_LABEL_TEXT_OFFSET = 34
 
-    def __init__(self, *, floor_plan, user, base_url):
+    def __init__(self, *, floor_plan, user, base_url, request=None):
         """
         Initialize a FloorPlanSVG.
 
@@ -53,10 +53,12 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
             floor_plan (FloorPlan): FloorPlan to render
             user (User): User making this request
             base_url (str): Server URL, needed to prepend to URLs included in the rendered SVG.
+            request (HttpRequest): The current request object
         """
         self.floor_plan = floor_plan
         self.user = user
         self.base_url = base_url.rstrip("/")
+        self.request = request
         self.add_url = self.base_url + reverse("plugins:nautobot_floor_plan:floorplantile_add")
         self.return_url = (
             reverse("plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": self.floor_plan.location.pk})
@@ -78,9 +80,14 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
         drawing = svgwrite.Drawing(size=(width, depth), debug=False)
         drawing.viewbox(0, 0, width=width, height=depth)
 
+        # Get theme from request cookies if available
+        theme = self.request.COOKIES.get("theme", "light") if self.request else "light"
+        css_filename = "dark_svg.css" if theme == "dark" else "svg.css"
+        logger.debug("Using CSS file: %s for theme: %s", css_filename, theme)
+
         # Add our custom stylesheet
         with open(
-            os.path.join(os.path.dirname(__file__), "static", "nautobot_floor_plan", "css", "svg.css"),
+            os.path.join(os.path.dirname(__file__), "static", "nautobot_floor_plan", "css", css_filename),
             "r",
             encoding="utf-8",
         ) as css_file:

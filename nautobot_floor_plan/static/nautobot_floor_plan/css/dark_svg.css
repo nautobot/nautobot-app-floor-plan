@@ -1,3 +1,4 @@
+/* dark_svg.css */
 /* Center text at its specified coordinate */
 text {
     text-anchor: middle;
@@ -18,24 +19,34 @@ text {
     stroke-width: 1px;
 }
 
-.tile-status {
-    stroke: black;
-    fill: #f7f7f7;
-    opacity: .6;
-}
-
 .button-text {
     fill: white;
 }
 
+.tile-status {
+    stroke: black;
+    fill: #f7f7f7;
+    opacity: .6;
+    filter: invert(1) hue-rotate(180deg);
+}
+
 .label-text {
     fill: white;
+    filter: invert(1) hue-rotate(180deg);
 }
 
 .label-text-primary {
     fill: white;
     font-weight: bold;
+    filter: invert(1) hue-rotate(180deg);
 }
+
+.object {
+    stroke: white;
+    stroke-width: 2px;
+    filter: invert(1) hue-rotate(180deg);
+}
+
 
 .add-tile-button {
     fill: #5cb85c;
@@ -104,11 +115,6 @@ a text {
     stroke-width: 0;
 }
 
-.object {
-    stroke: white;
-    stroke-width: 2px;
-}
-
 rect.object-orientation {
     fill: white;
     stroke: none;
@@ -131,19 +137,25 @@ rect.object-orientation {
 
 /* spotlight, border, and arrow styles */
 .spotlight-effect {
-    fill: rgba(255, 255, 0, 0.4);
+    fill: rgba(255, 255, 0, 0.8);
+    pointer-events: none;
+    filter: invert(1) hue-rotate(180deg);
 }
 
 .highlight-border {
     fill: none;
     stroke: #ff9900;
     stroke-width: 3px;
+    pointer-events: none;
+    filter: invert(1) hue-rotate(180deg);
 }
 
 .indicator-arrow {
     fill: #ff3300;
+    pointer-events: none;
+    filter: invert(1) hue-rotate(180deg);
 }
-/* Highlight effects */
+/* Make sure all effect elements don't interfere with clicks */
 .spotlight-effect,
 .highlight-border,
 .indicator-arrow {

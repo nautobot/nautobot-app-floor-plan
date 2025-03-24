@@ -127,9 +127,9 @@ class FloorPlan(PrimaryModel):
         """Stringify instance."""
         return f'Floor Plan for Location "{self.location.name}"'
 
-    def get_svg(self, *, user, base_url):
+    def get_svg(self, *, user, base_url, request=None):
         """Get SVG representation of this FloorPlan."""
-        return FloorPlanSVG(floor_plan=self, user=user, base_url=base_url).render()
+        return FloorPlanSVG(floor_plan=self, user=user, base_url=base_url, request=request).render()
 
     def clean(self):
         """Validate the floor plan dimensions and other constraints."""
