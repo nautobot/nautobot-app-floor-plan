@@ -271,7 +271,7 @@ class TestFloorPlanCoordinateFilter(TestCase):
         filter_instance.parent = MagicMock()
         filter_instance.parent.data = {"nautobot_floor_plan_floor_plan": self.floor_plan.pk}
 
-        # Apply filter with label "B" or "2" (depends on your label system)
+        # Apply filter with label "B"
         test_qs = models.FloorPlanTile.objects.all()
         filtered_qs = filter_instance.filter(test_qs, "B")
 

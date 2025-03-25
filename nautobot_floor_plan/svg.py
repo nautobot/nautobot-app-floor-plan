@@ -219,7 +219,7 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
             filter_params = urlencode(
                 {
                     "nautobot_floor_plan_floor_plan": self.floor_plan.pk,
-                    "nautobot_floor_plan_tile_y_origin": label,
+                    "nautobot_floor_plan_tile_y_origin": label, # Pass the label instead of the numeric position
                 }
             )
             rack_url = f"{self.base_url}/dcim/rack-elevations/?{filter_params}"
