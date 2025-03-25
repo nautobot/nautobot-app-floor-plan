@@ -129,6 +129,16 @@ rect.object-orientation {
     text-transform: capitalize;
 }
 
+.clickable-label {
+    cursor: pointer;
+    fill: #0066cc;
+}
+
+.clickable-label:hover {
+    fill: #0056b3;
+    text-decoration: underline;
+}
+
 /* spotlight, border, and arrow styles */
 .spotlight-effect {
     fill: rgba(255, 255, 0, 0.8);
@@ -143,6 +153,7 @@ rect.object-orientation {
 .indicator-arrow {
     fill: #ff3300;
 }
+
 /* Highlight effects */
 .spotlight-effect,
 .highlight-border,

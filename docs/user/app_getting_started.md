@@ -237,7 +237,9 @@ Common Data:
 
 If you've defined a large floor plan or have a small display, you can use your mouse wheel to zoom in for a better view. While zoomed in, click and drag to pan around the grid.
 
-Additional you can use the Enable Box Zoom/Switch to Pan Mode button to left click and drag a zoom box while Zoom is enabled, or pan in any direction when the Pan is enable. The Reset View button will reset the view back to the original rendered floor plan.
+Additionally you can use the Enable Box Zoom/Switch to Pan Mode button to left click and drag a zoom box while Zoom is enabled, or pan in any direction when the Pan is enable. The Reset View button will reset the view back to the original rendered floor plan.
+
+Clicking on a grid label for a given row will navigate to a Rack elevation view of racks filtered by the Floor Plan and the Racks in the chosen row.
 
 ![Floor plan zoom box button](../images/floorplan-click-drag-zoom.png)
 ![Floor plan zoomed in](../images/floorplan-zoomed.png)

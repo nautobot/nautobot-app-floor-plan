@@ -1,11 +1,14 @@
 """Test FloorPlan Filter."""
 
+from unittest.mock import MagicMock, patch
+
 from django.test import TestCase
 from nautobot.dcim.models import Rack, RackGroup
 from nautobot.extras.models import Tag
 
-from nautobot_floor_plan import choices, filters, models
-from nautobot_floor_plan.tests import fixtures
+from nautobot_floor_plan import choices, filter_extensions, filters, models
+from nautobot_floor_plan.choices import CustomAxisLabelsChoices
+from nautobot_floor_plan.tests import fixtures, utils
 
 
 class TestFloorPlanFilterSet(TestCase):
@@ -181,3 +184,152 @@ class TestFloorPlanTileFilterSet(TestCase):
         """Test filtering by y_origin position."""
         params = {"y_origin": [1]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 10)
+
+
+class TestFloorPlanCoordinateFilter(TestCase):
+    """Test FloorPlanCoordinateFilter functionality."""
+
+    @classmethod
+    def setUpTestData(cls):
+        """Setup test data for FloorPlan and FloorPlanCoordinateFilter."""
+        data = fixtures.create_prerequisites()
+        cls.floor_plan = fixtures.create_floor_plans(data["floors"])[0]
+
+        # Create custom labels for testing
+        utils.create_custom_labels(
+            cls.floor_plan,
+            [
+                {
+                    "start": "1",
+                    "end": "5",
+                    "step": 1,
+                    "increment_letter": False,
+                    "label_type": CustomAxisLabelsChoices.NUMBERS,
+                },
+            ],
+            axis="X",
+        )
+
+        utils.create_custom_labels(
+            cls.floor_plan,
+            [
+                {
+                    "start": "A",
+                    "end": "E",
+                    "step": 1,
+                    "increment_letter": True,
+                    "label_type": CustomAxisLabelsChoices.LETTERS,
+                },
+            ],
+            axis="Y",
+        )
+
+        # Create some floor plan tiles for testing
+        cls.tile1 = models.FloorPlanTile.objects.create(
+            floor_plan=cls.floor_plan, x_origin=1, y_origin=1, status=data["status"]
+        )
+
+        cls.tile2 = models.FloorPlanTile.objects.create(
+            floor_plan=cls.floor_plan, x_origin=2, y_origin=2, status=data["status"]
+        )
+
+    @patch("nautobot_floor_plan.filter_extensions.LabelToPositionConverter")
+    @patch("nautobot_floor_plan.models.FloorPlan.objects.get")
+    def test_filter_with_x_coordinate(self, mock_get, mock_converter):
+        """Test filtering by X coordinate value."""
+        # Setup mocks
+        mock_get.return_value = self.floor_plan
+        converter_instance = MagicMock()
+        converter_instance.convert.return_value = (1, None)  # Return position 1
+        mock_converter.return_value = converter_instance
+
+        # Create the filter instance
+        filter_instance = filter_extensions.FloorPlanCoordinateFilter(axis="X", field_name="x_origin")
+        filter_instance.parent = MagicMock()
+        filter_instance.parent.data = {"nautobot_floor_plan_floor_plan": self.floor_plan.pk}
+
+        # Apply filter with label "1"
+        test_qs = models.FloorPlanTile.objects.all()
+        filtered_qs = filter_instance.filter(test_qs, "1")
+
+        # Verify that the filter was applied correctly
+        self.assertEqual(filtered_qs.count(), 1)
+        self.assertEqual(filtered_qs.first().x_origin, 1)
+
+    @patch("nautobot_floor_plan.filter_extensions.LabelToPositionConverter")
+    @patch("nautobot_floor_plan.models.FloorPlan.objects.get")
+    def test_filter_with_y_coordinate(self, mock_get, mock_converter):
+        """Test filtering by Y coordinate value."""
+        # Setup mocks
+        mock_get.return_value = self.floor_plan
+        converter_instance = MagicMock()
+        converter_instance.convert.return_value = (2, None)  # Return position 2
+        mock_converter.return_value = converter_instance
+
+        # Create the filter instance
+        filter_instance = filter_extensions.FloorPlanCoordinateFilter(axis="Y", field_name="y_origin")
+        filter_instance.parent = MagicMock()
+        filter_instance.parent.data = {"nautobot_floor_plan_floor_plan": self.floor_plan.pk}
+
+        # Apply filter with label "B" or "2" (depends on your label system)
+        test_qs = models.FloorPlanTile.objects.all()
+        filtered_qs = filter_instance.filter(test_qs, "B")
+
+        # Verify that the filter was applied correctly
+        self.assertEqual(filtered_qs.count(), 1)
+        self.assertEqual(filtered_qs.first().y_origin, 2)
+
+    @patch("nautobot_floor_plan.models.FloorPlan.objects.get")
+    def test_filter_with_invalid_floor_plan(self, mock_get):
+        """Test filtering when the FloorPlan does not exist."""
+        mock_get.side_effect = models.FloorPlan.DoesNotExist
+
+        # Create filter instance
+        filter_instance = filter_extensions.FloorPlanCoordinateFilter(axis="X", field_name="x_origin")
+        filter_instance.parent = MagicMock()
+        filter_instance.parent.data = {"nautobot_floor_plan_floor_plan": self.floor_plan.pk}
+
+        # Test the filter with a non-existent floor plan
+        test_qs = models.FloorPlanTile.objects.all()
+        filtered_qs = filter_instance.filter(test_qs, "1")
+
+        # The original queryset should be returned unchanged
+        self.assertEqual(list(filtered_qs), list(test_qs))
+
+    @patch("nautobot_floor_plan.filter_extensions.PositionToLabelConverter")
+    @patch("nautobot_floor_plan.models.FloorPlan.objects.get")
+    def test_display_value_with_valid_value(self, mock_get, mock_converter):
+        """Test display_value with a valid position value."""
+        # Setup mocks
+        mock_get.return_value = self.floor_plan
+        converter_instance = MagicMock()
+        converter_instance.convert.return_value = "A"  # Return label "A"
+        mock_converter.return_value = converter_instance
+
+        # Create filter instance
+        filter_instance = filter_extensions.FloorPlanCoordinateFilter(axis="Y", field_name="y_origin")
+        filter_instance.parent = MagicMock()
+        filter_instance.parent.data = {"nautobot_floor_plan_floor_plan": self.floor_plan.pk}
+
+        # Test display_value
+        result = filter_instance.display_value("1")
+
+        # Verify the result
+        self.assertEqual(result, "A")
+        mock_converter.assert_called_once_with(1, "Y", self.floor_plan)
+
+    @patch("nautobot_floor_plan.models.FloorPlan.objects.get")
+    def test_display_value_with_invalid_floor_plan(self, mock_get):
+        """Test display_value when the FloorPlan does not exist."""
+        mock_get.side_effect = models.FloorPlan.DoesNotExist
+
+        # Create filter instance
+        filter_instance = filter_extensions.FloorPlanCoordinateFilter(axis="X", field_name="x_origin")
+        filter_instance.parent = MagicMock()
+        filter_instance.parent.data = {"nautobot_floor_plan_floor_plan": self.floor_plan.pk}
+
+        # Test display_value with a non-existent floor plan
+        result = filter_instance.display_value("1")
+
+        # Original value should be returned
+        self.assertEqual(result, "1")
