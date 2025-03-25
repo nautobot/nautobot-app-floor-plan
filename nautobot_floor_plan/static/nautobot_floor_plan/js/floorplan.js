@@ -372,9 +372,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // On releasing the mouse button, update the panning location or zoom to selection
         svgElement.onmouseup = function(e){
             if (!isPanning && !selectionRect) return;
-        
+
             e.preventDefault();
-        
+
             if (zoomMode && selectionRect) {
                 // In ZOOM mode - Finalize the zoom box
                 // Create an SVG point at the mouse position
@@ -525,19 +525,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Apply highlight effects
                 const effects = createHighlightEffects(element, svg);
 
-                // Restore original view after 5s
+                // Restore original view
                 setTimeout(() => {
                     console.log("Resetting viewBox using resetZoom() function.");
                     resetZoom(); // Call the existing reset function
-                    // Re-enable zoom and pan after highlight is complete
+                    // Re-enable zoom and pan after configured zoom_duration, default is 5 seconds
                     enableZoomAndPan();
-                }, 5000);
+                }, ZOOM_DURATION);
 
-                // Clean up effects after 20s
+                // Clean up effects after configured highlight_duration, default is 20 seconds
                 setTimeout(() => {
-                    console.log("Cleanup triggered after 20 seconds");
+                    console.log("Cleanup triggered");
                     completeCleanup(element, effects.elements, effects.animations);
-                }, 20000);
+                }, HIGHLIGHT_DURATION);
             } else {
                 console.error("Invalid viewBox values. Skipping update.");
             }
@@ -580,13 +580,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // If element exists, restore its original styling
-        if (element) {
-            element.classList.remove('highlighted');
-            element.classList.remove('static-highlight');
-            element.removeAttribute('data-highlighted');
-        }
-
         console.log("Cleanup complete");
     }
 
@@ -606,9 +599,7 @@ document.addEventListener('DOMContentLoaded', function() {
             spotlight.setAttribute("cx", centerX);
             spotlight.setAttribute("cy", centerY);
             spotlight.setAttribute("r", Math.max(bbox.width, bbox.height) * 1.5);
-            spotlight.setAttribute("fill", "rgba(255, 255, 0, 0.8)");
-            spotlight.setAttribute("class", "spotlight-effect");
-            spotlight.setAttribute("pointer-events", "none");
+            spotlight.classList.add("spotlight-effect");
             spotlight.setAttribute("data-highlight-effect", "true");
 
             // Insert spotlight at the beginning of SVG
@@ -638,17 +629,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("Spotlight animation not supported:", animError);
             }
 
-            // Create animated border - using fixed values and stroke properties only
+            // Create animated border
             const border = document.createElementNS("http://www.w3.org/2000/svg", "rect");
             border.setAttribute("x", bbox.x - 5);
             border.setAttribute("y", bbox.y - 5);
             border.setAttribute("width", bbox.width + 10);
             border.setAttribute("height", bbox.height + 10);
-            border.setAttribute("fill", "none");
-            border.setAttribute("stroke", "#ff9900");
-            border.setAttribute("stroke-width", "3");
-            border.setAttribute("class", "highlight-border");
-            border.setAttribute("pointer-events", "none");
+            border.classList.add("highlight-border");
             border.setAttribute("data-highlight-effect", "true");
 
             svg.appendChild(border);
@@ -674,20 +661,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const arrow = document.createElementNS("http://www.w3.org/2000/svg", "path");
             arrow.setAttribute("d", `M${centerX},${arrowY + 20} L${centerX - 10},${arrowY} L${centerX + 10},${arrowY} Z`);
-            arrow.setAttribute("fill", "#ff3300");
-            arrow.setAttribute("pointer-events", "none");
-            arrow.setAttribute("class", "indicator-arrow");
+            arrow.classList.add("indicator-arrow");
             arrow.setAttribute("data-highlight-effect", "true");
 
             svg.appendChild(arrow);
             effectElements.push(arrow);
 
-            // Animate the arrow using CSS transform property
+            // Animate the arrow
             try {
                 const arrowAnim = arrow.animate([
-                    { transform: "translate(0px, -5px)" },
-                    { transform: "translate(0px, 5px)" },
-                    { transform: "translate(0px, -5px)" }
+                    { transform: 'translateY(0px)' },
+                    { transform: 'translateY(10px)' },
+                    { transform: 'translateY(0px)' }
                 ], {
                     duration: 1500,
                     iterations: Infinity
@@ -697,14 +682,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("Arrow animation not supported:", animError);
             }
 
-        } catch (e) {
-            console.error("Error creating highlight effects:", e);
+            return {
+                elements: effectElements,
+                animations: effectAnimations
+            };
+        } catch (error) {
+            console.error("Error creating highlight effects:", error);
+            return {
+                elements: [],
+                animations: []
+            };
         }
-
-        return {
-            elements: effectElements,
-            animations: effectAnimations
-        };
     }
     // Function to check for and highlight elements from URL parameters
     function highlightElementFromURL() {
@@ -731,4 +719,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Call the function when the page loads
     highlightElementFromURL();
+
+    // Add function to check the current theme
+    function getCurrentTheme() {
+        // First check localStorage for user preference
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme && currentTheme !== "system") {
+            return currentTheme;
+        }
+
+        // If system theme, check system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return "dark";
+        }
+
+        // Default to light
+        return "light";
+    }
+
+    // Add this function to update the SVG's CSS
+    function updateSvgTheme() {
+        const isDarkMode = getCurrentTheme() === "dark";
+        const svgElement = document.querySelector('#floor-plan-svg');
+        if (svgElement) {
+            // Find the style element within the SVG
+            const styleElement = svgElement.querySelector('style');
+            if (styleElement) {
+                // Fetch the appropriate CSS file
+                const cssFile = isDarkMode ? 'dark_svg.css' : 'svg.css';
+                fetch(`/static/nautobot_floor_plan/css/${cssFile}`)
+                    .then(response => response.text())
+                    .then(css => {
+                        styleElement.textContent = css;
+                });
+            }
+        }
+    }
+
+    // Call this when the page loads
+    updateSvgTheme();
 });

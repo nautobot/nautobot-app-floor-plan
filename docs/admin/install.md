@@ -44,13 +44,15 @@ PLUGINS = ["nautobot_floor_plan"]
 PLUGINS_CONFIG = {
     "nautobot_floor_plan": {
         "default_x_axis_labels": "letters",
+        "x_size_limit": 100,
+        "y_size_limit": 100,
+        "zoom_duration": 5000,
+        "highlight_duration": 20000,
         "default_statuses": {
             "FloorPlanTile": [
                 {"name": "Active", "color": "4caf50"},
             ],
         },
-        "x_size_limit": 100,
-        "y_size_limit": 100,
     }
 }
 ```
@@ -87,7 +89,9 @@ The app behavior can be customized with the following configuration settings:
 | `default_y_axis_labels` | `"numbers"`                               | `"numbers"` | Defines the label style for the Y-axis of the floor plan grid. Options are `numbers` or `letters`. This sets the default value in the create form. |
 | x_size_limit | 100 | None | An integer that sets the maximum allowable "x_size" for a Floor Plan. If set to None, there is no limit.|
 | y_size_limit | 100 | None | An integer that sets the maximum allowable "y_size" for a Floor Plan. If set to None, there is no limit.|
-| `default_statuses`      | `{"name": "Active", "color": "4caf50"}`   | See note below | A list of name and color key-value pairs for the **FloorPlanTile** model.                                                                      |
+| zoom_duration | 5000 | 5000 | Duration of the zoom animation in milliseconds when navigating from an Object to a Floor Plan.|
+| highlight_duration | 20000 | 20000 | Duration of the highlight animation in milliseconds when navigating from an Object to a Floor Plan.|
+| `default_statuses`      | `{"name": "Active", "color": "4caf50"}`   | See note below | A list of name and color key-value pairs for the **FloorPlanTile** model.|
 
 !!! note
     Default statuses are configured as follows:
