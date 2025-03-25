@@ -372,9 +372,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // On releasing the mouse button, update the panning location or zoom to selection
         svgElement.onmouseup = function(e){
             if (!isPanning && !selectionRect) return;
-        
+
             e.preventDefault();
-        
+
             if (zoomMode && selectionRect) {
                 // In ZOOM mode - Finalize the zoom box
                 // Create an SVG point at the mouse position
@@ -525,19 +525,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Apply highlight effects
                 const effects = createHighlightEffects(element, svg);
 
-                // Restore original view after 5s
+                // Restore original view
                 setTimeout(() => {
                     console.log("Resetting viewBox using resetZoom() function.");
                     resetZoom(); // Call the existing reset function
-                    // Re-enable zoom and pan after highlight is complete
+                    // Re-enable zoom and pan after configured zoom_duration, default is 5 seconds
                     enableZoomAndPan();
-                }, 5000);
+                }, ZOOM_DURATION);
 
-                // Clean up effects after 20s
+                // Clean up effects after configured highlight_duration, default is 20 seconds
                 setTimeout(() => {
-                    console.log("Cleanup triggered after 20 seconds");
+                    console.log("Cleanup triggered");
                     completeCleanup(element, effects.elements, effects.animations);
-                }, 20000);
+                }, HIGHLIGHT_DURATION);
             } else {
                 console.error("Invalid viewBox values. Skipping update.");
             }
@@ -758,19 +758,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Call this when the page loads
     updateSvgTheme();
-
-    // Also update when theme changes
-    const htmlEl = document.getElementsByTagName('html')[0];
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.attributeName === 'data-theme') {
-                updateSvgTheme();
-            }
-        });
-    });
-
-    observer.observe(htmlEl, {
-        attributes: true,
-        attributeFilter: ['data-theme']
-    });
 });

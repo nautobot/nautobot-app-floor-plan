@@ -34,6 +34,10 @@
     <script src="{% static 'nautobot_floor_plan/tippy.js-6.3.7/tippy-bundle.umd.min.js' %}"></script>
     <script src="{% static 'nautobot_floor_plan/js/floorplan.js' %}?v={% now 'U' %}"></script>
     <script src="{% static 'nautobot_floor_plan/gsap.js-3.12.2/gsap.min.js' %}"></script>
+    <script>
+        const ZOOM_DURATION = {{ zoom_duration }};
+        const HIGHLIGHT_DURATION = {{ highlight_duration }};
+    </script>
 
     {% comment %}
     Scale the SVG by default to match the page width, preserving its aspect-ratio.
@@ -41,12 +45,12 @@
     {% endcomment %}
     <div id="floor-plan-svg-container"
          style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ floor_plan.y_size}} * {{ floor_plan.tile_depth }}) / ({{ floor_plan.x_size }} * {{ floor_plan.tile_width }}) / 1.2);">
-         <a id="zoom-anchor"></a>
-         <div id="floor-plan-svg" 
-             data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=floor_plan.pk %}"
-             data-floor-plan-x-size="{{ floor_plan.x_size }}"
-             data-floor-plan-y-size="{{ floor_plan.y_size }}"
-             style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
+        <a id="zoom-anchor"></a>
+        <div id="floor-plan-svg"
+            data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=floor_plan.pk %}"
+            data-floor-plan-x-size="{{ floor_plan.x_size }}"
+            data-floor-plan-y-size="{{ floor_plan.y_size }}"
+            style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
         </div>
     </div>
 {% else %}

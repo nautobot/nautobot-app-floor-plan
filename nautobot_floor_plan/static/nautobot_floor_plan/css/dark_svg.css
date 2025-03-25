@@ -138,26 +138,21 @@ rect.object-orientation {
 /* spotlight, border, and arrow styles */
 .spotlight-effect {
     fill: rgba(255, 255, 0, 0.8);
-    pointer-events: none;
-    filter: invert(1) hue-rotate(180deg);
 }
 
 .highlight-border {
     fill: none;
     stroke: #ff9900;
     stroke-width: 3px;
-    pointer-events: none;
-    filter: invert(1) hue-rotate(180deg);
 }
 
 .indicator-arrow {
     fill: #ff3300;
-    pointer-events: none;
-    filter: invert(1) hue-rotate(180deg);
 }
 /* Make sure all effect elements don't interfere with clicks */
 .spotlight-effect,
 .highlight-border,
 .indicator-arrow {
     pointer-events: none;
+    filter: invert(1) hue-rotate(180deg);
 }

@@ -131,7 +131,7 @@ rect.object-orientation {
 
 /* spotlight, border, and arrow styles */
 .spotlight-effect {
-    fill: rgba(255, 255, 0, 0.4);
+    fill: rgba(255, 255, 0, 0.8);
 }
 
 .highlight-border {

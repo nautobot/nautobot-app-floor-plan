@@ -1,6 +1,7 @@
 """Views for FloorPlan."""
 
 from django_tables2 import RequestConfig
+from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.views import (
     NautobotUIViewSet,
     ObjectChangeLogViewMixin,
@@ -38,6 +39,8 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
         context["label_type_choices"] = [
             {"value": choice[0], "label": choice[1]} for choice in CustomAxisLabelsChoices.CHOICES
         ]
+        context["zoom_duration"] = get_app_settings_or_config("nautobot_floor_plan", "zoom_duration")
+        context["highlight_duration"] = get_app_settings_or_config("nautobot_floor_plan", "highlight_duration")
         return context
 
 
