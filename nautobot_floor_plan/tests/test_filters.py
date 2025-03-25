@@ -233,51 +233,73 @@ class TestFloorPlanCoordinateFilter(TestCase):
             floor_plan=cls.floor_plan, x_origin=2, y_origin=2, status=data["status"]
         )
 
-    @patch("nautobot_floor_plan.filter_extensions.LabelToPositionConverter")
-    @patch("nautobot_floor_plan.models.FloorPlan.objects.get")
-    def test_filter_with_x_coordinate(self, mock_get, mock_converter):
+    def test_filter_with_x_coordinate(self):
         """Test filtering by X coordinate value."""
-        # Setup mocks
-        mock_get.return_value = self.floor_plan
-        converter_instance = MagicMock()
-        converter_instance.convert.return_value = (1, None)  # Return position 1
-        mock_converter.return_value = converter_instance
-
         # Create the filter instance
         filter_instance = filter_extensions.FloorPlanCoordinateFilter(axis="X", field_name="x_origin")
         filter_instance.parent = MagicMock()
         filter_instance.parent.data = {"nautobot_floor_plan_floor_plan": self.floor_plan.pk}
 
         # Apply filter with label "1"
-        test_qs = models.FloorPlanTile.objects.all()
-        filtered_qs = filter_instance.filter(test_qs, "1")
+        # manually patch the LabelToPositionConverter for this test
+        original_converter = filter_extensions.LabelToPositionConverter
+        try:
+            # Create a mock converter
+            mock_converter = MagicMock()
+            mock_instance = MagicMock()
+            mock_instance.convert.return_value = (1, None)  # Return position 1
+            mock_converter.return_value = mock_instance
 
-        # Verify that the filter was applied correctly
-        self.assertEqual(filtered_qs.count(), 1)
-        self.assertEqual(filtered_qs.first().x_origin, 1)
+            # Replace the original with the mock
+            filter_extensions.LabelToPositionConverter = mock_converter
 
-    @patch("nautobot_floor_plan.filter_extensions.LabelToPositionConverter")
-    @patch("nautobot_floor_plan.models.FloorPlan.objects.get")
-    def test_filter_with_y_coordinate(self, mock_get, mock_converter):
+            # Run the test
+            test_qs = models.FloorPlanTile.objects.all()
+            filtered_qs = filter_instance.filter(test_qs, "1")
+
+            # Verify that the filter was applied correctly
+            self.assertEqual(filtered_qs.count(), 1)
+            self.assertEqual(filtered_qs.first().x_origin, 1)
+
+            # Verify the mock was called correctly
+            mock_converter.assert_called_once_with("1", "X", self.floor_plan)
+        finally:
+            # Restore the original converter
+            filter_extensions.LabelToPositionConverter = original_converter
+
+    def test_filter_with_y_coordinate(self):
         """Test filtering by Y coordinate value."""
-        # Setup mocks
-        mock_get.return_value = self.floor_plan
-        converter_instance = MagicMock()
-        converter_instance.convert.return_value = (2, None)  # Return position 2
-        mock_converter.return_value = converter_instance
-
         # Create the filter instance
         filter_instance = filter_extensions.FloorPlanCoordinateFilter(axis="Y", field_name="y_origin")
         filter_instance.parent = MagicMock()
         filter_instance.parent.data = {"nautobot_floor_plan_floor_plan": self.floor_plan.pk}
 
         # Apply filter with label "B"
-        test_qs = models.FloorPlanTile.objects.all()
-        filtered_qs = filter_instance.filter(test_qs, "B")
+        # manually patching the LabelToPositionConverter for this test
+        original_converter = filter_extensions.LabelToPositionConverter
+        try:
+            # Create a mock converter
+            mock_converter = MagicMock()
+            mock_instance = MagicMock()
+            mock_instance.convert.return_value = (2, None)  # Return position 2
+            mock_converter.return_value = mock_instance
 
-        # Verify that the filter was applied correctly
-        self.assertEqual(filtered_qs.count(), 1)
-        self.assertEqual(filtered_qs.first().y_origin, 2)
+            # Replace the original with the mock
+            filter_extensions.LabelToPositionConverter = mock_converter
+
+            # Run the test
+            test_qs = models.FloorPlanTile.objects.all()
+            filtered_qs = filter_instance.filter(test_qs, "B")
+
+            # Verify that the filter was applied correctly
+            self.assertEqual(filtered_qs.count(), 1)
+            self.assertEqual(filtered_qs.first().y_origin, 2)
+
+            # Verify the mock was called correctly
+            mock_converter.assert_called_once_with("B", "Y", self.floor_plan)
+        finally:
+            # Restore the original converter
+            filter_extensions.LabelToPositionConverter = original_converter
 
     @patch("nautobot_floor_plan.models.FloorPlan.objects.get")
     def test_filter_with_invalid_floor_plan(self, mock_get):
@@ -296,27 +318,18 @@ class TestFloorPlanCoordinateFilter(TestCase):
         # The original queryset should be returned unchanged
         self.assertEqual(list(filtered_qs), list(test_qs))
 
-    @patch("nautobot_floor_plan.filter_extensions.PositionToLabelConverter")
-    @patch("nautobot_floor_plan.models.FloorPlan.objects.get")
-    def test_display_value_with_valid_value(self, mock_get, mock_converter):
-        """Test display_value with a valid position value."""
-        # Setup mocks
-        mock_get.return_value = self.floor_plan
-        converter_instance = MagicMock()
-        converter_instance.convert.return_value = "A"  # Return label "A"
-        mock_converter.return_value = converter_instance
-
+    def test_display_value_with_real_converter(self):
+        """Test display_value with the actual PositionToLabelConverter."""
         # Create filter instance
         filter_instance = filter_extensions.FloorPlanCoordinateFilter(axis="Y", field_name="y_origin")
         filter_instance.parent = MagicMock()
         filter_instance.parent.data = {"nautobot_floor_plan_floor_plan": self.floor_plan.pk}
 
         # Test display_value
-        result = filter_instance.display_value("1")
+        result = filter_instance.display_value("1")  # Pass a valid value
 
-        # Verify the result
+        # Verify the result matches what we expect from the real converter
         self.assertEqual(result, "A")
-        mock_converter.assert_called_once_with(1, "Y", self.floor_plan)
 
     @patch("nautobot_floor_plan.models.FloorPlan.objects.get")
     def test_display_value_with_invalid_floor_plan(self, mock_get):
