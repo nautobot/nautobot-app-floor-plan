@@ -20,7 +20,7 @@ class FloorPlanCoordinateFilter(django_filters.CharFilter):
         self.axis = axis
 
     def filter(self, qs, value):
-        """Convert label to position and filter."""
+        """Convert label to position and filter the given queryset based on the position."""
         floor_plan_id = None
         if not value:
             return qs
@@ -53,20 +53,26 @@ class FloorPlanCoordinateFilter(django_filters.CharFilter):
     def display_value(self, value):
         """Convert stored numeric value to label for display."""
         floor_plan_id = None
-        if not value:
+        if value is None or value == "":
             return value
 
         try:
             if hasattr(self, "parent") and self.parent and hasattr(self.parent, "data"):
                 floor_plan_id = self.parent.data.get("nautobot_floor_plan_floor_plan")
-            if floor_plan_id and value is not None:
+            if floor_plan_id:
                 floor_plan = models.FloorPlan.objects.get(pk=floor_plan_id)
 
                 # Check if custom labels are being used for this axis
                 if floor_plan.custom_labels.filter(axis=self.axis).exists():
-                    # Use PositionToLabelConverter for custom labels
-                    converter = PositionToLabelConverter(int(value), self.axis, floor_plan)
-                    return converter.convert() or value
+                    # Convert value to int and use PositionToLabelConverter
+                    try:
+                        numeric_value = int(value)
+                        converter = PositionToLabelConverter(numeric_value, self.axis, floor_plan)
+                        return converter.convert() or value
+                    except (ValueError, TypeError):
+                        # Handle case where value can't be converted to int
+                        logger.warning("Could not convert value '%s' to int for label conversion", value)
+                        return value
                 # For default labels, use the value directly
                 return value
 

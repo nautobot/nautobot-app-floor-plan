@@ -17,9 +17,9 @@
 
     <div class="panel panel-default">
         <div class="panel-heading"><strong>Object Configuration</strong></div>
-        <div class="panel-body">  
+        <div class="panel-body">
             {% with power_feed_errors=form.power_feed.errors device_errors=form.device.errors power_panel_errors=form.power_panel.errors rack_errors=form.rack.errors %}
-            
+
             {# Add data attributes for JavaScript to use on a container div instead of body #}
             <div id="object-tabs-container"
                 data-rack-errors="{{ rack_errors|yesno:'true,false' }}"
@@ -50,22 +50,22 @@
                     <div role="tabpanel" class="tab-pane" id="rack">
                         {% render_field form.rack %}
                     </div>
-                
+
                     <div role="tabpanel" class="tab-pane" id="device">
                         {% render_field form.device %}
                     </div>
-                
+
                     <div role="tabpanel" class="tab-pane" id="power-panel">
                         {% render_field form.power_panel %}
                     </div>
-                
+
                     <div role="tabpanel" class="tab-pane" id="power-feed">
                         {% render_field form.power_feed %}
                     </div>
                 </div>
             </div>
             {% endwith %}
-            
+
             <!-- Object orientation field outside of tabs so it's always available -->
             {% render_field form.object_orientation %}
         </div>
