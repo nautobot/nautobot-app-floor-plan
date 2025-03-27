@@ -185,30 +185,55 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
         return x_labels, y_labels
 
     def _draw_axis_labels(self, drawing, x_labels, y_labels):
-        """Draw labels on the X and Y axes."""
+        """Draw labels on the X and Y axes with clickable links to rack elevations."""
+        # Create X-axis labels (column labels)
         for idx, label in enumerate(x_labels):
-            drawing.add(
+            # Create filter URL for racks in this row
+            filter_params = urlencode(
+                {
+                    "nautobot_floor_plan_floor_plan": self.floor_plan.pk,
+                    "nautobot_floor_plan_tile_x_origin": label,  # Pass the label instead of the numeric position
+                }
+            )
+            rack_url = f"{self.base_url}/dcim/rack-elevations/?{filter_params}"
+
+            # Create clickable link
+            link = drawing.add(drawing.a(href=rack_url, target="_top"))
+            link.add(
                 drawing.text(
                     label,
                     insert=(
                         (idx + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
                     ),
-                    class_="grid-label",
+                    class_="grid-label clickable-label",
                 )
             )
+
+        # Create Y-axis labels (row labels)
         max_y_length = max(len(str(label)) for label in y_labels)
         y_label_text_offset = self._calculate_y_label_offset(max_y_length)
 
         for idx, label in enumerate(y_labels):
-            drawing.add(
+            # Create filter URL for racks in this row
+            filter_params = urlencode(
+                {
+                    "nautobot_floor_plan_floor_plan": self.floor_plan.pk,
+                    "nautobot_floor_plan_tile_y_origin": label,  # Pass the label instead of the numeric position
+                }
+            )
+            rack_url = f"{self.base_url}/dcim/rack-elevations/?{filter_params}"
+
+            # Create clickable link
+            link = drawing.add(drawing.a(href=rack_url, target="_top"))
+            link.add(
                 drawing.text(
                     label,
                     insert=(
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2 - y_label_text_offset,
                         (idx + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
                     ),
-                    class_="grid-label",
+                    class_="grid-label clickable-label",
                 )
             )
 
