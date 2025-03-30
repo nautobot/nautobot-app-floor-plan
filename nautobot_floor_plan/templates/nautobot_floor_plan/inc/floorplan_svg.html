@@ -1,16 +1,16 @@
 {% load buttons %}
 {% load static %}
 
-{% if floor_plan %}
+{% if object %}
     <div class="pull-right noprint">
-        <a href="{% url 'plugins:nautobot_floor_plan:floorplan_edit' floor_plan.pk %}" class="btn btn-warning btn-sm" id="edit-button">
+        <a href="{% url 'plugins:nautobot_floor_plan:floorplan_edit' object.pk %}" class="btn btn-warning btn-sm" id="edit-button">
             <span class="mdi mdi-checkerboard" aria-hidden="true"></span> Edit Floorplan
         </a>
-        <a href="{% url 'plugins:nautobot_floor_plan:floorplantile_add' %}?floor_plan={{ floor_plan.pk }}" class="btn btn-primary btn-sm " id="add-floor-plan">
+        <a href="{% url 'plugins:nautobot_floor_plan:floorplantile_add' %}?floor_plan={{ object.pk }}" class="btn btn-primary btn-sm" id="add-floor-plan">
             <span class="mdi mdi-plus-box" aria-hidden="true"></span> Add Tile
         </a>
     </div>
-    <h4>{{ floor_plan }}</h4>
+    <h4>{{ object }}</h4>
     <div>
         Use shift+scroll wheel to zoom in or out.
         Click and drag to scroll.
@@ -21,7 +21,7 @@
     </div>
 
     <div class="text-center text-small">
-        <a href="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=floor_plan.pk %}" class="rack_elevation_save_svg_link" download="floor_plan_{{ floor_plan.location.name }}.svg">
+        <a href="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" class="rack_elevation_save_svg_link" download="floor_plan_{{ object.location.name }}.svg">
             <i class="mdi mdi-content-save-outline"></i> Save SVG
         </a>
     </div>
@@ -45,12 +45,12 @@
     See https://css-tricks.com/scale-svg/ for more details.
     {% endcomment %}
     <div id="floor-plan-svg-container"
-         style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ floor_plan.y_size}} * {{ floor_plan.tile_depth }}) / ({{ floor_plan.x_size }} * {{ floor_plan.tile_width }}) / 1.2);">
+         style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ object.y_size}} * {{ object.tile_depth }}) / ({{ object.x_size }} * {{ object.tile_width }}) / 1.2);">
         <a id="zoom-anchor"></a>
         <div id="floor-plan-svg"
-            data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=floor_plan.pk %}"
-            data-floor-plan-x-size="{{ floor_plan.x_size }}"
-            data-floor-plan-y-size="{{ floor_plan.y_size }}"
+            data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}"
+            data-floor-plan-x-size="{{ object.x_size }}"
+            data-floor-plan-y-size="{{ object.y_size }}"
             style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
         </div>
     </div>

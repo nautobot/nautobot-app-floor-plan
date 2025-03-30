@@ -1,0 +1,60 @@
+{% load helpers %}
+{% load seed_helpers %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <strong>Related Items</strong>
+        <button type="button" class="btn-xs btn-primary pull-right accordion-toggle-all" data-target="#related-items">Collapse All</button>
+    </div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-layout-fixed w-100" id="related-items">
+                <tbody>
+                    <tr>
+                        <td colspan="4">
+                            <strong>
+                                <button type="button"
+                                        class="accordion-toggle mdi mdi-chevron-down"
+                                        name="grouping.Related_Items"
+                                        data-toggle="collapse"
+                                        data-target=".collapseme-related-items-1">
+                                    Tiles and Child Floor Plans
+                                </button>
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr class="collapseme-related-items-1 collapse in" data-parent="#related-items">
+                        <th class="col-3">Tile(s)</th>
+                        <td class="col-9">
+                            <span class="hover_copy">
+                                <span id="_value_tiles">
+                                    <a href="{% url 'plugins:nautobot_floor_plan:floorplantile_list' %}?floor_plan={{ object.pk }}">
+                                        {{ object.tiles.count }}
+                                    </a>
+                                </span>
+                                <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_tiles">
+                                    <span class="mdi mdi-content-copy"></span>
+                                </button>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr class="collapseme-related-items-1 collapse in" data-parent="#related-items">
+                        <th class="col-3">Child Floor Plan(s)</th>
+                        <td class="col-9">
+                            <span class="hover_copy">
+                                <span id="_value_child_plans">
+                                    <a href="{% url 'plugins:nautobot_floor_plan:floorplan_list'%}?parent_location={{ object.location.pk }}">
+                                        {{ object.location|count_children_floor_plans }}
+                                    </a>
+                                </span>
+                                <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_child_plans">
+                                    <span class="mdi mdi-content-copy"></span>
+                                </button>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,111 @@
+{% load seed_helpers %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <strong>Axis Configuration</strong>
+        <button type="button" class="btn-xs btn-primary pull-right accordion-toggle-all" data-target="#axis-config">Collapse All</button>
+    </div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-layout-fixed w-100" id="axis-config">
+                <tbody>
+                    <!-- X Axis Section -->
+                    <tr>
+                        <td colspan="4">
+                            <strong>
+                                <button type="button"
+                                        class="accordion-toggle mdi mdi-chevron-down"
+                                        name="grouping.X_Axis"
+                                        data-toggle="collapse"
+                                        data-target=".collapseme-x-axis">
+                                    X Axis Configuration
+                                </button>
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr class="collapseme-x-axis collapse in" data-parent="#axis-config">
+                        <th class="col-3">Label Type</th>
+                        <td class="col-9">
+                            <span class="hover_copy">
+                                <span id="_value_x_label">{{ object|render_axis_label:'x' }}</span>
+                                <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_x_label">
+                                    <span class="mdi mdi-content-copy"></span>
+                                </button>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr class="collapseme-x-axis collapse in" data-parent="#axis-config">
+                        <th class="col-3">Origin</th>
+                        <td class="col-9">
+                            <span class="hover_copy">
+                                <span id="_value_x_origin">{{ object|render_origin_seed:'x' }}</span>
+                                <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_x_origin">
+                                    <span class="mdi mdi-content-copy"></span>
+                                </button>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr class="collapseme-x-axis collapse in" data-parent="#axis-config">
+                        <th class="col-3">Step</th>
+                        <td class="col-9">
+                            <span class="hover_copy">
+                                <span id="_value_x_step">{{ object|render_axis_step:'x' }}</span>
+                                <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_x_step">
+                                    <span class="mdi mdi-content-copy"></span>
+                                </button>
+                            </span>
+                        </td>
+                    </tr>
+
+                    <!-- Y Axis Section -->
+                    <tr>
+                        <td colspan="4">
+                            <strong>
+                                <button type="button"
+                                        class="accordion-toggle mdi mdi-chevron-down"
+                                        name="grouping.Y_Axis"
+                                        data-toggle="collapse"
+                                        data-target=".collapseme-y-axis">
+                                    Y Axis Configuration
+                                </button>
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr class="collapseme-y-axis collapse in" data-parent="#axis-config">
+                        <th class="col-3">Label Type</th>
+                        <td class="col-9">
+                            <span class="hover_copy">
+                                <span id="_value_y_label">{{ object|render_axis_label:'y' }}</span>
+                                <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_y_label">
+                                    <span class="mdi mdi-content-copy"></span>
+                                </button>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr class="collapseme-y-axis collapse in" data-parent="#axis-config">
+                        <th class="col-3">Origin</th>
+                        <td class="col-9">
+                            <span class="hover_copy">
+                                <span id="_value_y_origin">{{ object|render_origin_seed:'y' }}</span>
+                                <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_y_origin">
+                                    <span class="mdi mdi-content-copy"></span>
+                                </button>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr class="collapseme-y-axis collapse in" data-parent="#axis-config">
+                        <th class="col-3">Step</th>
+                        <td class="col-9">
+                            <span class="hover_copy">
+                                <span id="_value_y_step">{{ object|render_axis_step:'y' }}</span>
+                                <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_y_step">
+                                    <span class="mdi mdi-content-copy"></span>
+                                </button>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> 
