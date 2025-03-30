@@ -53,15 +53,15 @@ Default settings allow you to configure labels, seeds, and steps for each axis o
 
 - **X Axis Labels** and **Y Axis Labels**:
   Represent grid labels as either `"Numbers"` or `"Letters"`.
-  - Default: `"Numbers"`
+    - Default: `"Numbers"`
 
 - **X Axis Seed** and **Y Axis Seed**:
   Define the starting point for grid labels.
-  - Default: `"1"`
+    - Default: `"1"`
 
 - **X Axis Step** and **Y Axis Step**:
   Set a positive or negative integer step value to skip numbers or letters in grid labeling.
-  - Default: `"1"`
+    - Default: `"1"`
 
 ![Add Floor Plan form part 2](../images/add-tile-axis-default.png)
 
