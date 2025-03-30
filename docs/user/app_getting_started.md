@@ -84,31 +84,31 @@ The **Custom Labels** tab provides options to configure a custom label range usi
 
 - **`increment_letter`** *(optional)*
   Applicable only for *numalpha* and *alphanumeric* label types, this parameter controls whether letter patterns increment.
-  - *Default*: `true`
-  - When set to `true`:
-  - The letter portions increment,  but the numeric portions do not creating patterns like:
-    - For numalpha: `02AA, 02AB, 02AC`
-    - For alphanumeric: `A01, B01, C01`
-  - When set to `false`:
-  - For numalpha:
-    - The entire letter portion increments with every step creating patterns like:
-    - `02AA, 02BB, 02CC`
-  - For alphanumeric:
-    - The letter prefix does not increment, but the numeric portion does creating patterns like:
-    - `A01, A02, A03`
+    - *Default*: `true`
+    - When set to `true`:
+    - The letter portions increment,  but the numeric portions do not creating patterns like:
+        - For numalpha: `02AA, 02AB, 02AC`
+        - For alphanumeric: `A01, B01, C01`
+    - When set to `false`:
+    - For numalpha:
+        - The entire letter portion increments with every step creating patterns like:
+        - `02AA, 02BB, 02CC`
+    - For alphanumeric:
+        - The letter prefix does not increment, but the numeric portion does creating patterns like:
+        - `A01, A02, A03`
 
   Both *numalpha* and *alphanumeric* label types support leading or non-leading zero formats.
 
 - **`label_type`**
   Specifies the type of label. Supported types include:
-  - `numalpha (e.g., 02A, 05ZZ, 04AZ)`
-  - `alphanumeric (e.g., A01, B02)`
-  - `roman (e.g., I, II, III)`
-  - `greek (e.g., α, β, γ)`
-  - `hex (e.g., 0x0001, 0x000A, 0x000F)`
-  - `binary (e.g., 0b0001, 0b1010, 0b0110)`
-  - `letters (e.g., A, B, C)`
-  - `numbers (e.g. 1, 2, 3)`
+    - `numalpha (e.g., 02A, 05ZZ, 04AZ)`
+    - `alphanumeric (e.g., A01, B02)`
+    - `roman (e.g., I, II, III)`
+    - `greek (e.g., α, β, γ)`
+    - `hex (e.g., 0x0001, 0x000A, 0x000F)`
+    - `binary (e.g., 0b0001, 0b1010, 0b0110)`
+    - `letters (e.g., A, B, C)`
+    - `numbers (e.g. 1, 2, 3)`
 
 There is a `Generate Preview` button that allows you to preview a range of labels that would be generated on the grid once the Floor Plan form has been saved.
 
@@ -164,7 +164,7 @@ For each tile, you can:
 - **Assign a Object or RackGroup**: Specify the object or rack group associated with the tile.
 - **Specify Rack Orientation**: Define the orientation of the object relative to the floor plan.
 - **Adjust Tile Size**: Expand a tile to cover multiple spaces.
-  - Useful for documenting larger-than-usual racks or marking sections of the floor plan as "Reserved" or "Unavailable."
+    - Useful for documenting larger-than-usual racks or marking sections of the floor plan as "Reserved" or "Unavailable."
 
 !!! note
     Once a Object (Device, Power Panel, Power Feed, or Rack) has been placed on a **Floor Plan Tile** you cannot update the **Location** of the Object until it has been removed from the Floor Plan or the Floor Plan has been deleted.
