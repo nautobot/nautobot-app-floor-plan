@@ -8,7 +8,14 @@
 <table class="table table-hover panel-body attr-table">
     <tr>
         <td>Origin</td>
-        <td>({% render_axis_origin_tag object "X" %},{% render_axis_origin_tag object "Y" %})</td>
+        <td>
+            <span class="hover_copy">
+                <span id="tile-detail_value_origin">({% render_axis_origin_tag object "X" %},{% render_axis_origin_tag object "Y" %})</span>
+                <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#tile-detail_value_origin">
+                    <span class="mdi mdi-content-copy"></span>
+                </button>
+            </span>
+        </td>
     </tr>
 
     {% if object.allocation_type == 'object' %}
