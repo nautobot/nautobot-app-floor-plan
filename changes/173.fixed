@@ -1,0 +1,1 @@
+Fixed bullets to render properly in mkdocs which expects 4 spaces to indent.
