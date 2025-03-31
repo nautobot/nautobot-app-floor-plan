@@ -2,7 +2,6 @@
 
 from django.db.models import Case, CharField, Value, When
 from django_tables2 import RequestConfig
-from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.ui import ObjectDetailContent, ObjectFieldsPanel, Panel, SectionChoices
 from nautobot.apps.views import (
     NautobotUIViewSet,
@@ -17,7 +16,7 @@ from nautobot.apps.views import (
 from nautobot.core.views.paginator import EnhancedPaginator, get_paginate_count
 from nautobot.dcim.models import Location
 
-from nautobot_floor_plan import filters, forms, models, tables
+from nautobot_floor_plan import custom_panels, filters, forms, models, tables
 from nautobot_floor_plan.api import serializers
 
 
@@ -40,23 +39,17 @@ class FloorPlanUIViewSet(NautobotUIViewSet):
                 section=SectionChoices.LEFT_HALF,
                 fields=["location", "x_size", "y_size", "tile_width", "tile_depth"],
             ),
-            Panel(
-                label="Axis Configuration",
+            custom_panels.AxisConfigurationPanel(
                 weight=200,
                 section=SectionChoices.RIGHT_HALF,
-                template_path="nautobot_floor_plan/inc/floorplan_axis_config_panel.html",
             ),
-            Panel(
-                label="Related Items",
+            custom_panels.RelatedItemsPanel(
                 weight=300,
                 section=SectionChoices.LEFT_HALF,
-                template_path="nautobot_floor_plan/inc/floorplan_related_panel.html",
             ),
-            Panel(
-                label="Floor Plan Visualization",
+            custom_panels.FloorPlanVisualizationPanel(
                 weight=400,
                 section=SectionChoices.FULL_WIDTH,
-                template_path="nautobot_floor_plan/inc/floorplan_svg.html",
             ),
         ]
     )
@@ -64,12 +57,6 @@ class FloorPlanUIViewSet(NautobotUIViewSet):
     def get_extra_context(self, request, instance=None):
         """Add custom context data to the view."""
         context = super().get_extra_context(request, instance)
-        context.update(
-            {
-                "zoom_duration": get_app_settings_or_config("nautobot_floor_plan", "zoom_duration"),
-                "highlight_duration": get_app_settings_or_config("nautobot_floor_plan", "highlight_duration"),
-            }
-        )
         return context
 
 
