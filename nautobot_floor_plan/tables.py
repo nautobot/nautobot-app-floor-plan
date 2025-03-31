@@ -82,7 +82,6 @@ class FloorPlanTable(BaseTable):
 
 
 class FloorPlanTileTable(BaseTable):
-    # pylint: disable=too-few-public-methods
     """Table for list view."""
 
     floor_plan_tile = tables.Column(verbose_name="Tile", empty_values=[])
@@ -90,7 +89,12 @@ class FloorPlanTileTable(BaseTable):
     location = tables.Column(accessor="floor_plan__location", linkify=True)
     x_origin = tables.Column()
     y_origin = tables.Column()
-    rack = tables.Column(linkify=True)
+    allocation_type = tables.Column()
+    allocated_object = tables.Column(
+        empty_values=[],
+        verbose_name="Object",
+        accessor="object_name",  # Use the annotated field for sorting
+    )
     tags = TagColumn()
     actions = ButtonsColumn(models.FloorPlanTile)
 
@@ -106,11 +110,29 @@ class FloorPlanTileTable(BaseTable):
         """Render y_origin using the generalized render_axis_origin method."""
         return render_axis_origin(record, "Y")
 
+    def render_allocation_type(self, record):
+        """Render the allocation type display value."""
+        return record.get_allocation_type_display()
+
+    def render_allocated_object(self, record):
+        """Dynamically render the allocated object based on type."""
+        if record.allocation_type != "object":
+            return ""
+
+        if record.device:
+            return hyperlinked_object(record.device)
+        if record.rack:
+            return hyperlinked_object(record.rack)
+        if record.power_panel:
+            return hyperlinked_object(record.power_panel)
+        if record.power_feed:
+            return hyperlinked_object(record.power_feed)
+        return ""
+
     class Meta(BaseTable.Meta):
         """Meta attributes."""
 
         model = models.FloorPlanTile
-        # pylint: disable=nb-use-fields-all
         fields = (
             "floor_plan_tile",
             "floor_plan",
@@ -119,11 +141,8 @@ class FloorPlanTileTable(BaseTable):
             "y_origin",
             "x_size",
             "y_size",
-            "rack",
-            "rack_group",
-            "rack_orientation",
-            "rack.tenant",
-            "rack.tenant.tenant_group",
+            "allocation_type",
+            "allocated_object",
             "tags",
             "actions",
         )
@@ -135,8 +154,8 @@ class FloorPlanTileTable(BaseTable):
             "y_origin",
             "x_size",
             "y_size",
-            "rack",
-            "rack_group",
+            "allocation_type",
+            "allocated_object",
             "tags",
             "actions",
         )

@@ -1,5 +1,6 @@
 """Views for FloorPlan."""
 
+from django.db.models import Case, CharField, Value, When
 from django_tables2 import RequestConfig
 from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.ui import ObjectDetailContent, ObjectFieldsPanel, Panel, SectionChoices
@@ -116,8 +117,7 @@ class FloorPlanTileUIViewSet(
     ObjectDestroyViewMixin,
     ObjectChangeLogViewMixin,
     ObjectNotesViewMixin,
-):
-    # pylint: disable=abstract-method
+):  # pylint: disable=abstract-method
     """ViewSet for FloorPlanTile views."""
 
     filterset_class = filters.FloorPlanTileFilterSet
@@ -127,3 +127,41 @@ class FloorPlanTileUIViewSet(
     serializer_class = serializers.FloorPlanTileSerializer
     table_class = tables.FloorPlanTileTable
     action_buttons = ()
+
+    object_detail_content = ObjectDetailContent(
+        panels=[
+            Panel(
+                label="Floor Plan Tile",
+                weight=100,
+                section=SectionChoices.LEFT_HALF,
+                template_path="nautobot_floor_plan/inc/floorplan_tile_detail_panel.html",
+            ),
+        ]
+    )
+
+    def get_extra_context(self, request, instance=None):
+        """Add custom context data to the view."""
+        context = super().get_extra_context(request, instance)
+        if instance:
+            context["tenant"] = instance.rack.tenant if instance.rack else None
+            context["tenant_group"] = (
+                instance.rack.tenant.tenant_group if instance.rack and instance.rack.tenant else None
+            )
+        return context
+
+    def get_queryset(self):
+        """Annotate queryset with object_name for sorting."""
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                object_name=Case(
+                    When(device__isnull=False, then="device__name"),
+                    When(rack__isnull=False, then="rack__name"),
+                    When(power_panel__isnull=False, then="power_panel__name"),
+                    When(power_feed__isnull=False, then="power_feed__name"),
+                    default=Value(""),
+                    output_field=CharField(),
+                )
+            )
+        )
