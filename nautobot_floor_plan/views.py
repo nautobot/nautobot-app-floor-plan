@@ -2,7 +2,7 @@
 
 from django.db.models import Case, CharField, Value, When
 from django_tables2 import RequestConfig
-from nautobot.apps.ui import ObjectDetailContent, ObjectFieldsPanel, Panel, SectionChoices
+from nautobot.apps.ui import ObjectDetailContent, ObjectFieldsPanel, SectionChoices
 from nautobot.apps.views import (
     NautobotUIViewSet,
     ObjectChangeLogViewMixin,
@@ -19,8 +19,10 @@ from nautobot.dcim.models import Location
 from nautobot_floor_plan import custom_panels, filters, forms, models, tables
 from nautobot_floor_plan.api import serializers
 
+from .custom_panels import TileObjectDetailsPanel
 
-class FloorPlanUIViewSet(NautobotUIViewSet):
+
+class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of views
     """ViewSet for FloorPlan views using UI Component Framework."""
 
     bulk_update_form_class = forms.FloorPlanBulkEditForm
@@ -117,11 +119,22 @@ class FloorPlanTileUIViewSet(
 
     object_detail_content = ObjectDetailContent(
         panels=[
-            Panel(
-                label="Floor Plan Tile",
+            ObjectFieldsPanel(
+                label="Basic Information",
                 weight=100,
                 section=SectionChoices.LEFT_HALF,
-                template_path="nautobot_floor_plan/inc/floorplan_tile_detail_panel.html",
+                fields=[
+                    "floor_plan",
+                    "status",
+                    "x_size",
+                    "y_size",
+                    "allocation_type",
+                    "object_orientation",
+                ],
+            ),
+            TileObjectDetailsPanel(
+                weight=200,
+                section=SectionChoices.RIGHT_HALF,
             ),
         ]
     )
@@ -129,11 +142,12 @@ class FloorPlanTileUIViewSet(
     def get_extra_context(self, request, instance=None):
         """Add custom context data to the view."""
         context = super().get_extra_context(request, instance)
-        if instance:
-            context["tenant"] = instance.rack.tenant if instance.rack else None
-            context["tenant_group"] = (
-                instance.rack.tenant.tenant_group if instance.rack and instance.rack.tenant else None
-            )
+
+        # Add tenant and tenant group information if available
+        if instance and instance.allocation_type == "object" and instance.rack and instance.rack.tenant:
+            context["tenant"] = instance.rack.tenant
+            context["tenant_group"] = instance.rack.tenant.tenant_group if instance.rack.tenant.tenant_group else None
+
         return context
 
     def get_queryset(self):

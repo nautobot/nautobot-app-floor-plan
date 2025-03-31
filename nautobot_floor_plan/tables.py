@@ -2,7 +2,7 @@
 
 import django_tables2 as tables
 from nautobot.apps.tables import BaseTable, ButtonsColumn, TagColumn, ToggleColumn
-from nautobot.core.templatetags.helpers import hyperlinked_object
+from nautobot.core.templatetags.helpers import hyperlinked_object, placeholder
 
 from nautobot_floor_plan import models
 from nautobot_floor_plan.templatetags.seed_helpers import (
@@ -117,7 +117,7 @@ class FloorPlanTileTable(BaseTable):
     def render_allocated_object(self, record):
         """Dynamically render the allocated object based on type."""
         if record.allocation_type != "object":
-            return ""
+            return placeholder
 
         if record.device:
             return hyperlinked_object(record.device)
@@ -127,7 +127,7 @@ class FloorPlanTileTable(BaseTable):
             return hyperlinked_object(record.power_panel)
         if record.power_feed:
             return hyperlinked_object(record.power_feed)
-        return ""
+        return placeholder
 
     class Meta(BaseTable.Meta):
         """Meta attributes."""

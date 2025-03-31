@@ -38,3 +38,13 @@ class FloorPlanVisualizationPanel(Panel):
             "zoom_duration": get_app_settings_or_config("nautobot_floor_plan", "zoom_duration"),
             "highlight_duration": get_app_settings_or_config("nautobot_floor_plan", "highlight_duration"),
         }
+
+
+class TileObjectDetailsPanel(Panel):
+    """Panel for displaying Floor Plan Tile object details."""
+
+    def __init__(self, **kwargs):
+        """Initialize the panel, setting the template path and label."""
+        kwargs.setdefault("label", "Tile Object Information")
+        kwargs.setdefault("template_path", "nautobot_floor_plan/inc/floorplan_tile_detail_panel.html")
+        super().__init__(**kwargs)
