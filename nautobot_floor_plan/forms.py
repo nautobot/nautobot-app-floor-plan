@@ -109,6 +109,16 @@ class FloorPlanForm(NautobotModelForm):
         """Set the Y axis ranges formset."""
         self._y_ranges = value
 
+    @property
+    def has_x_custom_labels(self):
+        """Return whether there are any configured X axis custom labels."""
+        return self._has_custom_labels("X", "x_ranges")
+
+    @property
+    def has_y_custom_labels(self):
+        """Return whether there are any configured Y axis custom labels."""
+        return self._has_custom_labels("Y", "y_ranges")
+
     def __init__(self, *args, **kwargs):
         """Overwrite the constructor to set initial values and handle custom ranges."""
         super().__init__(*args, **kwargs)
@@ -165,18 +175,6 @@ class FloorPlanForm(NautobotModelForm):
 
         FormSetClass = CustomLabelRangeFormSetNoExtra if y_initial else CustomLabelRangeFormSetWithExtra
         self.y_ranges = FormSetClass(prefix="y_ranges", initial=y_initial, data=kwargs.get("data"))
-
-        # Set has_x_custom_labels based on whether there are actual values in the formset
-        self.has_x_custom_labels = any(
-            form.initial.get("start") and form.initial.get("end")
-            for form in self.x_ranges.forms
-            if hasattr(form, "initial")
-        )
-        self.has_y_custom_labels = any(
-            form.initial.get("start") and form.initial.get("end")
-            for form in self.y_ranges.forms
-            if hasattr(form, "initial")
-        )
 
     def _clean_origin_seed(self, field_name, axis):
         """Clean method for origin seed fields."""
@@ -381,6 +379,35 @@ class FloorPlanForm(NautobotModelForm):
         validator.validate_multiple_ranges(ranges)
 
         return ranges
+
+    def _has_custom_labels(self, axis, ranges_attr):
+        """Generic method to check if there are any configured custom labels for the given axis."""
+        if not hasattr(self, ranges_attr):
+            return False
+
+        ranges = getattr(self, ranges_attr)
+
+        # Check initial data
+        has_initial = any(
+            form.initial.get("start") and form.initial.get("end") for form in ranges.forms if hasattr(form, "initial")
+        )
+
+        # Check raw form data
+        has_data = False
+        if hasattr(ranges, "data"):
+            total_forms = int(ranges.data.get(f"{ranges.prefix}-TOTAL_FORMS", 0))
+            for i in range(total_forms):
+                start = ranges.data.get(f"{ranges.prefix}-{i}-start")
+                end = ranges.data.get(f"{ranges.prefix}-{i}-end")
+                delete = ranges.data.get(f"{ranges.prefix}-{i}-DELETE")
+                if start and end and not delete:
+                    has_data = True
+                    break
+
+        # Check if there are custom labels in the database
+        has_db = bool(self.instance and self.instance.pk and self.instance.custom_labels.filter(axis=axis).exists())
+
+        return has_initial or has_data or has_db
 
 
 class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pylint: disable=too-many-ancestors

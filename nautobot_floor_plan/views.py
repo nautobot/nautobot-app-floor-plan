@@ -41,6 +41,81 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
         ]
         context["zoom_duration"] = get_app_settings_or_config("nautobot_floor_plan", "zoom_duration")
         context["highlight_duration"] = get_app_settings_or_config("nautobot_floor_plan", "highlight_duration")
+
+        # Default to showing the default tab
+        context.update(
+            {
+                "x_activate_default_tab": True,
+                "x_activate_custom_tab": False,
+                "y_activate_default_tab": True,
+                "y_activate_custom_tab": False,
+            }
+        )
+
+        # Check for custom labels on the instance first
+        if instance and instance.pk:
+            has_x_custom_labels = instance.custom_labels.filter(axis="X").exists()
+            has_y_custom_labels = instance.custom_labels.filter(axis="Y").exists()
+
+            if has_x_custom_labels:
+                context.update(
+                    {
+                        "x_activate_default_tab": False,
+                        "x_activate_custom_tab": True,
+                    }
+                )
+
+            if has_y_custom_labels:
+                context.update(
+                    {
+                        "y_activate_default_tab": False,
+                        "y_activate_custom_tab": True,
+                    }
+                )
+
+        # Then check form state if available
+        form = context.get("form")
+        if form:
+            # X-axis tab activation logic
+            x_default_tab_errors = (
+                getattr(form, "x_origin_seed", {}).errors
+                or getattr(form, "x_axis_step", {}).errors
+                or getattr(form, "x_axis_labels", {}).errors
+            )
+
+            x_custom_tab_errors = form.x_ranges.errors if hasattr(form, "x_ranges") else False
+
+            # Switch to custom tab if:
+            # 1. There are custom labels and no default errors, or
+            # 2. There are custom tab errors
+            if (form.has_x_custom_labels and not x_default_tab_errors) or x_custom_tab_errors:
+                context.update(
+                    {
+                        "x_activate_default_tab": False,
+                        "x_activate_custom_tab": True,
+                    }
+                )
+
+            # Y-axis logic tab activation logic
+            y_default_tab_errors = (
+                getattr(form, "y_origin_seed", {}).errors
+                or getattr(form, "y_axis_step", {}).errors
+                or getattr(form, "y_axis_labels", {}).errors
+            )
+
+            y_custom_tab_errors = form.y_ranges.errors if hasattr(form, "y_ranges") else False
+
+            # Switch to custom tab if:
+            # 1. There are custom labels and no default errors, or
+            # 2. There are custom tab errors
+            if (form.has_y_custom_labels and not y_default_tab_errors) or y_custom_tab_errors:
+                context.update(
+                    {
+                        "y_activate_default_tab": False,
+                        "y_activate_custom_tab": True,
+                    }
+                )
+
         return context
 
 
