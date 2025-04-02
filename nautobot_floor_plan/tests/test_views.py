@@ -100,8 +100,9 @@ class FloorPlanTabActivationTest(TestCase):
             x_axis_step=1,
             y_axis_step=1,
         )
+        floor_plan.save()
 
-        models.FloorPlanCustomAxisLabel.objects.create(
+        custom_label = models.FloorPlanCustomAxisLabel.objects.create(
             floor_plan=floor_plan,
             axis="X",
             start_label="1",
@@ -110,6 +111,10 @@ class FloorPlanTabActivationTest(TestCase):
             label_type=choices.CustomAxisLabelsChoices.NUMBERS,
             order=1,
         )
+        custom_label.save()
+
+        # Refresh the floor plan from the database to ensure relationships are loaded
+        floor_plan.refresh_from_db()
 
         response = self.client.get(reverse("plugins:nautobot_floor_plan:floorplan_edit", kwargs={"pk": floor_plan.pk}))
         self.assertContains(response, "Custom Labels")
@@ -170,7 +175,7 @@ class FloorPlanTabActivationTest(TestCase):
 
     def test_custom_tab_errors_with_existing_labels(self):
         """Test that custom tab becomes active when there are existing custom labels and validation errors."""
-        # First create a floor plan with valid custom labels
+        # Create a floor plan with custom labels
         floor_plan = models.FloorPlan.objects.create(
             location=self.floors[0],
             x_size=1,
@@ -184,9 +189,9 @@ class FloorPlanTabActivationTest(TestCase):
             x_axis_step=1,
             y_axis_step=1,
         )
+        floor_plan.save()
 
-        # Add a valid custom label
-        models.FloorPlanCustomAxisLabel.objects.create(
+        custom_label = models.FloorPlanCustomAxisLabel.objects.create(
             floor_plan=floor_plan,
             axis="X",
             start_label="1",
@@ -195,6 +200,10 @@ class FloorPlanTabActivationTest(TestCase):
             label_type=choices.CustomAxisLabelsChoices.NUMBERS,
             order=1,
         )
+        custom_label.save()
+
+        # Refresh the floor plan from the database to ensure relationships are loaded
+        floor_plan.refresh_from_db()
 
         # Now try to update with invalid data
         data = {
