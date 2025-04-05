@@ -1,5 +1,7 @@
 """Views for FloorPlan."""
 
+from types import SimpleNamespace
+
 from django_tables2 import RequestConfig
 from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.views import (
@@ -32,6 +34,10 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
     queryset = models.FloorPlan.objects.all()
     serializer_class = serializers.FloorPlanSerializer
     table_class = tables.FloorPlanTable
+
+    def safe_get_errors(self, obj, attr):
+        """Safely retrieves the 'errors' attribute from a given attribute of an object."""
+        return getattr(obj, attr, SimpleNamespace(errors=None)).errors
 
     def get_extra_context(self, request, instance=None):
         """Add custom context data to the view."""
@@ -78,9 +84,9 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
         if form:
             # X-axis tab activation logic
             x_default_tab_errors = (
-                getattr(form, "x_origin_seed", {}).errors
-                or getattr(form, "x_axis_step", {}).errors
-                or getattr(form, "x_axis_labels", {}).errors
+                self.safe_get_errors(form, "x_origin_seed")
+                or self.safe_get_errors(form, "x_axis_step")
+                or self.safe_get_errors(form, "x_axis_labels")
             )
 
             x_custom_tab_errors = form.x_ranges.errors if hasattr(form, "x_ranges") else False
@@ -98,11 +104,10 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
 
             # Y-axis logic tab activation logic
             y_default_tab_errors = (
-                getattr(form, "y_origin_seed", {}).errors
-                or getattr(form, "y_axis_step", {}).errors
-                or getattr(form, "y_axis_labels", {}).errors
+                self.safe_get_errors(form, "y_origin_seed")
+                or self.safe_get_errors(form, "y_axis_step")
+                or self.safe_get_errors(form, "y_axis_labels")
             )
-
             y_custom_tab_errors = form.y_ranges.errors if hasattr(form, "y_ranges") else False
 
             # Switch to custom tab if:
