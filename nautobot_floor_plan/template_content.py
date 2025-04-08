@@ -1,7 +1,9 @@
 """Added content to the device model view for floor plan."""
 
 from django.urls import reverse
+from django.utils.http import urlencode
 from nautobot.apps.ui import Button, DistinctViewTab, TemplateExtension
+from nautobot.core.views.utils import get_obj_from_context
 
 
 class DeleteFloorPlanButton(Button):  # pylint: disable=abstract-method
@@ -21,7 +23,7 @@ class DeleteFloorPlanButton(Button):  # pylint: disable=abstract-method
 
     def get_link(self, context):
         """Generate the delete URL with return URL."""
-        location = context["object"]
+        location = get_obj_from_context(context)
         return (
             f"{reverse('plugins:nautobot_floor_plan:floorplan_delete', kwargs={'pk': location.floor_plan.pk})}"
             f"?return_url={reverse('dcim:location', kwargs={'pk': location.pk})}"
@@ -29,7 +31,7 @@ class DeleteFloorPlanButton(Button):  # pylint: disable=abstract-method
 
     def should_render(self, context):
         """Only render if the location has a floor plan and the user has permissions."""
-        location = context["object"]
+        location = get_obj_from_context(context)
         # Check if location has a floor plan and show the button if user has permission
         return (
             hasattr(location, "floor_plan")
@@ -63,11 +65,18 @@ class AddFloorPlanButton(Button):  # pylint: disable=abstract-method
         Returns:
             str: The URL to the add view with location and return URL parameters
         """
-        location = context["object"]
-        return (
-            f"{reverse('plugins:nautobot_floor_plan:floorplan_add')}"
-            f"?location={location.pk}&return_url={reverse('plugins:nautobot_floor_plan:location_floor_plan_tab', kwargs={'pk': location.pk})}%3Ftab=nautobot_floor_plan:1"
+        location = get_obj_from_context(context)
+        return_url = (
+            reverse("plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": location.pk})
+            + "?tab=nautobot_floor_plan:1"
         )
+        query_params = urlencode(
+            {
+                "location": location.pk,
+                "return_url": return_url,
+            }
+        )
+        return f"{reverse('plugins:nautobot_floor_plan:floorplan_add')}?{query_params}"
 
     def should_render(self, context):
         """
@@ -79,7 +88,7 @@ class AddFloorPlanButton(Button):  # pylint: disable=abstract-method
         Returns:
             bool: True if the button should be rendered, False otherwise
         """
-        location = context["object"]
+        location = get_obj_from_context(context)
         # Check if location has a floor plan and show the button if user has permission
         return not (hasattr(location, "floor_plan") and location.floor_plan) and context["request"].user.has_perm(
             "nautobot_floor_plan.add_floorplan"
@@ -184,11 +193,14 @@ class BaseFloorPlanButton(Button):  # pylint: disable=abstract-method
         """Generate the URL with highlight parameters."""
         obj = context["object"]
         floor_plan_pk = self.get_floor_plan_pk(obj)
-        return (
-            f"{reverse('plugins:nautobot_floor_plan:floorplan', kwargs={'pk': floor_plan_pk})}?{self.highlight_param}={obj.pk}"
-            if floor_plan_pk
-            else "#"
-        )
+
+        if not floor_plan_pk:
+            return "#"
+
+        base_url = reverse("plugins:nautobot_floor_plan:floorplan", kwargs={"pk": floor_plan_pk})
+        query_string = urlencode({self.highlight_param: obj.pk})
+
+        return f"{base_url}?{query_string}"
 
     def should_render(self, context):
         """Only render if the object has a floor plan and the user has permissions."""

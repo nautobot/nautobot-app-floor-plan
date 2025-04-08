@@ -1,4 +1,4 @@
-"""Custom Panels for FloorPlan."""
+"""Panel for Floor Plan visualization."""
 
 from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.ui import Panel

@@ -41,7 +41,7 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
             ObjectFieldsPanel(
                 weight=100,
                 section=SectionChoices.LEFT_HALF,
-                fields=["location", "x_size", "y_size", "tile_width", "tile_depth"],
+                fields="__all__",
             ),
             custom_panels.AxisConfigurationPanel(
                 weight=200,
@@ -203,14 +203,7 @@ class FloorPlanTileUIViewSet(
                 label="Basic Information",
                 weight=100,
                 section=SectionChoices.LEFT_HALF,
-                fields=[
-                    "floor_plan",
-                    "status",
-                    "x_size",
-                    "y_size",
-                    "allocation_type",
-                    "object_orientation",
-                ],
+                fields="__all__",
             ),
             TileObjectDetailsPanel(
                 weight=200,
@@ -226,7 +219,7 @@ class FloorPlanTileUIViewSet(
         # Add tenant and tenant group information if available
         if instance and instance.allocation_type == "object" and instance.rack and instance.rack.tenant:
             context["tenant"] = instance.rack.tenant
-            context["tenant_group"] = instance.rack.tenant.tenant_group if instance.rack.tenant.tenant_group else None
+            context["tenant_group"] = instance.rack.tenant.tenant_group
 
         return context
 

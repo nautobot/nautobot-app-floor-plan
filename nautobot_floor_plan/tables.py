@@ -119,15 +119,8 @@ class FloorPlanTileTable(BaseTable):
         if record.allocation_type != "object":
             return placeholder
 
-        if record.device:
-            return hyperlinked_object(record.device)
-        if record.rack:
-            return hyperlinked_object(record.rack)
-        if record.power_panel:
-            return hyperlinked_object(record.power_panel)
-        if record.power_feed:
-            return hyperlinked_object(record.power_feed)
-        return placeholder
+        allocated_object = record.device or record.rack or record.power_panel or record.power_feed
+        return hyperlinked_object(allocated_object) if allocated_object else placeholder
 
     class Meta(BaseTable.Meta):
         """Meta attributes."""
