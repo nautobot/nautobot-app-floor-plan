@@ -18,29 +18,42 @@
     </div>
 </div>
 
+<!-- X Axis Settings -->
 <div class="panel panel-default">
     <div class="panel-heading">
         <strong>X Axis Settings</strong>
     </div>
     <div class="panel-body">
+        {% if form.x_origin_seed.errors or form.x_axis_step.errors or form.x_axis_labels.errors %}
+        <div class="alert alert-danger">
+            <i class="mdi mdi-alert"></i> There are validation errors in the Default Labels tab
+        </div>
+        {% endif %}
+        {% for range_form in form.x_ranges.forms %}
+            {% if range_form.start.value or range_form.end.value %}
+                {% if range_form.errors %}
+                <div class="alert alert-danger">
+                    <i class="mdi mdi-alert"></i> There are validation errors in the Custom Labels tab
+                </div>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" {% if not form.has_x_custom_labels and not form.x_ranges.errors %}class="active"{% endif %}>
+                <li role="presentation" {% if x_activate_default_tab %}class="active"{% endif %}>
                     <a href="#x-default" aria-controls="x-default" role="tab" data-toggle="tab">Default Labels</a>
                 </li>
-                <li role="presentation" {% if form.has_x_custom_labels or form.x_ranges.errors %}class="active"{% endif %}>
+                <li role="presentation" {% if x_activate_custom_tab %}class="active"{% endif %}>
                     <a href="#x-custom" aria-controls="x-custom" role="tab" data-toggle="tab">Custom Labels</a>
                 </li>
             </ul>
             <div class="tab-content">
-                <!-- Default Labels Tab -->
-                <div role="tabpanel" class="tab-pane {% if not form.has_x_custom_labels and not form.x_ranges.errors %}active{% endif %}" id="x-default">
+                <div role="tabpanel" class="tab-pane {% if x_activate_default_tab %}active{% endif %}" id="x-default">
                     {% for field in form.fieldsets.1.1.tabs.0.1 %}
                         {% render_field form|get_fieldset_field:field %}
                     {% endfor %}
                 </div>
-                <!-- Custom Labels Tab -->
-                <div role="tabpanel" class="tab-pane {% if form.has_x_custom_labels or form.x_ranges.errors %}active{% endif %}" id="x-custom">
+                <div role="tabpanel" class="tab-pane {% if x_activate_custom_tab %}active{% endif %}" id="x-custom">
                     {{ form.x_ranges.management_form }}
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm">
@@ -124,30 +137,42 @@
     </div>
 </div>
 
-
+<!-- Y Axis Settings -->
 <div class="panel panel-default">
     <div class="panel-heading">
         <strong>Y Axis Settings</strong>
     </div>
     <div class="panel-body">
+        {% if form.y_origin_seed.errors or form.y_axis_step.errors or form.y_axis_labels.errors %}
+        <div class="alert alert-danger">
+            <i class="mdi mdi-alert"></i> There are validation errors in the Default Labels tab
+        </div>
+        {% endif %}
+        {% for range_form in form.y_ranges.forms %}
+            {% if range_form.start.value or range_form.end.value %}
+                {% if range_form.errors %}
+                <div class="alert alert-danger">
+                    <i class="mdi mdi-alert"></i> There are validation errors in the Custom Labels tab
+                </div>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" {% if not form.has_y_custom_labels and not form.y_ranges.errors%}class="active"{% endif %}>
+                <li role="presentation" {% if y_activate_default_tab %}class="active"{% endif %}>
                     <a href="#y-default" aria-controls="y-default" role="tab" data-toggle="tab">Default Labels</a>
                 </li>
-                <li role="presentation" {% if form.has_y_custom_labels or form.y_ranges.errors %}class="active"{% endif %}>
+                <li role="presentation" {% if y_activate_custom_tab %}class="active"{% endif %}>
                     <a href="#y-custom" aria-controls="y-custom" role="tab" data-toggle="tab">Custom Labels</a>
                 </li>
             </ul>
             <div class="tab-content">
-                <!-- Default Labels Tab -->
-                <div role="tabpanel" class="tab-pane {% if not form.has_y_custom_labels and not form.y_ranges.errors %}active{% endif %}" id="y-default">
+                <div role="tabpanel" class="tab-pane {% if y_activate_default_tab %}active{% endif %}" id="y-default">
                     {% for field in form.fieldsets.2.1.tabs.0.1 %}
                         {% render_field form|get_fieldset_field:field %}
                     {% endfor %}
                 </div>
-                <!-- Custom Labels Tab -->
-                <div role="tabpanel" class="tab-pane {% if form.has_y_custom_labels or form.y_ranges.errors %}active{% endif %}" id="y-custom">
+                <div role="tabpanel" class="tab-pane {% if y_activate_custom_tab %}active{% endif %}" id="y-custom">
                     {{ form.y_ranges.management_form }}
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm">
@@ -230,7 +255,6 @@
         </div>
     </div>
 </div>
-
 
 <script type="module">
     import { generateLabels } from '/static/nautobot_floor_plan/js/label_utils.js';
