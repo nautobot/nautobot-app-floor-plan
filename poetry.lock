@@ -925,13 +925,13 @@ sqlparse = "*"
 
 [[package]]
 name = "django-structlog"
-version = "9.0.1"
+version = "9.1.1"
 description = "Structured Logging for Django"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "django_structlog-9.0.1-py3-none-any.whl", hash = "sha256:6f9ed724af2b122158384c3e7ab892cab776930afde2aa564c1a1cd7869f27fa"},
-    {file = "django_structlog-9.0.1.tar.gz", hash = "sha256:eb19bafa837345c62f294ded315c6a12523e16d29b4ba69d9e6ce57c7b0d2925"},
+    {file = "django_structlog-9.1.1-py3-none-any.whl", hash = "sha256:5b6ac3abdf6549e94ccb35160b1f10266f1627c3ac77844571235a08a1ddae66"},
+    {file = "django_structlog-9.1.1.tar.gz", hash = "sha256:14342c6c824581f1e063c88a8bc52314cd67995a3bd4a4fc8c27ea37ccd78947"},
 ]
 
 [package.dependencies]
@@ -3183,13 +3183,13 @@ files = [
 
 [[package]]
 name = "selenium"
-version = "4.30.0"
+version = "4.31.0"
 description = "Official Python bindings for Selenium WebDriver"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "selenium-4.30.0-py3-none-any.whl", hash = "sha256:90bcd3be86a1762100a093b33e5e4530b328226da94208caadb15ce13243dffd"},
-    {file = "selenium-4.30.0.tar.gz", hash = "sha256:16ab890fc7cb21a01e1b1e9a0fbaa9445fe30837eabc66e90b3bacf12138126a"},
+    {file = "selenium-4.31.0-py3-none-any.whl", hash = "sha256:7b8b8d5e424d7133cb7aa656263b19ac505ec26d65c0f921a696e7e2c5ccd95b"},
+    {file = "selenium-4.31.0.tar.gz", hash = "sha256:441cffc436a2e6659fe3cfb012692435652efd38b0d368d16f661a5db47825f5"},
 ]
 
 [package.dependencies]
@@ -3855,4 +3855,4 @@ all = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.2,<3.13"
-content-hash = "5296424c0c3a4e65257f311ad2142607fcada133a7f1b5bda669726eb28c7f93"
+content-hash = "0ea07807aaac8b9a1d5fb280d9bff5f3140817b42e2a0817cee3977f94591d3d"

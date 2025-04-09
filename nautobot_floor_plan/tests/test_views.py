@@ -1,6 +1,7 @@
 """Unit tests for views."""
 # pylint: disable=duplicate-code
 
+from django.test import override_settings
 from django.urls import reverse
 from nautobot.apps.testing import TestCase, ViewTestCases
 from nautobot.users.models import User
@@ -40,6 +41,32 @@ class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
             **fixtures.get_full_formset_data(axis="x"),
             **fixtures.get_full_formset_data(axis="y"),
         }
+
+
+class LocationFloorPlanTabTest(TestCase):
+    """Test the Location Floor Plan tab views."""
+
+    def setUp(self):
+        super().setUp()
+        data = fixtures.create_prerequisites()
+        self.location = data["floors"][0]
+        self.floor_plan = fixtures.create_floor_plans([self.location])[0]
+
+    @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"])
+    def test_floor_plan_tab(self):
+        """Test that the floor plan tab renders correctly."""
+        url = reverse("plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": self.location.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "nautobot_floor_plan/location_floor_plan.html")
+
+    @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"])
+    def test_child_floor_plan_tab(self):
+        """Test that the child floor plan tab renders correctly."""
+        url = reverse("plugins:nautobot_floor_plan:location_child_floor_plan_tab", kwargs={"pk": self.location.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "nautobot_floor_plan/location_child_floor_plan.html")
 
 
 class FloorPlanTabActivationTest(TestCase):

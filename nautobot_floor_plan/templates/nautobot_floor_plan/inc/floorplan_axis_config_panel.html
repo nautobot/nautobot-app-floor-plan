@@ -1,0 +1,80 @@
+{% load seed_helpers %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <strong>Axis Configuration</strong>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover attr-table">
+            <tbody>
+                <!-- X Axis Configuration -->
+                <tr style="background-color: #f7f7f7;">
+                    <td colspan="2">
+                        <strong>X Axis</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Label Type</td>
+                    <td>
+                        <span class="hover_copy">
+                            <span id="_value_x_label">{{ object|render_axis_label:'x'|upper }}</span>
+                            <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_x_label">
+                                <span class="mdi mdi-content-copy"></span>
+                            </button>
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Origin</td>
+                    <td>
+                        {% with field_id="x_origin" value=object|render_origin_seed:'x' %}
+                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                        {% endwith %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Step</td>
+                    <td>
+                        {% with field_id="x_step" value=object|render_axis_step:'x' %}
+                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                        {% endwith %}
+                    </td>
+                </tr>
+                <!-- Y Axis Configuration -->
+                <tr style="background-color: #f7f7f7;">
+                    <td colspan="2">
+                        <strong>Y Axis</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Label Type</td>
+                    <td>
+                        <span class="hover_copy">
+                            <span id="_value_y_label">{{ object|render_axis_label:'y'|upper }}</span>
+                            <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_y_label">
+                                <span class="mdi mdi-content-copy"></span>
+                            </button>
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Origin</td>
+                    <td>
+                        {% with field_id="y_origin" value=object|render_origin_seed:'y' %}
+                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                        {% endwith %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Step</td>
+                    <td>
+                        {% with field_id="y_step" value=object|render_axis_step:'y' %}
+                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                        {% endwith %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

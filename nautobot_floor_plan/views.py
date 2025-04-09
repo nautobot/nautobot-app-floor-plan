@@ -2,8 +2,9 @@
 
 from types import SimpleNamespace
 
+from django.db.models import Case, CharField, Value, When
 from django_tables2 import RequestConfig
-from nautobot.apps.config import get_app_settings_or_config
+from nautobot.apps.ui import ObjectDetailContent, ObjectFieldsPanel, SectionChoices
 from nautobot.apps.views import (
     NautobotUIViewSet,
     ObjectChangeLogViewMixin,
@@ -17,14 +18,14 @@ from nautobot.apps.views import (
 from nautobot.core.views.paginator import EnhancedPaginator, get_paginate_count
 from nautobot.dcim.models import Location
 
-from nautobot_floor_plan import filters, forms, models, tables
+from nautobot_floor_plan import custom_panels, filters, forms, models, tables
 from nautobot_floor_plan.api import serializers
 
-from .choices import CustomAxisLabelsChoices
+from .custom_panels import TileObjectDetailsPanel
 
 
 class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of views
-    """ViewSet for FloorPlan views."""
+    """ViewSet for FloorPlan views using UI Component Framework."""
 
     bulk_update_form_class = forms.FloorPlanBulkEditForm
     filterset_class = filters.FloorPlanFilterSet
@@ -35,6 +36,28 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
     serializer_class = serializers.FloorPlanSerializer
     table_class = tables.FloorPlanTable
 
+    object_detail_content = ObjectDetailContent(
+        panels=[
+            ObjectFieldsPanel(
+                weight=100,
+                section=SectionChoices.LEFT_HALF,
+                fields="__all__",
+            ),
+            custom_panels.AxisConfigurationPanel(
+                weight=100,
+                section=SectionChoices.RIGHT_HALF,
+            ),
+            custom_panels.RelatedItemsPanel(
+                weight=200,
+                section=SectionChoices.LEFT_HALF,
+            ),
+            custom_panels.FloorPlanVisualizationPanel(
+                weight=300,
+                section=SectionChoices.FULL_WIDTH,
+            ),
+        ]
+    )
+
     def safe_get_errors(self, obj, attr):
         """Safely retrieves the 'errors' attribute from a given attribute of an object."""
         return getattr(obj, attr, SimpleNamespace(errors=None)).errors
@@ -42,11 +65,6 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
     def get_extra_context(self, request, instance=None):
         """Add custom context data to the view."""
         context = super().get_extra_context(request, instance)
-        context["label_type_choices"] = [
-            {"value": choice[0], "label": choice[1]} for choice in CustomAxisLabelsChoices.CHOICES
-        ]
-        context["zoom_duration"] = get_app_settings_or_config("nautobot_floor_plan", "zoom_duration")
-        context["highlight_duration"] = get_app_settings_or_config("nautobot_floor_plan", "highlight_duration")
 
         # Default to showing the default tab
         context.update(
@@ -168,8 +186,7 @@ class FloorPlanTileUIViewSet(
     ObjectDestroyViewMixin,
     ObjectChangeLogViewMixin,
     ObjectNotesViewMixin,
-):
-    # pylint: disable=abstract-method
+):  # pylint: disable=abstract-method
     """ViewSet for FloorPlanTile views."""
 
     filterset_class = filters.FloorPlanTileFilterSet
@@ -179,3 +196,46 @@ class FloorPlanTileUIViewSet(
     serializer_class = serializers.FloorPlanTileSerializer
     table_class = tables.FloorPlanTileTable
     action_buttons = ()
+
+    object_detail_content = ObjectDetailContent(
+        panels=[
+            ObjectFieldsPanel(
+                label="Basic Information",
+                weight=100,
+                section=SectionChoices.LEFT_HALF,
+                fields="__all__",
+            ),
+            TileObjectDetailsPanel(
+                weight=100,
+                section=SectionChoices.RIGHT_HALF,
+            ),
+        ]
+    )
+
+    def get_extra_context(self, request, instance=None):
+        """Add custom context data to the view."""
+        context = super().get_extra_context(request, instance)
+
+        # Add tenant and tenant group information if available
+        if instance and instance.allocation_type == "object" and instance.rack and instance.rack.tenant:
+            context["tenant"] = instance.rack.tenant
+            context["tenant_group"] = instance.rack.tenant.tenant_group
+
+        return context
+
+    def get_queryset(self):
+        """Annotate queryset with object_name for sorting."""
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                object_name=Case(
+                    When(device__isnull=False, then="device__name"),
+                    When(rack__isnull=False, then="rack__name"),
+                    When(power_panel__isnull=False, then="power_panel__name"),
+                    When(power_feed__isnull=False, then="power_feed__name"),
+                    default=Value(""),
+                    output_field=CharField(),
+                )
+            )
+        )

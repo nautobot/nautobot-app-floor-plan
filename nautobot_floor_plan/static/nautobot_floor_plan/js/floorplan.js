@@ -537,6 +537,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     console.log("Cleanup triggered");
                     completeCleanup(element, effects.elements, effects.animations);
+                    resetZoom(); // Add this in case floor plan wasn't rendered before 5 seconds and missed the first resetZoom()
                 }, HIGHLIGHT_DURATION);
             } else {
                 console.error("Invalid viewBox values. Skipping update.");

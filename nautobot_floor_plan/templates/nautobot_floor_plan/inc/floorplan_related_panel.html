@@ -1,0 +1,42 @@
+{% load helpers %}
+{% load seed_helpers %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <strong>Tiles and Child Floor Plans</strong>
+    </div>
+    <table class="table table-hover attr-table">
+        <tbody>
+            <tr>
+                <td>Tile(s)</td>
+                <td>
+                    <span class="hover_copy">
+                        <span id="_value_tiles">
+                            <a href="{% url 'plugins:nautobot_floor_plan:floorplantile_list' %}?floor_plan={{ object.pk }}">
+                                {{ object.tiles.count }}
+                            </a>
+                        </span>
+                        <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_tiles">
+                            <span class="mdi mdi-content-copy"></span>
+                        </button>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td>Child Floor Plan(s)</td>
+                <td>
+                    <span class="hover_copy">
+                        <span id="_value_child_plans">
+                            <a href="{% url 'plugins:nautobot_floor_plan:floorplan_list' %}?parent_location={{ object.location.pk }}">
+                                {{ object.location|count_children_floor_plans }}
+                            </a>
+                        </span>
+                        <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_child_plans">
+                            <span class="mdi mdi-content-copy"></span>
+                        </button>
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
