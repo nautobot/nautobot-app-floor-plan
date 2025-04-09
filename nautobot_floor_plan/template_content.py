@@ -111,7 +111,7 @@ class FloorPlanTab(DistinctViewTab):
 
     def should_render(self, context):
         """Only render if the location has a floor plan."""
-        location = context["object"]
+        location = get_obj_from_context(context)
         return hasattr(location, "floor_plan") and location.floor_plan is not None
 
 
@@ -131,7 +131,7 @@ class ChildFloorPlanTab(DistinctViewTab):
 
     def should_render(self, context):
         """Only render if any child locations have floor plans."""
-        location = context["object"]
+        location = get_obj_from_context(context)
         return location.children.filter(floor_plan__isnull=False).exists()
 
 

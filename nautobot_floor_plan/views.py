@@ -44,15 +44,15 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
                 fields="__all__",
             ),
             custom_panels.AxisConfigurationPanel(
-                weight=200,
+                weight=100,
                 section=SectionChoices.RIGHT_HALF,
             ),
             custom_panels.RelatedItemsPanel(
-                weight=300,
+                weight=200,
                 section=SectionChoices.LEFT_HALF,
             ),
             custom_panels.FloorPlanVisualizationPanel(
-                weight=400,
+                weight=300,
                 section=SectionChoices.FULL_WIDTH,
             ),
         ]
@@ -206,7 +206,7 @@ class FloorPlanTileUIViewSet(
                 fields="__all__",
             ),
             TileObjectDetailsPanel(
-                weight=200,
+                weight=100,
                 section=SectionChoices.RIGHT_HALF,
             ),
         ]
