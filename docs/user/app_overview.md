@@ -25,6 +25,8 @@ Included is a non-exhaustive list of capabilities beyond a standard MVC (model v
 - Provides visualization of Power Panels, and Racks being assigned to a Rack Group on a floor map.
 - Provides visualization of Tenant and Tenant Groups for Objects on a floor map.
 - Provides easy navigation from floor map to Object and subsequently device from Rack.
+- Provides easy navigation from floor map via grid labels to filter Rack Elevations.
+- Provides easy navigation from Objects to Floor Plan. Objects will be centered and zoomed in for 5 seconds and highlighted on Floor Plan for 20 seconds.
 - Provides the ability to assign Objects to coordinates / tiles.
   - From the Floor Plan UI
   - From the Object UI.
@@ -50,6 +52,8 @@ This App:
 - Adds a "Location Floor Plans" menu item to Nautobot's "Organization" menu.
 - Adds three new database models, "Floor Plan", "Floor Plan Tile" and "Floor Plan Custom Axis Label".
 - Adds UI and REST API endpoints for performing standard create/retrieve/update/delete (CRUD) operations on these models.
+- Extends the detail view of Nautobot Devices, Power Feeds, Power Panels, and Racks.
+    - Includes a "View on Floor Plan" button if the Object is on a "Floor Plan Tile".
 - Extends the detail view of Nautobot Locations.
     - Includes an "Add/Remove Floor Plan" button.
     - When a Floor Plan is defined a "Floor Plan" tab to display and interact with the rendered floor plan will be present.

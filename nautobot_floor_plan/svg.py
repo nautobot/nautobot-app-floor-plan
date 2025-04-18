@@ -13,6 +13,7 @@ from nautobot.core.templatetags.helpers import fgcolor
 from nautobot.dcim.models import Device, PowerFeed, PowerPanel, Rack
 
 from nautobot_floor_plan.choices import AllocationTypeChoices, ObjectOrientationChoices
+from nautobot_floor_plan.templatetags.seed_helpers import render_axis_origin
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
     RACKGROUP_TEXT_OFFSET = 12
     Y_LABEL_TEXT_OFFSET = 34
 
-    def __init__(self, *, floor_plan, user, base_url):
+    def __init__(self, *, floor_plan, user, base_url, request=None):
         """
         Initialize a FloorPlanSVG.
 
@@ -52,10 +53,12 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
             floor_plan (FloorPlan): FloorPlan to render
             user (User): User making this request
             base_url (str): Server URL, needed to prepend to URLs included in the rendered SVG.
+            request (HttpRequest): The current request object
         """
         self.floor_plan = floor_plan
         self.user = user
         self.base_url = base_url.rstrip("/")
+        self.request = request
         self.add_url = self.base_url + reverse("plugins:nautobot_floor_plan:floorplantile_add")
         self.return_url = (
             reverse("plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": self.floor_plan.location.pk})
@@ -77,9 +80,14 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
         drawing = svgwrite.Drawing(size=(width, depth), debug=False)
         drawing.viewbox(0, 0, width=width, height=depth)
 
+        # Get theme from request cookies if available
+        theme = self.request.COOKIES.get("theme", "light") if self.request else "light"
+        css_filename = "dark_svg.css" if theme == "dark" else "svg.css"
+        logger.debug("Using CSS file: %s for theme: %s", css_filename, theme)
+
         # Add our custom stylesheet
         with open(
-            os.path.join(os.path.dirname(__file__), "static", "nautobot_floor_plan", "css", "svg.css"),
+            os.path.join(os.path.dirname(__file__), "static", "nautobot_floor_plan", "css", css_filename),
             "r",
             encoding="utf-8",
         ) as css_file:
@@ -177,30 +185,55 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
         return x_labels, y_labels
 
     def _draw_axis_labels(self, drawing, x_labels, y_labels):
-        """Draw labels on the X and Y axes."""
+        """Draw labels on the X and Y axes with clickable links to rack elevations."""
+        # Create X-axis labels (column labels)
         for idx, label in enumerate(x_labels):
-            drawing.add(
+            # Create filter URL for racks in this row
+            filter_params = urlencode(
+                {
+                    "nautobot_floor_plan_floor_plan": self.floor_plan.pk,
+                    "nautobot_floor_plan_tile_x_origin": label,  # Pass the label instead of the numeric position
+                }
+            )
+            rack_url = f"{self.base_url}/dcim/rack-elevations/?{filter_params}"
+
+            # Create clickable link
+            link = drawing.add(drawing.a(href=rack_url, target="_top"))
+            link.add(
                 drawing.text(
                     label,
                     insert=(
                         (idx + 0.5) * self.GRID_SIZE_X + self.GRID_OFFSET,
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2,
                     ),
-                    class_="grid-label",
+                    class_="grid-label clickable-label",
                 )
             )
+
+        # Create Y-axis labels (row labels)
         max_y_length = max(len(str(label)) for label in y_labels)
         y_label_text_offset = self._calculate_y_label_offset(max_y_length)
 
         for idx, label in enumerate(y_labels):
-            drawing.add(
+            # Create filter URL for racks in this row
+            filter_params = urlencode(
+                {
+                    "nautobot_floor_plan_floor_plan": self.floor_plan.pk,
+                    "nautobot_floor_plan_tile_y_origin": label,  # Pass the label instead of the numeric position
+                }
+            )
+            rack_url = f"{self.base_url}/dcim/rack-elevations/?{filter_params}"
+
+            # Create clickable link
+            link = drawing.add(drawing.a(href=rack_url, target="_top"))
+            link.add(
                 drawing.text(
                     label,
                     insert=(
                         self.BORDER_WIDTH + self.TEXT_LINE_HEIGHT / 2 - y_label_text_offset,
                         (idx + 0.5) * self.GRID_SIZE_Y + self.GRID_OFFSET,
                     ),
-                    class_="grid-label",
+                    class_="grid-label clickable-label",
                 )
             )
 
@@ -313,26 +346,37 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
             (tile.y_origin - self.floor_plan.y_origin_seed) * self.GRID_SIZE_Y + self.GRID_OFFSET,
         )
 
-        # Determine the object and its URL
+        # Determine the object
         if tile.rack is not None:
             obj = tile.rack
-            obj_url = reverse("dcim:rack", kwargs={"pk": obj.pk})
+            obj_type = "rack"
+            obj_id = obj.pk
         elif tile.device is not None:
             obj = tile.device
-            obj_url = reverse("dcim:device", kwargs={"pk": obj.pk})
+            obj_type = "device"
+            obj_id = obj.pk
         elif tile.power_panel is not None:
             obj = tile.power_panel
-            obj_url = reverse("dcim:powerpanel", kwargs={"pk": obj.pk})
+            obj_type = "powerpanel"
+            obj_id = obj.pk
         elif tile.power_feed is not None:
             obj = tile.power_feed
-            obj_url = reverse("dcim:powerfeed", kwargs={"pk": obj.pk})
+            obj_type = "powerfeed"
+            obj_id = obj.pk
         else:
             return  # No object to draw
 
+        obj_url = reverse("dcim:" + obj_type, kwargs={"pk": obj_id})
         obj_url = f"{self.base_url}{obj_url}"
 
-        # Add link to the detail view of the object
-        link = drawing.add(drawing.a(href=obj_url, target="_top"))
+        # Create the link with enhanced attributes for highlighting
+        link = drawing.add(
+            drawing.a(
+                href=obj_url,
+                target="_top",
+                id=f"{obj_type}-{obj_id}",
+            )
+        )
 
         # Draw the main object rectangle
         link.add(
@@ -470,7 +514,26 @@ class FloorPlanSVG:  # pylint: disable=too-many-instance-attributes
             origin,
             tile,
         )
+        # When Zooming in to a highlighted object on large floor plans the labels are not visible.
+        # Adding the labels to the Tiles will make it easier to see where they are located.
+        # Use render_axis_origin to retrieve the converted labels for x and y origins
+        x_label = render_axis_origin(tile, "X")
+        y_label = render_axis_origin(tile, "Y")
 
+        # Display grid coordinates using the converted labels
+        grid_coordinates = f"({x_label}, {y_label})"
+
+        self._add_text_element(
+            drawing,
+            TextElement(
+                text=grid_coordinates,
+                line_offset=2,  # This will position it below the type text
+                class_name="label-text-grid",
+                color=obj.status.color if hasattr(obj, "status") else tile.status.color,
+            ),
+            origin,
+            tile,
+        )
         # Add tooltip data
         tooltip_data = self._get_tooltip_data(obj, obj_type)
         # Add tooltip data to the link element using proper SVG attribute setting

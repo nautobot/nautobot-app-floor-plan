@@ -20,6 +20,16 @@
       "type": ["integer", "null"],
       "description": "Maximum allowed Y size for the floor plan. Set to null for no limit."
     },
+    "zoom_duration": {
+      "type": "integer",
+      "default": 5000,
+      "description": "Duration of the zoom animation in milliseconds."
+    },
+    "highlight_duration": {
+      "type": "integer",
+      "default": 20000,
+      "description": "Duration of the highlight animation in milliseconds."
+    },
     "default_statuses": {
       "type": "object",
       "properties": {

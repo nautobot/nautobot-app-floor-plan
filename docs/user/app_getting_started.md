@@ -53,15 +53,15 @@ Default settings allow you to configure labels, seeds, and steps for each axis o
 
 - **X Axis Labels** and **Y Axis Labels**:
   Represent grid labels as either `"Numbers"` or `"Letters"`.
-  - Default: `"Numbers"`
+    - Default: `"Numbers"`
 
 - **X Axis Seed** and **Y Axis Seed**:
   Define the starting point for grid labels.
-  - Default: `"1"`
+    - Default: `"1"`
 
 - **X Axis Step** and **Y Axis Step**:
   Set a positive or negative integer step value to skip numbers or letters in grid labeling.
-  - Default: `"1"`
+    - Default: `"1"`
 
 ![Add Floor Plan form part 2](../images/add-tile-axis-default.png)
 
@@ -84,31 +84,31 @@ The **Custom Labels** tab provides options to configure a custom label range usi
 
 - **`increment_letter`** *(optional)*
   Applicable only for *numalpha* and *alphanumeric* label types, this parameter controls whether letter patterns increment.
-  - *Default*: `true`
-  - When set to `true`:
-  - The letter portions increment,  but the numeric portions do not creating patterns like:
-    - For numalpha: `02AA, 02AB, 02AC`
-    - For alphanumeric: `A01, B01, C01`
-  - When set to `false`:
-  - For numalpha:
-    - The entire letter portion increments with every step creating patterns like:
-    - `02AA, 02BB, 02CC`
-  - For alphanumeric:
-    - The letter prefix does not increment, but the numeric portion does creating patterns like:
-    - `A01, A02, A03`
+    - *Default*: `true`
+    - When set to `true`:
+    - The letter portions increment,  but the numeric portions do not creating patterns like:
+        - For numalpha: `02AA, 02AB, 02AC`
+        - For alphanumeric: `A01, B01, C01`
+    - When set to `false`:
+    - For numalpha:
+        - The entire letter portion increments with every step creating patterns like:
+        - `02AA, 02BB, 02CC`
+    - For alphanumeric:
+        - The letter prefix does not increment, but the numeric portion does creating patterns like:
+        - `A01, A02, A03`
 
   Both *numalpha* and *alphanumeric* label types support leading or non-leading zero formats.
 
-- **`label_type`**  
-  Specifies the type of label. Supported types include:  
-  - `numalpha (e.g., 02A, 05ZZ, 04AZ)`  
-  - `alphanumeric (e.g., A01, B02)`  
-  - `roman (e.g., I, II, III)`  
-  - `greek (e.g., α, β, γ)`  
-  - `hex (e.g., 0x0001, 0x000A, 0x000F)`  
-  - `binary (e.g., 0b0001, 0b1010, 0b0110)`  
-  - `letters (e.g., A, B, C)`  
-  - `numbers (e.g. 1, 2, 3)`
+- **`label_type`**
+  Specifies the type of label. Supported types include:
+    - `numalpha (e.g., 02A, 05ZZ, 04AZ)`
+    - `alphanumeric (e.g., A01, B02)`
+    - `roman (e.g., I, II, III)`
+    - `greek (e.g., α, β, γ)`
+    - `hex (e.g., 0x0001, 0x000A, 0x000F)`
+    - `binary (e.g., 0b0001, 0b1010, 0b0110)`
+    - `letters (e.g., A, B, C)`
+    - `numbers (e.g. 1, 2, 3)`
 
 There is a `Generate Preview` button that allows you to preview a range of labels that would be generated on the grid once the Floor Plan form has been saved.
 
@@ -164,7 +164,7 @@ For each tile, you can:
 - **Assign a Object or RackGroup**: Specify the object or rack group associated with the tile.
 - **Specify Rack Orientation**: Define the orientation of the object relative to the floor plan.
 - **Adjust Tile Size**: Expand a tile to cover multiple spaces.
-  - Useful for documenting larger-than-usual racks or marking sections of the floor plan as "Reserved" or "Unavailable."
+    - Useful for documenting larger-than-usual racks or marking sections of the floor plan as "Reserved" or "Unavailable."
 
 !!! note
     Once a Object (Device, Power Panel, Power Feed, or Rack) has been placed on a **Floor Plan Tile** you cannot update the **Location** of the Object until it has been removed from the Floor Plan or the Floor Plan has been deleted.
@@ -237,7 +237,9 @@ Common Data:
 
 If you've defined a large floor plan or have a small display, you can use your mouse wheel to zoom in for a better view. While zoomed in, click and drag to pan around the grid.
 
-Additional you can use the Enable Box Zoom/Switch to Pan Mode button to left click and drag a zoom box while Zoom is enabled, or pan in any direction when the Pan is enable. The Reset View button will reset the view back to the original rendered floor plan.
+Additionally you can use the Enable Box Zoom/Switch to Pan Mode button to left click and drag a zoom box while Zoom is enabled, or pan in any direction when Pan is enabled. The Reset View button will reset the view back to the original rendered floor plan.
+
+Clicking on a grid label for a given row (or column) will navigate to a Rack Elevation view of racks filtered by the Floor Plan and the Racks in the chosen row (or column).
 
 ![Floor plan zoom box button](../images/floorplan-click-drag-zoom.png)
 ![Floor plan zoomed in](../images/floorplan-zoomed.png)

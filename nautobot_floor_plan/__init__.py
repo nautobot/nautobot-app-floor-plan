@@ -31,6 +31,8 @@ class FloorPlanConfig(NautobotAppConfig):
         "default_y_axis_labels": AxisLabelsChoices.NUMBERS,
         "x_size_limit": None,
         "y_size_limit": None,
+        "zoom_duration": 5000,
+        "highlight_duration": 20000,
         "default_statuses": {
             "FloorPlanTile": [
                 {"name": "Active", "color": "4caf50"},

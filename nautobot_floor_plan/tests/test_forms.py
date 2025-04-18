@@ -325,6 +325,100 @@ class TestFloorPlanForm(TestCase):
         form = forms.FloorPlanForm(data=form_data)
         self.assertFalse(form.is_valid())
 
+    def test_has_x_custom_labels_with_initial_data(self):
+        """Test has_x_custom_labels property with initial data."""
+        form = forms.FloorPlanForm()
+        form.x_ranges = forms.CustomLabelRangeFormSetWithExtra(
+            initial=[{"start": "1", "end": "10", "step": 1, "label_type": choices.CustomAxisLabelsChoices.NUMBERS}]
+        )
+        self.assertTrue(form.has_x_custom_labels)
+
+    def test_has_x_custom_labels_with_form_data(self):
+        """Test has_x_custom_labels property with submitted form data."""
+        form_data = {
+            **fixtures.get_default_floor_plan_data(self.floors),
+            "x_ranges-TOTAL_FORMS": "1",
+            "x_ranges-INITIAL_FORMS": "0",
+            "x_ranges-0-start": "1",
+            "x_ranges-0-end": "10",
+            "x_ranges-0-step": "1",
+            "x_ranges-0-label_type": choices.CustomAxisLabelsChoices.NUMBERS,
+        }
+        form = forms.FloorPlanForm(data=form_data)
+        self.assertTrue(form.has_x_custom_labels)
+
+    def test_has_x_custom_labels_with_deleted_form(self):
+        """Test has_x_custom_labels property when form is marked for deletion."""
+        form_data = {
+            **fixtures.get_default_floor_plan_data(self.floors),
+            "x_ranges-TOTAL_FORMS": "1",
+            "x_ranges-INITIAL_FORMS": "0",
+            "x_ranges-0-start": "1",
+            "x_ranges-0-end": "10",
+            "x_ranges-0-step": "1",
+            "x_ranges-0-label_type": choices.CustomAxisLabelsChoices.NUMBERS,
+            "x_ranges-0-DELETE": "on",
+        }
+        form = forms.FloorPlanForm(data=form_data)
+        self.assertFalse(form.has_x_custom_labels)
+
+    def test_has_x_custom_labels_with_empty_form(self):
+        """Test has_x_custom_labels property with empty form data."""
+        form_data = {
+            **fixtures.get_default_floor_plan_data(self.floors),
+            "x_ranges-TOTAL_FORMS": "1",
+            "x_ranges-INITIAL_FORMS": "0",
+            "x_ranges-0-start": "",
+            "x_ranges-0-end": "",
+            "x_ranges-0-step": "1",
+            "x_ranges-0-label_type": choices.CustomAxisLabelsChoices.NUMBERS,
+        }
+        form = forms.FloorPlanForm(data=form_data)
+        self.assertFalse(form.has_x_custom_labels)
+
+    def test_has_y_custom_labels_with_form_data(self):
+        """Test has_y_custom_labels property with submitted form data."""
+        form_data = {
+            **fixtures.get_default_floor_plan_data(self.floors),
+            "y_ranges-TOTAL_FORMS": "1",
+            "y_ranges-INITIAL_FORMS": "0",
+            "y_ranges-0-start": "1",
+            "y_ranges-0-end": "10",
+            "y_ranges-0-step": "1",
+            "y_ranges-0-label_type": choices.CustomAxisLabelsChoices.NUMBERS,
+        }
+        form = forms.FloorPlanForm(data=form_data)
+        self.assertTrue(form.has_y_custom_labels)
+
+    def test_has_y_custom_labels_with_deleted_form(self):
+        """Test has_y_custom_labels property when form is marked for deletion."""
+        form_data = {
+            **fixtures.get_default_floor_plan_data(self.floors),
+            "y_ranges-TOTAL_FORMS": "1",
+            "y_ranges-INITIAL_FORMS": "0",
+            "y_ranges-0-start": "1",
+            "y_ranges-0-end": "10",
+            "y_ranges-0-step": "1",
+            "y_ranges-0-label_type": choices.CustomAxisLabelsChoices.NUMBERS,
+            "y_ranges-0-DELETE": "on",
+        }
+        form = forms.FloorPlanForm(data=form_data)
+        self.assertFalse(form.has_y_custom_labels)
+
+    def test_has_y_custom_labels_with_empty_form(self):
+        """Test has_y_custom_labels property with empty form data."""
+        form_data = {
+            **fixtures.get_default_floor_plan_data(self.floors),
+            "y_ranges-TOTAL_FORMS": "1",
+            "y_ranges-INITIAL_FORMS": "0",
+            "y_ranges-0-start": "",
+            "y_ranges-0-end": "",
+            "y_ranges-0-step": "1",
+            "y_ranges-0-label_type": choices.CustomAxisLabelsChoices.NUMBERS,
+        }
+        form = forms.FloorPlanForm(data=form_data)
+        self.assertFalse(form.has_y_custom_labels)
+
 
 class TestFloorPlanTileForm(TestCase):
     """Test FloorPlanTileForm forms."""

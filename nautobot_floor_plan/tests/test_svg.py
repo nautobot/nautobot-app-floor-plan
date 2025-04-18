@@ -1,13 +1,23 @@
 """Tests for the SVG rendering functionality of the Nautobot Floor Plan app."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
+from nautobot.dcim.models import Device, PowerFeed, PowerPanel, Rack, RackGroup
+from nautobot.users.models import Token
+from rest_framework import status
+from rest_framework.test import APIClient
 
+from nautobot_floor_plan import models, svg
 from nautobot_floor_plan.choices import ObjectOrientationChoices
-from nautobot_floor_plan.svg import FloorPlanSVG
+from nautobot_floor_plan.tests import fixtures
+from nautobot_floor_plan.tests.fixtures import create_prerequisites
 
 # pylint: disable=protected-access,too-many-instance-attributes
+
+User = get_user_model()
 
 
 class FloorPlanSVGTestCase(TestCase):
@@ -43,7 +53,7 @@ class FloorPlanSVGTestCase(TestCase):
         self.mock_reverse = self.reverse_patcher.start()
 
         # Create the SVG instance once with the patch applied
-        self.svg = FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
+        self.svg = svg.FloorPlanSVG(floor_plan=self.floor_plan, user=self.user, base_url=self.base_url)
 
     def tearDown(self):
         """Clean up test environment."""
@@ -311,3 +321,233 @@ class FloorPlanSVGTestCase(TestCase):
         self.svg._draw_grid.assert_called_once_with(mock_drawing)
         self.assertEqual(self.svg._draw_tile.call_count, 2)
         self.assertEqual(result, mock_drawing)
+
+    def test_get_tooltip_data(self):
+        """Test the _get_tooltip_data method with different object types."""
+        # Create prerequisites which includes status, manufacturer, etc.
+        prerequisites = create_prerequisites(floor_count=1)
+        active_status = prerequisites["status"]
+        device_type = prerequisites["device_type"]
+        device_role = prerequisites["device_role"]
+        floor = prerequisites["floors"][0]
+
+        # Test Rack tooltip
+        rack_group = RackGroup.objects.create(
+            name="Test Rack Group",
+            location=floor,
+        )
+
+        rack = Rack.objects.create(
+            name="Test Rack",
+            status=active_status,
+            location=floor,
+            rack_group=rack_group,
+        )
+
+        rack_data = self.svg._get_tooltip_data(rack, "Rack")
+        self.assertEqual(rack_data["Name"], "Test Rack")
+        self.assertEqual(rack_data["Type"], "Rack")
+        self.assertEqual(rack_data["Status"], "Active")
+        self.assertEqual(rack_data["Utilization"], "0 / 42 RU")
+        self.assertEqual(rack_data["Rack_group"], "Test Rack Group")
+
+        # Test Device tooltip
+        device = Device.objects.create(
+            name="Test Device",
+            status=active_status,
+            device_type=device_type,
+            role=device_role,
+            location=floor,
+            serial="ABC123",
+            asset_tag="ASSET001",
+        )
+
+        device_data = self.svg._get_tooltip_data(device, "Device")
+        self.assertEqual(device_data["Name"], "Test Device")
+        self.assertEqual(device_data["Type"], "Device")
+        self.assertEqual(device_data["Status"], "Active")
+        self.assertEqual(device_data["Manufacturer"], "Test Manufacturer")
+        self.assertEqual(device_data["Model"], "Test Device Type")
+        self.assertEqual(device_data["Serial"], "ABC123")
+        self.assertEqual(device_data["Asset_tag"], "ASSET001")
+
+        # Test PowerPanel tooltip
+        power_panel = PowerPanel.objects.create(
+            name="Test Power Panel",
+            location=floor,
+            rack_group=rack_group,
+        )
+
+        # Create some power feeds for the panel
+        PowerFeed.objects.create(
+            name="Feed 1",
+            power_panel=power_panel,
+            status=active_status,
+        )
+        PowerFeed.objects.create(
+            name="Feed 2",
+            power_panel=power_panel,
+            status=active_status,
+        )
+
+        panel_data = self.svg._get_tooltip_data(power_panel, "Power Panel")
+        self.assertEqual(panel_data["Name"], "Test Power Panel")
+        self.assertEqual(panel_data["Type"], "Power Panel")
+        self.assertEqual(panel_data["Feeds"], ["Feed 1", "Feed 2"])
+        self.assertEqual(panel_data["Rack_group"], "Test Rack Group")
+
+        # Test PowerFeed tooltip
+        power_feed = PowerFeed.objects.create(
+            name="Test Power Feed",
+            status=active_status,
+            power_panel=power_panel,
+            voltage=220,
+            amperage=30,
+            phase="Single",
+        )
+
+        feed_data = self.svg._get_tooltip_data(power_feed, "Power Feed")
+        self.assertEqual(feed_data["Name"], "Test Power Feed")
+        self.assertEqual(feed_data["Type"], "Power Feed")
+        self.assertEqual(feed_data["Status"], "Active")
+        self.assertEqual(feed_data["Panel"], "Test Power Panel")
+        self.assertEqual(feed_data["Voltage"], "220V")
+        self.assertEqual(feed_data["Amperage"], "30A")
+        self.assertEqual(feed_data["Phase"], "Single-phase")
+
+    def test_add_text_element(self):
+        """Test the _add_text_element method."""
+        # Setup
+        mock_drawing = MagicMock()
+        mock_tile = MagicMock()
+        mock_tile.x_size = 2
+        mock_tile.y_size = 2
+        origin = (50, 50)
+
+        text_element = svg.TextElement(text="Test Text", line_offset=1, class_name="test-class", color="ff0000")
+
+        # Call method
+        self.svg._add_text_element(mock_drawing, text_element, origin, mock_tile)
+
+        # Assertions
+        mock_drawing.text.assert_called_once()
+        mock_drawing.add.assert_called_once()
+
+        # Verify text parameters
+        text_call_args = mock_drawing.text.call_args[0]
+        text_call_kwargs = mock_drawing.text.call_args[1]
+
+        self.assertEqual(text_call_args[0], "Test Text")
+        self.assertEqual(text_call_kwargs["class_"], "test-class")
+        self.assertIn("style", text_call_kwargs)
+        self.assertIn("fill: #ffffff", text_call_kwargs["style"])
+
+    def test_draw_object_text(self):
+        """Test the _draw_object_text method."""
+        # Setup using fixtures
+        prerequisites = create_prerequisites(floor_count=1)
+        active_status = prerequisites["status"]
+        floor = prerequisites["floors"][0]
+
+        # Create a real rack for testing
+        rack_group = RackGroup.objects.create(
+            name="Test Rack Group",
+            location=floor,
+        )
+
+        rack = Rack.objects.create(
+            name="Test Rack",
+            status=active_status,
+            location=floor,
+            rack_group=rack_group,
+        )
+
+        # Setup drawing mocks
+        mock_drawing = MagicMock()
+        mock_tile = MagicMock()
+        mock_link = MagicMock()
+        origin = (50, 50)
+
+        # Configure the tile with our real rack
+        mock_tile.rack = rack
+        mock_tile.device = None
+        mock_tile.power_panel = None
+        mock_tile.power_feed = None
+        mock_tile.x_origin = 1
+        mock_tile.y_origin = 1
+        mock_tile.status = active_status
+
+        # Mock the _add_text_element method
+        self.svg._add_text_element = MagicMock()
+
+        # Call method
+        self.svg._draw_object_text(mock_drawing, mock_tile, mock_link, origin)
+
+        # Assertions
+        self.assertEqual(self.svg._add_text_element.call_count, 3)
+        mock_link.__setitem__.assert_any_call("class", "object-tooltip")
+        mock_link.__setitem__.assert_any_call("data-tooltip", ANY)
+
+    def test_draw_edit_delete_button(self):
+        """Test the _draw_edit_delete_button method."""
+        # Setup
+        mock_drawing = MagicMock()
+        mock_tile = MagicMock()
+        mock_tile.pk = 1
+        mock_tile.x_origin = 1
+        mock_tile.y_origin = 1
+        mock_tile.x_size = 2
+        mock_tile.y_size = 2
+        mock_tile.allocation_type = "Object"
+
+        # Call method
+        self.svg._draw_edit_delete_button(mock_drawing, mock_tile, 0, 0)
+
+        # Assertions
+        # Should create two links (edit and delete)
+        self.assertEqual(mock_drawing.a.call_count, 2)
+        # Should create two rectangles (button backgrounds)
+        self.assertEqual(mock_drawing.rect.call_count, 2)
+        # Should create two text elements (button symbols)
+        self.assertEqual(mock_drawing.text.call_count, 2)
+        # Should add all elements to the drawing
+        self.assertEqual(mock_drawing.add.call_count, 2)  # One for each button group
+
+
+class FloorPlanThemeTests(TestCase):
+    """Test cases for SVG rendering based on user theme settings."""
+
+    def setUp(self):
+        """Set up test environment using fixtures."""
+        # Create prerequisites using the fixture
+        data = fixtures.create_prerequisites()
+        self.floors = data["floors"]
+        self.floor_plan = models.FloorPlan.objects.create(
+            location=self.floors[0], x_size=5, y_size=5, x_origin_seed=1, y_origin_seed=1
+        )
+        self.user = User.objects.create(username="testuser", is_superuser=True)
+        self.token = Token.objects.create(user=self.user)
+        self.client = APIClient()
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
+
+    def test_svg_rendering_light_theme(self):
+        """Test SVG rendering with light theme."""
+        url = reverse("plugins-api:nautobot_floor_plan-api:floorplan-svg", kwargs={"pk": self.floor_plan.pk})
+        response = self.client.get(url, **{"HTTP_COOKIE": "theme=light"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('<style type="text/css">', response.content.decode())  # Check for CSS inclusion
+        self.assertNotIn(
+            "filter: invert(1) hue-rotate(180deg);", response.content.decode()
+        )  # Check that invert filter is not in use
+
+    def test_svg_rendering_dark_theme(self):
+        """Test SVG rendering with dark theme and check for invert filter on .object."""
+        url = reverse("plugins-api:nautobot_floor_plan-api:floorplan-svg", kwargs={"pk": self.floor_plan.pk})
+        response = self.client.get(url, **{"HTTP_COOKIE": "theme=dark"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('<style type="text/css">', response.content.decode())  # Check for CSS inclusion
+        self.assertIn(
+            "filter: invert(1) hue-rotate(180deg);", response.content.decode()
+        )  # Check that invert filter is being used

@@ -1,3 +1,4 @@
+/* dark_svg.css */
 /* Center text at its specified coordinate */
 text {
     text-anchor: middle;
@@ -18,24 +19,34 @@ text {
     stroke-width: 1px;
 }
 
-.tile-status {
-    stroke: black;
-    fill: #f7f7f7;
-    opacity: .6;
-}
-
 .button-text {
     fill: white;
 }
 
+.tile-status {
+    stroke: black;
+    fill: #f7f7f7;
+    opacity: .6;
+    filter: invert(1) hue-rotate(180deg);
+}
+
 .label-text {
     fill: white;
+    filter: invert(1) hue-rotate(180deg);
 }
 
 .label-text-primary {
     fill: white;
     font-weight: bold;
+    filter: invert(1) hue-rotate(180deg);
 }
+
+.object {
+    stroke: white;
+    stroke-width: 2px;
+    filter: invert(1) hue-rotate(180deg);
+}
+
 
 .add-tile-button {
     fill: #5cb85c;
@@ -104,11 +115,6 @@ a text {
     stroke-width: 0;
 }
 
-.object {
-    stroke: white;
-    stroke-width: 2px;
-}
-
 rect.object-orientation {
     fill: white;
     stroke: none;
@@ -159,4 +165,5 @@ rect.object-orientation {
 .highlight-border,
 .indicator-arrow {
     pointer-events: none;
+    filter: invert(1) hue-rotate(180deg);
 }
