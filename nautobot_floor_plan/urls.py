@@ -12,7 +12,9 @@ from nautobot_floor_plan import views
 app_name = "nautobot_floor_plan"
 router = NautobotUIViewSetRouter()
 
-router.register("floorplan", views.FloorPlanUIViewSet)
+# The standard is for the route to be the hyphenated version of the model class name plural.
+# for example, ExampleModel would be example-models.
+router.register("floor-plans", views.FloorPlanUIViewSet)
 
 
 urlpatterns = [

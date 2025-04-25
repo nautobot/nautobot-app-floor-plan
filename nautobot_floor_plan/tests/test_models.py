@@ -1,12 +1,22 @@
 """Test FloorPlan."""
 
-from django.test import TestCase
+from nautobot.apps.testing import ModelTestCases
 
 from nautobot_floor_plan import models
+from nautobot_floor_plan.tests import fixtures
 
 
-class TestFloorPlan(TestCase):
+class TestFloorPlan(ModelTestCases.BaseModelTestCase):
     """Test FloorPlan."""
+
+    model = models.FloorPlan
+
+    @classmethod
+    def setUpTestData(cls):
+        """Create test data for FloorPlan Model."""
+        super().setUpTestData()
+        # Create 3 objects for the model test cases.
+        fixtures.create_floorplan()
 
     def test_create_floorplan_only_required(self):
         """Create with only required fields, and validate null description and __str__."""

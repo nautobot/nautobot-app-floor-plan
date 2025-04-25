@@ -1,16 +1,22 @@
 """Test FloorPlan Filter."""
 
-from django.test import TestCase
+from nautobot.apps.testing import FilterTestCases
 
 from nautobot_floor_plan import filters, models
 from nautobot_floor_plan.tests import fixtures
 
 
-class FloorPlanFilterTestCase(TestCase):
+class FloorPlanFilterTestCase(FilterTestCases.FilterTestCase):
     """FloorPlan Filter Test Case."""
 
     queryset = models.FloorPlan.objects.all()
     filterset = filters.FloorPlanFilterSet
+    generic_filter_tests = (
+        ("id",),
+        ("created",),
+        ("last_updated",),
+        ("name",),
+    )
 
     @classmethod
     def setUpTestData(cls):
