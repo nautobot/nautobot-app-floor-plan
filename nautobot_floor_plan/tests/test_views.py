@@ -14,13 +14,16 @@ class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
     """Test the FloorPlan views."""
 
     model = models.FloorPlan
-    bulk_edit_data = {"x_size": 10, "y_size": 10, "tile_width": 200, "tile_depth": 200}
-    csv_data = (
-        "location__name,x_size,x_origin_seed,x_axis_step,y_size,y_origin_seed,y_axis_step,tile_width,tile_depth",
-        "Floor 4,1,1,1,2,1,1,100,100",
-        "Floor 5,2,1,1,4,1,2,100,200",
-        "Floor 6,3,1,1,6,1,-2,200,100",
-    )
+    bulk_edit_data = {"description": "Bulk edit views"}
+    form_data = {
+        "name": "Test 1",
+        "description": "Initial model",
+    }
+
+    update_data = {
+        "name": "Test 2",
+        "description": "Updated model",
+    }
 
     @classmethod
     def setUpTestData(cls):
