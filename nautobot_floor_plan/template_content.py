@@ -198,7 +198,7 @@ class BaseFloorPlanButton(Button):  # pylint: disable=abstract-method
             return "#"
 
         base_url = reverse("plugins:nautobot_floor_plan:floorplan", kwargs={"pk": floor_plan_pk})
-        query_string = urlencode({self.highlight_param: str(obj.pk)})
+        query_string = urlencode({self.highlight_param: obj.pk})
 
         return f"{base_url}?{query_string}"
 
