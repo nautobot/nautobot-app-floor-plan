@@ -18,7 +18,7 @@ class DeleteFloorPlanButton(Button):  # pylint: disable=abstract-method
             **kwargs: Arbitrary keyword arguments passed to Button.__init__
         """
         super().__init__(
-            label="Delete Floor Plan", icon="mdi-checkerboard-remove", color="danger", weight="100", *args, **kwargs
+            label="Delete Floor Plan", icon="mdi-checkerboard-remove", color="danger", weight=100, *args, **kwargs
         )
 
     def get_link(self, context):
@@ -52,7 +52,7 @@ class AddFloorPlanButton(Button):  # pylint: disable=abstract-method
             **kwargs: Arbitrary keyword arguments passed to Button.__init__
         """
         super().__init__(
-            label="Add Floor Plan", icon="mdi-checkerboard-plus", color="success", weight="100", *args, **kwargs
+            label="Add Floor Plan", icon="mdi-checkerboard-plus", color="success", weight=100, *args, **kwargs
         )
 
     def get_link(self, context):
@@ -168,7 +168,7 @@ class BaseFloorPlanButton(Button):  # pylint: disable=abstract-method
         self.object_type = object_type
         self.highlight_param = f"highlight_{object_type}"
         super().__init__(
-            label="View on Floor Plan", icon="mdi-floor-plan", color="primary", weight="100", *args, **kwargs
+            label="View on Floor Plan", icon="mdi-floor-plan", color="primary", weight=100, *args, **kwargs
         )
 
     def get_floor_plan_pk(self, obj):
@@ -185,7 +185,7 @@ class BaseFloorPlanButton(Button):  # pylint: disable=abstract-method
         if self.object_type == "powerfeed" and obj.power_panel and hasattr(obj.power_panel.location, "floor_plan"):
             return obj.power_panel.location.floor_plan.pk
         # For all other objects, the floor plan is on the object's location
-        if hasattr(obj.location, "floor_plan"):
+        if hasattr(obj, "location") and hasattr(obj.location, "floor_plan"):
             return obj.location.floor_plan.pk
         return None
 
@@ -198,7 +198,7 @@ class BaseFloorPlanButton(Button):  # pylint: disable=abstract-method
             return "#"
 
         base_url = reverse("plugins:nautobot_floor_plan:floorplan", kwargs={"pk": floor_plan_pk})
-        query_string = urlencode({self.highlight_param: obj.pk})
+        query_string = urlencode({self.highlight_param: str(obj.pk)})
 
         return f"{base_url}?{query_string}"
 
