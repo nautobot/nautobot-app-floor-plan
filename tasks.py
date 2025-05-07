@@ -205,20 +205,15 @@ def build(context, force_rm=False, cache=True):
 
 def _ensure_creds_env_file(context):
     """Ensure that the development/creds.env file exists."""
-    if not os.path.exists(
-        os.path.join(context.nautobot_floor_plan.compose_dir, "creds.env")
-    ):
+    if not os.path.exists(os.path.join(context.nautobot_floor_plan.compose_dir, "creds.env")):
         # Warn the user that the creds.env file does not exist and that we are copying the example file to it
-        print(
-            "⚠️⚠️ The creds.env file does not exist, using the example file to create it. ⚠️⚠️"
-        )
+        print("⚠️⚠️ The creds.env file does not exist, using the example file to create it. ⚠️⚠️")
         # Copy the creds.example.env file to creds.env
         shutil.copy(
-            os.path.join(
-                context.nautobot_floor_plan.compose_dir, "creds.example.env"
-            ),
+            os.path.join(context.nautobot_floor_plan.compose_dir, "creds.example.env"),
             os.path.join(context.nautobot_floor_plan.compose_dir, "creds.env"),
         )
+
 
 @task
 def generate_packages(context):
@@ -861,7 +856,8 @@ def check_migrations(context):
         "verbose": "Enable verbose test output.",
         "coverage": "Enable coverage reporting. Defaults to False",
         "skip_docs_build": "Skip building the documentation before running tests.",
-    }
+    },
+    iterable=["tags"],
 )
 def unittest(  # noqa: PLR0913
     context,

@@ -10,10 +10,8 @@ from nautobot_floor_plan import views
 app_name = "nautobot_floor_plan"
 router = NautobotUIViewSetRouter()
 
-# The standard is for the route to be the hyphenated version of the model class name plural.
-# for example, ExampleModel would be example-models.
 router.register("floor-plans", views.FloorPlanUIViewSet)
-
+router.register("floor-plan-tiles", views.FloorPlanTileUIViewSet)
 
 urlpatterns = [
     path("locations/<uuid:pk>/floor_plan/", views.LocationFloorPlanTab.as_view(), name="location_floor_plan_tab"),

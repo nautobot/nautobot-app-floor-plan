@@ -3,16 +3,30 @@
 import logging
 from dataclasses import dataclass
 
-# Nautobot imports
-from nautobot.apps.models import PrimaryModel, extras_features
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
+from django.db import models, transaction
+from nautobot.apps.models import PrimaryModel, StatusField, extras_features
 
-# If you want to choose a specific model to overload in your class declaration, please reference the following documentation:
-# how to chose a database model: https://docs.nautobot.com/projects/core/en/stable/plugins/development/#database-models
-# If you want to use the extras_features decorator please reference the following documentation
-# https://docs.nautobot.com/projects/core/en/stable/development/core/model-checklist/#extras-features
-@extras_features("custom_links", "custom_validators", "export_templates", "graphql", "webhooks")
-class FloorPlan(PrimaryModel):  # pylint: disable=too-many-ancestors
-    """Base model for Nautobot Floor Plan app."""
+from nautobot_floor_plan.choices import (
+    AllocationTypeChoices,
+    AxisLabelsChoices,
+    CustomAxisLabelsChoices,
+    ObjectOrientationChoices,
+)
+from nautobot_floor_plan.svg import FloorPlanSVG
+from nautobot_floor_plan.templatetags.seed_helpers import (
+    render_axis_origin,
+)
+from nautobot_floor_plan.utils.custom_validators import ValidateNotZero
+from nautobot_floor_plan.utils.label_generator import FloorPlanLabelGenerator
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TileOverlapData:
+    """Data container for tile overlap validation."""
 
     x_min: int
     y_min: int
