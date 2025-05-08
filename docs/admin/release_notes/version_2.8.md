@@ -27,7 +27,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - [#61](https://github.com/nautobot/nautobot-app-floor-plan/issues/61) - Fixed colors not displaying properly when using dark mode theme.
 - [#170](https://github.com/nautobot/nautobot-app-floor-plan/issues/170) - Fixed default label tab not being active when validation error occurs.
 - [#173](https://github.com/nautobot/nautobot-app-floor-plan/issues/173) - Fixed bullets to render properly in mkdocs which expects 4 spaces to indent.
+- [#180](https://github.com/nautobot/nautobot-app-floor-plan/issues/180) - Fixed bugs where locations without Floorplans would not load Power Feed detail view, and weight attribute for buttons had string configured.
 
 ### Housekeeping
 
 - [#171](https://github.com/nautobot/nautobot-app-floor-plan/issues/171) - Updated Floor Plan app to utilize the UI Component Framework introduced in Nautobot 2.4.0.
+- Rebaked from the cookie `nautobot-app-v2.5.0`.
