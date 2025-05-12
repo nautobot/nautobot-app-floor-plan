@@ -28,11 +28,11 @@ Included is a non-exhaustive list of capabilities beyond a standard MVC (model v
 - Provides easy navigation from floor map via grid labels to filter Rack Elevations.
 - Provides easy navigation from Objects to Floor Plan. Objects will be centered and zoomed in for 5 seconds and highlighted on Floor Plan for 20 seconds.
 - Provides the ability to assign Objects to coordinates / tiles.
-  - From the Floor Plan UI
-  - From the Object UI.
-  - From the API.
+    - From the Floor Plan UI
+    - From the Object UI.
+    - From the API.
 - Provides ability to map status to color for many use cases.
-  - Leveraging this you can depict hot / cold aisle.
+    - Leveraging this you can depict hot / cold aisle.
 - Provides the ability to set the direction of the Objects and show up.
 - Provides the ability to span multiple adjacent tiles by a single Object.
 - Provides the ability to place Objects in a group that spans multiple tiles.
