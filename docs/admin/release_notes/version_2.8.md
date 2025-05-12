@@ -29,15 +29,6 @@ This document describes all new features and changes in the release. The format 
 
 - [#171](https://github.com/nautobot/nautobot-app-floor-plan/issues/171) - Updated Floor Plan app to utilize the UI Component Framework introduced in Nautobot 2.4.0.
 
-# v2.8.1 Release Notes
-
-This document describes all new features and changes in the release. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## Release Overview
-
-- Major features or milestones
-- Changes to compatibility with Nautobot and/or other apps, libraries etc.
-
 ## [v2.8.1 (2025-05-12)](https://github.com/nautobot/nautobot-app-floor-plan/releases/tag/v2.8.1)
 
 ### Fixed
