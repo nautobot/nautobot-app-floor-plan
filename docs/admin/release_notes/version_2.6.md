@@ -8,16 +8,16 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ## Release Overview
 
 - This release adds greater customization to Floor Plan Grid labels and some minor changes associated with that enhancement.
-  - Custom labels and custom ranges: This feature allows user to create unique labels for a Floor Plan grid and even mix and match different label types on the same grid using the custom label feature.
-  - The following custom labels were added:
-    - NumAlpha
-    - Alphanumeric
-    - Numbers
-    - Letters
-    - Roman numerals
-    - Greek letters
-    - Binary
-    - Hexadecimal
+    - Custom labels and custom ranges: This feature allows user to create unique labels for a Floor Plan grid and even mix and match different label types on the same grid using the custom label feature.
+    - The following custom labels were added:
+        - NumAlpha
+        - Alphanumeric
+        - Numbers
+        - Letters
+        - Roman numerals
+        - Greek letters
+        - Binary
+        - Hexadecimal
 - It is possible to generate a Floor Plan that is so large it could cause it not to render or the browser to crash. An optional setting was added, which defaults to None, to allow the restriction on the maximum configurable size of the Floor Plan.
 
 ## [v2.6.0 (2025-01-23)](https://github.com/nautobot/nautobot-app-floor-plan/releases/tag/v2.6.0)

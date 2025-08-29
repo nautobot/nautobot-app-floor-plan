@@ -12,9 +12,7 @@
                 <td>
                     <span class="hover_copy">
                         <span id="_value_tiles">
-                            <a href="{% url 'plugins:nautobot_floor_plan:floorplantile_list' %}?floor_plan={{ object.pk }}">
-                                {{ object.tiles.count }}
-                            </a>
+                            <a href="{% url 'plugins:nautobot_floor_plan:floorplantile_list' %}?floor_plan={{ object.pk }}">{{ object.tiles.count }}</a>
                         </span>
                         <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_tiles">
                             <span class="mdi mdi-content-copy"></span>
@@ -27,9 +25,7 @@
                 <td>
                     <span class="hover_copy">
                         <span id="_value_child_plans">
-                            <a href="{% url 'plugins:nautobot_floor_plan:floorplan_list' %}?parent_location={{ object.location.pk }}">
-                                {{ object.location|count_children_floor_plans }}
-                            </a>
+                            <a href="{% url 'plugins:nautobot_floor_plan:floorplan_list' %}?parent_location={{ object.location.pk }}">{{ object.location|count_children_floor_plans }}</a>
                         </span>
                         <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#_value_child_plans">
                             <span class="mdi mdi-content-copy"></span>

@@ -14,6 +14,7 @@ limitations under the License.
 
 import os
 import re
+import shutil
 import sys
 from pathlib import Path
 from time import sleep
@@ -118,6 +119,7 @@ def docker_compose(context, command, **kwargs):
         command (str): Command string to append to the "docker compose ..." command, such as "build", "up", etc.
         **kwargs: Passed through to the context.run() call.
     """
+    _ensure_creds_env_file(context)
     build_env = {
         # Note: 'docker compose logs' will stop following after 60 seconds by default,
         # so we are overriding that by setting this environment variable.
@@ -199,6 +201,18 @@ def build(context, force_rm=False, cache=True):
 
     print(f"Building Nautobot with Python {context.nautobot_floor_plan.python_ver}...")
     docker_compose(context, command)
+
+
+def _ensure_creds_env_file(context):
+    """Ensure that the development/creds.env file exists."""
+    if not os.path.exists(os.path.join(context.nautobot_floor_plan.compose_dir, "creds.env")):
+        # Warn the user that the creds.env file does not exist and that we are copying the example file to it
+        print("⚠️⚠️ The creds.env file does not exist, using the example file to create it. ⚠️⚠️")
+        # Copy the creds.example.env file to creds.env
+        shutil.copy(
+            os.path.join(context.nautobot_floor_plan.compose_dir, "creds.example.env"),
+            os.path.join(context.nautobot_floor_plan.compose_dir, "creds.env"),
+        )
 
 
 @task
@@ -676,6 +690,17 @@ def build_and_check_docs(context):
     command = "mkdocs build --no-directory-urls --strict"
     run_command(context, command)
 
+    # Check for the existence of a release notes file for the current version if it's not a prerelease.
+    version = context.run("poetry version --short", hide=True)
+    match = re.match(r"^(\d+)\.(\d+)\.\d+$", version.stdout.strip())
+    if match:
+        major = match.group(1)
+        minor = match.group(2)
+        release_notes_file = Path(__file__).parent / "docs" / "admin" / "release_notes" / f"version_{major}.{minor}.md"
+        if not release_notes_file.exists():
+            print(f"Release notes file `version_{major}.{minor}.md` does not exist.")
+            raise Exit(code=1)
+
 
 @task(name="help")
 def help_task(context):
@@ -748,11 +773,12 @@ def pylint(context):
 def autoformat(context):
     """Run code autoformatting."""
     ruff(context, action=["format"], fix=True)
+    djlint(context, action=["format"], fix=True)
 
 
 @task(
     help={
-        "action": "Available values are `['lint', 'format']`. Can be used multiple times. (default: `['lint', 'format']`)",
+        "action": "Available values are `['lint', 'format']`. Can be used multiple times. (default: `--action lint --action format`)",
         "target": "File or directory to inspect, repeatable (default: all files in the project will be inspected)",
         "fix": "Automatically fix selected actions. May not be able to fix all issues found. (default: False)",
         "output_format": "See https://docs.astral.sh/ruff/settings/#output-format for details. (default: `concise`)",
@@ -789,6 +815,39 @@ def ruff(context, action=None, target=None, fix=False, output_format="concise"):
         raise Exit(code=exit_code)
 
 
+@task(
+    help={
+        "action": "Available values are `['lint', 'format']`. Can be used multiple times. (default: `--action format`)",
+        "target": "File or directory to inspect, repeatable (default: all files in the project will be inspected)",
+        "fix": "Automatically fix the formatting. (default: False)",
+        "quiet": "Suppress output when formatting or checking (default: False)",
+    },
+    iterable=["target", "action"],
+)
+def djlint(context, action=None, target=None, fix=False, quiet=False):
+    """Run djlint to validate Django template formatting."""
+    if not action:
+        action = ["format"]  # TODO: Add 'lint' when we are ready to enforce linting
+    if not target:
+        target = ["."]
+
+    command = "djlint "
+
+    if "format" in action:
+        command += "--reformat --warn " if fix else "--check "
+        if quiet:
+            command += "--quiet "
+
+    if "lint" in action:
+        command += "--lint "
+
+    command += " ".join(target)
+
+    exit_code = 0 if run_command(context, command, warn=True) else 1
+    if exit_code != 0:
+        raise Exit(code=exit_code)
+
+
 @task
 def yamllint(context):
     """Run yamllint to validate formatting adheres to NTC defined YAML standards.
@@ -797,6 +856,18 @@ def yamllint(context):
         context (obj): Used to run specific commands
     """
     command = "yamllint . --format standard"
+    run_command(context, command)
+
+
+@task
+def markdownlint(context, fix=False):
+    """Lint Markdown files."""
+    # note: at the time of this writing, the `--fix` option is in pending state for pymarkdown on both rules.
+    if fix:
+        command = "pymarkdown fix --recurse docs *.md"
+        run_command(context, command)
+    # fix mode doesn't scan/report issues it can't fix, so always run scan even after fixing
+    command = "pymarkdown scan --recurse docs *.md"
     run_command(context, command)
 
 
@@ -817,6 +888,8 @@ def check_migrations(context):
         "pattern": "Run specific test methods, classes, or modules instead of all tests",
         "tags": "Unittest tags to target",
         "verbose": "Enable verbose test output.",
+        "coverage": "Enable coverage reporting. Defaults to False",
+        "skip_docs_build": "Skip building the documentation before running tests.",
     },
     iterable=["tags"],
 )
@@ -829,9 +902,16 @@ def unittest(  # noqa: PLR0913
     tags=[],
     pattern="",
     verbose=False,
+    coverage=False,
+    skip_docs_build=False,
 ):
     """Run Nautobot unit tests."""
-    command = f"coverage run --module nautobot.core.cli test {label}"
+    if not skip_docs_build:
+        build_and_check_docs(context)
+    if coverage:
+        command = f"coverage run --module nautobot.core.cli test {label}"
+    else:
+        command = f"nautobot-server test {label}"
 
     if keepdb:
         command += " --keepdb"
@@ -853,8 +933,24 @@ def unittest(  # noqa: PLR0913
 
 @task
 def unittest_coverage(context):
-    """Report on code test coverage as measured by 'invoke unittest'."""
-    command = "coverage report --skip-covered --include 'nautobot_floor_plan/*' --omit *migrations*"
+    """Report on code test coverage as measured by 'invoke unittest --coverage'."""
+    command = "coverage report --skip-covered"
+
+    run_command(context, command)
+
+
+@task
+def coverage_lcov(context):
+    """Generate an LCOV coverage report."""
+    command = "coverage lcov -o lcov.info"
+
+    run_command(context, command)
+
+
+@task
+def coverage_xml(context):
+    """Generate an XML coverage report."""
+    command = "coverage xml -o coverage.xml"
 
     run_command(context, command)
 
@@ -884,6 +980,8 @@ def tests(context, failfast=False, keepdb=False, lint_only=False):
     ruff(context)
     print("Running yamllint...")
     yamllint(context)
+    print("Running markdownlint...")
+    markdownlint(context)
     print("Running poetry check...")
     lock(context, check=True)
     print("Running migrations check...")
@@ -898,8 +996,9 @@ def tests(context, failfast=False, keepdb=False, lint_only=False):
         print("Running integ tests...")
         unittest(context, failfast=failfast, keepdb=keepdb, tags=["integration"])
         print("Running unit tests...")
-        unittest(context, failfast=failfast, keepdb=keepdb)
+        unittest(context, failfast=failfast, keepdb=keepdb, coverage=True, skip_docs_build=True)
         unittest_coverage(context)
+        coverage_lcov(context)
     print("All tests have passed!")
 
 

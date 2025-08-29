@@ -1,0 +1,1 @@
+Fixed bugs where locations without Floorplans would not load Power Feed detail view, and weight attribute for buttons had string configured.
