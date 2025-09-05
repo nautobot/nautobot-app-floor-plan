@@ -819,7 +819,7 @@ def ruff(context, action=None, target=None, fix=False, output_format="concise"):
     help={
         "target": "File or directory to inspect, repeatable (default: all files in the project will be inspected)",
     },
-    iterable=["target", "action"],
+    iterable=["target"],
 )
 def djlint(context, target=None):
     """Run djlint to lint Django templates."""
@@ -838,11 +838,10 @@ def djlint(context, target=None):
     help={
         "check": "Run djhtml in check mode.",
     },
-    iterable=["target"],
 )
 def djhtml(context, check=False):
     """Run djhtml to format Django HTML templates."""
-    command = "djhtml -t 4 nautobot_floor_plan/templates/."
+    command = "djhtml -t 4 nautobot_floor_plan/templates/"
 
     if check:
         command += " --check"
