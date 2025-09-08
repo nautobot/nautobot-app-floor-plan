@@ -64,6 +64,7 @@ jsonschema = "*"
 djlint = ">=1.36.4,<2.0.0"
 selenium = "^4.28.1"
 splinter = "^0.21.0"
+djhtml = ">=3.0.8,<4.0.0"
 
 
 [tool.poetry.extras]
