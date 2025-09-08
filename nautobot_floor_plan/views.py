@@ -164,7 +164,9 @@ class ChildLocationFloorPlanTab(ObjectView):
             .select_related("parent", "location_type")
         )
 
-        children_table = tables.FloorPlanTable(models.FloorPlan.objects.filter(location__in=children.all()), configurable=True)
+        children_table = tables.FloorPlanTable(
+            models.FloorPlan.objects.filter(location__in=children.all()), configurable=True
+        )
 
         paginate = {
             "paginator_class": EnhancedPaginator,
