@@ -21,7 +21,7 @@
         <br/>
         Click on a Row's Label to see the Elevation for all Racks in the row.
     </div>
-    <div class="text-center text-mdall">
+    <div class="text-center">
         <a class="rack_elevation_save_svg_link" download="floor_plan_{{ object.location.name }}.svg" href="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}">
             <span class="mdi mdi-content-save-outline"></span> Save SVG
         </a>
