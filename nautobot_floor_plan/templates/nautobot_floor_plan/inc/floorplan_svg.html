@@ -2,7 +2,7 @@
 {% load static %}
 
 {% if object %}
-    <div class="float-end noprint">
+    <div class="float-end d-print-none">
         <a class="btn btn-warning btn-md" href="{% url 'plugins:nautobot_floor_plan:floorplan_edit' object.pk %}" id="edit-button">
             <span aria-hidden="true" class="mdi mdi-checkerboard"></span> Edit Floorplan
         </a>

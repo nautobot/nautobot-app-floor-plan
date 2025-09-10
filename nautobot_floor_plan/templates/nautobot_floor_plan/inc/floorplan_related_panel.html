@@ -10,7 +10,7 @@
             <tr>
                 <td>Tile(s)</td>
                 <td>
-                    <span class="hover_copy">
+                    <span>
                         <span id="_value_tiles">
                             <a href="{% url 'plugins:nautobot_floor_plan:floorplantile_list' %}?floor_plan={{ object.pk }}">{{ object.tiles.count }}</a>
                         </span>
@@ -23,7 +23,7 @@
             <tr>
                 <td>Child Floor Plan(s)</td>
                 <td>
-                    <span class="hover_copy">
+                    <span>
                         <span id="_value_child_plans">
                             <a href="{% url 'plugins:nautobot_floor_plan:floorplan_list' %}?parent_location={{ object.location.pk }}">{{ object.location|count_children_floor_plans }}</a>
                         </span>
