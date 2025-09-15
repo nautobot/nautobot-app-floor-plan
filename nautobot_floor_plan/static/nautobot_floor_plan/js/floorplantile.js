@@ -8,12 +8,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!container) return;
 
         // Get all tab elements
-        const tabElements = {
-            'rack': document.querySelector('a[href="#rack"]').parentElement,
-            'device': document.querySelector('a[href="#device"]').parentElement,
-            'power-panel': document.querySelector('a[href="#power-panel"]').parentElement,
-            'power-feed': document.querySelector('a[href="#power-feed"]').parentElement
-        };
+            const tabLinks = {
+                'rack': document.querySelector('a[href="#rack"]'),
+                'device': document.querySelector('a[href="#device"]'),
+                'power-panel': document.querySelector('a[href="#power-panel"]'),
+                'power-feed': document.querySelector('a[href="#power-feed"]')
+            };
 
         // Get all tab panes
         const tabPanes = {
@@ -60,46 +60,49 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Set the active tab
-        for (const [tab, element] of Object.entries(tabElements)) {
-            if (tab === activeTab) {
-                element.classList.add('active');
-            } else {
-                element.classList.remove('active');
+            // Set the active tab link and pane for Bootstrap 5
+            for (const [tab, link] of Object.entries(tabLinks)) {
+                if (link) {
+                    if (tab === activeTab) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                }
             }
-        }
-
-        // Set the active tab pane
-        for (const [tab, element] of Object.entries(tabPanes)) {
-            if (tab === activeTab) {
-                element.classList.add('active');
-            } else {
-                element.classList.remove('active');
+            for (const [tab, pane] of Object.entries(tabPanes)) {
+                if (pane) {
+                    if (tab === activeTab) {
+                        pane.classList.add('active', 'show');
+                    } else {
+                        pane.classList.remove('active', 'show');
+                    }
+                }
             }
-        }
     }
 
     // Run the function on page load
     setActiveTab();
 
-    // Add event listeners to tab links
-    const tabLinks = document.querySelectorAll('.nav-tabs a[data-toggle="tab"]');
-    tabLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-
-            // Remove active class from all tabs and panes
-            document.querySelectorAll('.nav-tabs li').forEach(tab => {
-                tab.classList.remove('active');
+        // Add event listeners to tab links (Bootstrap 5)
+        const tabLinksAll = document.querySelectorAll('.nav-tabs a[data-bs-toggle="tab"]');
+        tabLinksAll.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Remove active class from all tab links
+                tabLinksAll.forEach(l => l.classList.remove('active'));
+                // Remove active and show from all panes
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('active', 'show');
+                });
+                // Add active to clicked tab link
+                this.classList.add('active');
+                // Add active and show to corresponding pane
+                const target = this.getAttribute('href').substring(1);
+                const pane = document.getElementById(target);
+                if (pane) {
+                    pane.classList.add('active', 'show');
+                }
             });
-            document.querySelectorAll('.tab-pane').forEach(pane => {
-                pane.classList.remove('active');
-            });
-
-            // Add active class to clicked tab and corresponding pane
-            this.parentElement.classList.add('active');
-            const target = this.getAttribute('href').substring(1);
-            document.getElementById(target).classList.add('active');
         });
-    });
 });

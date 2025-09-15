@@ -42,6 +42,14 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
                 weight=100,
                 section=SectionChoices.LEFT_HALF,
                 fields="__all__",
+                exclude_fields=[
+                    "x_axis_step",
+                    "y_axis_step",
+                    "x_origin_seed",
+                    "y_origin_seed",
+                    "x_axis_labels",
+                    "y_axis_labels",
+                ],
             ),
             custom_panels.AxisConfigurationPanel(
                 weight=100,
