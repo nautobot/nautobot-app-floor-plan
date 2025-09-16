@@ -1,6 +1,12 @@
 """Views for FloorPlan."""
 
+<<<<<<< HEAD
 from types import SimpleNamespace
+=======
+from nautobot.apps.views import NautobotUIViewSet
+from nautobot.apps.ui import ObjectDetailContent, ObjectFieldsPanel, ObjectTablePanel, SectionChoices
+from nautobot.core.templatetags import helpers
+>>>>>>> aaacb94 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
 
 from django.db.models import Case, CharField, Value, When
 from django_tables2 import RequestConfig
@@ -36,12 +42,19 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
     serializer_class = serializers.FloorPlanSerializer
     table_class = tables.FloorPlanTable
 
+<<<<<<< HEAD
+=======
+    # Here is an example of using the UI  Component Framework for the detail view.
+    # More information can be found in the Nautobot documentation:
+    # https://docs.nautobot.com/projects/core/en/stable/development/core/ui-component-framework/
+>>>>>>> aaacb94 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
     object_detail_content = ObjectDetailContent(
         panels=[
             ObjectFieldsPanel(
                 weight=100,
                 section=SectionChoices.LEFT_HALF,
                 fields="__all__",
+<<<<<<< HEAD
             ),
             custom_panels.AxisConfigurationPanel(
                 weight=100,
@@ -239,3 +252,26 @@ class FloorPlanTileUIViewSet(
                 )
             )
         )
+=======
+                # Alternatively, you can specify a list of field names:
+                # fields=[
+                #     "name",
+                #     "description",
+                # ],
+                # Some fields may require additional configuration, we can use value_transforms
+                # value_transforms={
+                #     "name": [helpers.bettertitle]
+                # },
+            ),
+            # If there is a ForeignKey or M2M with this model we can use ObjectTablePanel
+            # to display them in a table format.
+            # ObjectTablePanel(
+                # weight=200,
+                # section=SectionChoices.RIGHT_HALF,
+                # table_class=tables.FloorPlanTable,
+                # You will want to filter the table using the related_name
+                # filter="floorplans",
+            # ),
+        ],
+    )
+>>>>>>> aaacb94 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
