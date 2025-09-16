@@ -18,11 +18,10 @@ class FloorPlanConfig(NautobotAppConfig):
     description = "Nautobot Floor Plan."
     base_url = "floor-plan"
     required_settings = []
-    min_version = "2.0.0"
-    max_version = "2.9999"
     default_settings = {}
     caching_config = {}
     docs_view_name = "plugins:nautobot_floor_plan:docs"
+    searchable_models = ["floorplan"]
 
 
 config = FloorPlanConfig  # pylint:disable=invalid-name
