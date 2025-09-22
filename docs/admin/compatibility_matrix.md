@@ -5,5 +5,15 @@ Because this App depends on Nautobot's `Location` data model, which was introduc
 Because this App adopted the Nautobot UI Component Framework, any version beyond 2.8.X will require Nautobot 2.4.0 or higher.
 
 | Nautobot Floor Plan Version | Nautobot First Support Version | Nautobot Last Support Version |
-| ------------- | -------------------- | ------------- |
-| 1.0.X         | 2.4.2                | 2.99.99        |
+|-----------------------------|--------------------------------| ----------------------------- |
+| 1.0.X                       | 1.4.0                          | 1.99.99                       |
+| 2.0.X                       | 2.0.0                          | 2.2.99                        |
+| 2.1.X                       | 2.0.0                          | 2.2.99                        |
+| 2.2.X                       | 2.0.0                          | 2.2.99                        |
+| 2.3.X                       | 2.0.0                          | 2.99.99                       |
+| 2.4.X                       | 2.0.0                          | 2.99.99                       |
+| 2.5.X                       | 2.0.0                          | 2.99.99                       |
+| 2.6.X                       | 2.0.0                          | 2.99.99                       |
+| 2.7.X                       | 2.0.0                          | 2.99.99                       |
+| 2.8.X                       | 2.4.0                          | 2.99.99                       |
+| 2.8.2                       | 2.4.2                          | 2.99.99                       |
