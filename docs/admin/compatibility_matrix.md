@@ -16,4 +16,4 @@ Because this App adopted the Nautobot UI Component Framework, any version beyond
 | 2.6.X                       | 2.0.0                          | 2.99.99                       |
 | 2.7.X                       | 2.0.0                          | 2.99.99                       |
 | 2.8.X                       | 2.4.0                          | 2.99.99                       |
-| 2.8.2                       | 2.4.2                          | 2.99.99                       |
+| 2.9.X                       | 2.4.2                          | 2.99.99                       |
