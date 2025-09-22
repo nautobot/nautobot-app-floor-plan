@@ -15,8 +15,10 @@
         Use shift+scroll wheel to zoom in or out.
         Click and drag to scroll.
         <button id="toggle-zoom-mode" class="btn btn-sm btn-default">Enable Box Zoom</button>
-        <button id="reset-zoom" class="btn btn-sm btn-secondary">Reset View</button><br>
-        Add a tile by clicking the plus symbol on the grid OR by using the "Add Tile" button.<br>
+        <button id="reset-zoom" class="btn btn-sm btn-secondary">Reset View</button>
+        <br>
+        Add a tile by clicking the plus symbol on the grid OR by using the "Add Tile" button.
+        <br>
         Click on a Row's Label to see the Elevation for all Racks in the row.
     </div>
 
@@ -30,7 +32,7 @@
     Add Tippy.js resources - using local files for air-gapped environments
     Add Gsap.js resources - using local files for air-gapped environments
     {% endcomment %}
-    <link rel="stylesheet" href="{% static 'nautobot_floor_plan/css/light.css' %}"/>
+    <link rel="stylesheet" href="{% static 'nautobot_floor_plan/css/light.css' %}" />
     <script src="{% static 'nautobot_floor_plan/tippy.js-6.3.7/popper.min.js' %}"></script>
     <script src="{% static 'nautobot_floor_plan/tippy.js-6.3.7/tippy-bundle.umd.min.js' %}"></script>
     <script src="{% static 'nautobot_floor_plan/js/floorplan.js' %}?v={% now 'U' %}"></script>
@@ -44,15 +46,9 @@
     Scale the SVG by default to match the page width, preserving its aspect-ratio.
     See https://css-tricks.com/scale-svg/ for more details.
     {% endcomment %}
-    <div id="floor-plan-svg-container"
-         style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ object.y_size}} * {{ object.tile_depth }}) / ({{ object.x_size }} * {{ object.tile_width }}) / 1.2);">
+    <div id="floor-plan-svg-container" style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ object.y_size }} * {{ object.tile_depth }}) / ({{ object.x_size }} * {{ object.tile_width }}) / 1.2);">
         <a id="zoom-anchor"></a>
-        <div id="floor-plan-svg"
-            data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}"
-            data-floor-plan-x-size="{{ object.x_size }}"
-            data-floor-plan-y-size="{{ object.y_size }}"
-            style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
-        </div>
+        <div id="floor-plan-svg" data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" data-floor-plan-x-size="{{ object.x_size }}" data-floor-plan-y-size="{{ object.y_size }}" style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;"></div>
     </div>
 {% else %}
     {% comment %}
@@ -60,4 +56,3 @@
     {% endcomment %}
     No floor plan defined. Use the "Add Floor Plan" button above to create one if desired.
 {% endif %}
-

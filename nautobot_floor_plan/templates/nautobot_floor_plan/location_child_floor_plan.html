@@ -3,14 +3,12 @@
 {% load static %}
 {% load seed_helpers %}
 {% block content %}
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <strong>Child Floor Plans</strong>
-        <div class="pull-right noprint">
-            {% table_config_button_small children_table %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>Child Floor Plans</strong>
+            <div class="pull-right noprint">{% table_config_button_small children_table %}</div>
         </div>
+        {% include 'inc/table.html' with table=children_table %}
     </div>
-    {% include 'inc/table.html' with table=children_table %}
-</div>
-{% table_config_form children_table %}
+    {% table_config_form children_table %}
 {% endblock content %}

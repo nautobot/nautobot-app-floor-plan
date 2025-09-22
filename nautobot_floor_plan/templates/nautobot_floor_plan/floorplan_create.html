@@ -6,257 +6,220 @@
 
 {% block form %}
 
-<!-- Place this BEFORE your script tag -->
-{{ label_type_choices|json_script:"label-type-choices" }}
+    <!-- Place this BEFORE your script tag -->
+    {{ label_type_choices|json_script:"label-type-choices" }}
 
-<div class="panel panel-default">
-    <div class="panel-heading"><strong>Floor Plan</strong></div>
-    <div class="panel-body">
-        {% for field_name in form.fieldsets.0.1 %}
-            {% render_field form|get_fieldset_field:field_name %}
-        {% endfor %}
-    </div>
-</div>
-
-<!-- X Axis Settings -->
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <strong>X Axis Settings</strong>
-    </div>
-    <div class="panel-body">
-        {% if form.x_origin_seed.errors or form.x_axis_step.errors or form.x_axis_labels.errors %}
-        <div class="alert alert-danger">
-            <i class="mdi mdi-alert"></i> There are validation errors in the Default Labels tab
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>Floor Plan</strong>
         </div>
-        {% endif %}
-        {% for range_form in form.x_ranges.forms %}
-            {% if range_form.start.value or range_form.end.value %}
-                {% if range_form.errors %}
+        <div class="panel-body">
+            {% for field_name in form.fieldsets.0.1 %}
+                {% render_field form|get_fieldset_field:field_name %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- X Axis Settings -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>X Axis Settings</strong>
+        </div>
+        <div class="panel-body">
+            {% if form.x_origin_seed.errors or form.x_axis_step.errors or form.x_axis_labels.errors %}
                 <div class="alert alert-danger">
-                    <i class="mdi mdi-alert"></i> There are validation errors in the Custom Labels tab
+                    <i class="mdi mdi-alert"></i> There are validation errors in the Default Labels tab
                 </div>
-                {% endif %}
             {% endif %}
-        {% endfor %}
-        <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" {% if x_activate_default_tab %}class="active"{% endif %}>
-                    <a href="#x-default" aria-controls="x-default" role="tab" data-toggle="tab">Default Labels</a>
-                </li>
-                <li role="presentation" {% if x_activate_custom_tab %}class="active"{% endif %}>
-                    <a href="#x-custom" aria-controls="x-custom" role="tab" data-toggle="tab">Custom Labels</a>
-                </li>
-            </ul>
-            <div class="tab-content">
-                <div role="tabpanel" class="tab-pane {% if x_activate_default_tab %}active{% endif %}" id="x-default">
-                    {% for field in form.fieldsets.1.1.tabs.0.1 %}
-                        {% render_field form|get_fieldset_field:field %}
-                    {% endfor %}
-                </div>
-                <div role="tabpanel" class="tab-pane {% if x_activate_custom_tab %}active{% endif %}" id="x-custom">
-                    {{ form.x_ranges.management_form }}
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Start</th>
-                                    <th>End</th>
-                                    <th>Step</th>
-                                    <th>Label Type</th>
-                                    <th>Increment Letter</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="x-ranges">
-                                {% for range_form in form.x_ranges %}
-                                <tr>
-                                    <td>
-                                        {{ range_form.start }}
-                                        {% if range_form.start.errors %}
-                                        <div class="text-danger">
-                                            {{ range_form.start.errors }}
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ range_form.end }}
-                                        {% if range_form.end.errors %}
-                                        <div class="text-danger">
-                                            {{ range_form.end.errors }}
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ range_form.step }}
-                                        {% if range_form.step.errors %}
-                                        <div class="text-danger">
-                                            {{ range_form.step.errors }}
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ range_form.label_type }}
-                                        {% if range_form.label_type.errors %}
-                                        <div class="text-danger">
-                                            {{ range_form.label_type.errors }}
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ range_form.increment_letter }}
-                                        {% if range_form.increment_letter.errors %}
-                                        <div class="text-danger">
-                                            {{ range_form.increment_letter.errors }}
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ range_form.DELETE.as_hidden }}
-                                        <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            {% for range_form in form.x_ranges.forms %}
+                {% if range_form.start.value or range_form.end.value %}
+                    {% if range_form.errors %}
+                        <div class="alert alert-danger">
+                            <i class="mdi mdi-alert"></i> There are validation errors in the Custom Labels tab
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" {% if x_activate_default_tab %}class="active"{% endif %}>
+                        <a href="#x-default" aria-controls="x-default" role="tab" data-toggle="tab">Default Labels</a>
+                    </li>
+                    <li role="presentation" {% if x_activate_custom_tab %}class="active"{% endif %}>
+                        <a href="#x-custom" aria-controls="x-custom" role="tab" data-toggle="tab">Custom Labels</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane {% if x_activate_default_tab %}active{% endif %}" id="x-default">
+                        {% for field in form.fieldsets.1.1.tabs.0.1 %}
+                            {% render_field form|get_fieldset_field:field %}
+                        {% endfor %}
                     </div>
-                    <br>
-                    <button type="button" id="add-x-range" class="btn btn-primary btn-sm mt-2">
-                        <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Add Range
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm mt-2" data-toggle="modal" data-target="#exampleModal">
-                        <span class="mdi mdi-lightbulb" aria-hidden="true"></span> Examples
-                    </button>
-                    <div id="x-preview-section" class="mt-3">
-                        <h5>Preview</h5>
-                        <div id="x-preview"></div>
-                        <button type="button" id="generate-x-preview" class="btn btn-default btn-sm">Generate Preview</button>
+                    <div role="tabpanel" class="tab-pane {% if x_activate_custom_tab %}active{% endif %}" id="x-custom">
+                        {{ form.x_ranges.management_form }}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Step</th>
+                                        <th>Label Type</th>
+                                        <th>Increment Letter</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="x-ranges">
+                                    {% for range_form in form.x_ranges %}
+                                        <tr>
+                                            <td>
+                                                {{ range_form.start }}
+                                                {% if range_form.start.errors %}<div class="text-danger">{{ range_form.start.errors }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ range_form.end }}
+                                                {% if range_form.end.errors %}<div class="text-danger">{{ range_form.end.errors }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ range_form.step }}
+                                                {% if range_form.step.errors %}<div class="text-danger">{{ range_form.step.errors }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ range_form.label_type }}
+                                                {% if range_form.label_type.errors %}<div class="text-danger">{{ range_form.label_type.errors }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ range_form.increment_letter }}
+                                                {% if range_form.increment_letter.errors %}<div class="text-danger">{{ range_form.increment_letter.errors }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ range_form.DELETE.as_hidden }}
+                                                <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <br>
+                        <button type="button" id="add-x-range" class="btn btn-primary btn-sm mt-2">
+                            <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Add Range
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm mt-2" data-toggle="modal" data-target="#exampleModal">
+                            <span class="mdi mdi-lightbulb" aria-hidden="true"></span> Examples
+                        </button>
+                        <div id="x-preview-section" class="mt-3">
+                            <h5>Preview</h5>
+                            <div id="x-preview"></div>
+                            <button type="button" id="generate-x-preview" class="btn btn-default btn-sm">Generate Preview</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Y Axis Settings -->
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <strong>Y Axis Settings</strong>
-    </div>
-    <div class="panel-body">
-        {% if form.y_origin_seed.errors or form.y_axis_step.errors or form.y_axis_labels.errors %}
-        <div class="alert alert-danger">
-            <i class="mdi mdi-alert"></i> There are validation errors in the Default Labels tab
+    <!-- Y Axis Settings -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>Y Axis Settings</strong>
         </div>
-        {% endif %}
-        {% for range_form in form.y_ranges.forms %}
-            {% if range_form.start.value or range_form.end.value %}
-                {% if range_form.errors %}
+        <div class="panel-body">
+            {% if form.y_origin_seed.errors or form.y_axis_step.errors or form.y_axis_labels.errors %}
                 <div class="alert alert-danger">
-                    <i class="mdi mdi-alert"></i> There are validation errors in the Custom Labels tab
+                    <i class="mdi mdi-alert"></i> There are validation errors in the Default Labels tab
                 </div>
-                {% endif %}
             {% endif %}
-        {% endfor %}
-        <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" {% if y_activate_default_tab %}class="active"{% endif %}>
-                    <a href="#y-default" aria-controls="y-default" role="tab" data-toggle="tab">Default Labels</a>
-                </li>
-                <li role="presentation" {% if y_activate_custom_tab %}class="active"{% endif %}>
-                    <a href="#y-custom" aria-controls="y-custom" role="tab" data-toggle="tab">Custom Labels</a>
-                </li>
-            </ul>
-            <div class="tab-content">
-                <div role="tabpanel" class="tab-pane {% if y_activate_default_tab %}active{% endif %}" id="y-default">
-                    {% for field in form.fieldsets.2.1.tabs.0.1 %}
-                        {% render_field form|get_fieldset_field:field %}
-                    {% endfor %}
-                </div>
-                <div role="tabpanel" class="tab-pane {% if y_activate_custom_tab %}active{% endif %}" id="y-custom">
-                    {{ form.y_ranges.management_form }}
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Start</th>
-                                    <th>End</th>
-                                    <th>Step</th>
-                                    <th>Label Type</th>
-                                    <th>Increment Letter</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="y-ranges">
-                                {% for range_form in form.y_ranges %}
-                                <tr>
-                                    <td>
-                                        {{ range_form.start }}
-                                        {% if range_form.start.errors %}
-                                        <div class="text-danger">
-                                            {{ range_form.start.errors }}
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ range_form.end }}
-                                        {% if range_form.end.errors %}
-                                        <div class="text-danger">
-                                            {{ range_form.end.errors }}
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ range_form.step }}
-                                        {% if range_form.step.errors %}
-                                        <div class="text-danger">
-                                            {{ range_form.step.errors }}
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ range_form.label_type }}
-                                        {% if range_form.label_type.errors %}
-                                        <div class="text-danger">
-                                            {{ range_form.label_type.errors }}
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ range_form.increment_letter }}
-                                        {% if range_form.increment_letter.errors %}
-                                        <div class="text-danger">
-                                            {{ range_form.increment_letter.errors }}
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ range_form.DELETE.as_hidden }}
-                                        <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            {% for range_form in form.y_ranges.forms %}
+                {% if range_form.start.value or range_form.end.value %}
+                    {% if range_form.errors %}
+                        <div class="alert alert-danger">
+                            <i class="mdi mdi-alert"></i> There are validation errors in the Custom Labels tab
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" {% if y_activate_default_tab %}class="active"{% endif %}>
+                        <a href="#y-default" aria-controls="y-default" role="tab" data-toggle="tab">Default Labels</a>
+                    </li>
+                    <li role="presentation" {% if y_activate_custom_tab %}class="active"{% endif %}>
+                        <a href="#y-custom" aria-controls="y-custom" role="tab" data-toggle="tab">Custom Labels</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane {% if y_activate_default_tab %}active{% endif %}" id="y-default">
+                        {% for field in form.fieldsets.2.1.tabs.0.1 %}
+                            {% render_field form|get_fieldset_field:field %}
+                        {% endfor %}
                     </div>
-                    <br>
-                    <button type="button" id="add-y-range" class="btn btn-primary btn-sm mt-2">
-                        <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Add Range
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm mt-2" data-toggle="modal" data-target="#exampleModal">
-                        <span class="mdi mdi-lightbulb" aria-hidden="true"></span> Examples
-                    </button>
-                    <div id="y-preview-section" class="mt-3">
-                        <h5>Preview</h5>
-                        <div id="y-preview"></div>
-                        <button type="button" id="generate-y-preview" class="btn btn-default btn-sm">Generate Preview</button>
+                    <div role="tabpanel" class="tab-pane {% if y_activate_custom_tab %}active{% endif %}" id="y-custom">
+                        {{ form.y_ranges.management_form }}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Step</th>
+                                        <th>Label Type</th>
+                                        <th>Increment Letter</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="y-ranges">
+                                    {% for range_form in form.y_ranges %}
+                                        <tr>
+                                            <td>
+                                                {{ range_form.start }}
+                                                {% if range_form.start.errors %}<div class="text-danger">{{ range_form.start.errors }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ range_form.end }}
+                                                {% if range_form.end.errors %}<div class="text-danger">{{ range_form.end.errors }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ range_form.step }}
+                                                {% if range_form.step.errors %}<div class="text-danger">{{ range_form.step.errors }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ range_form.label_type }}
+                                                {% if range_form.label_type.errors %}<div class="text-danger">{{ range_form.label_type.errors }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ range_form.increment_letter }}
+                                                {% if range_form.increment_letter.errors %}<div class="text-danger">{{ range_form.increment_letter.errors }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ range_form.DELETE.as_hidden }}
+                                                <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <br>
+                        <button type="button" id="add-y-range" class="btn btn-primary btn-sm mt-2">
+                            <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Add Range
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm mt-2" data-toggle="modal" data-target="#exampleModal">
+                            <span class="mdi mdi-lightbulb" aria-hidden="true"></span> Examples
+                        </button>
+                        <div id="y-preview-section" class="mt-3">
+                            <h5>Preview</h5>
+                            <div id="y-preview"></div>
+                            <button type="button" id="generate-y-preview" class="btn btn-default btn-sm">Generate Preview</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script type="module">
+    {# fmt:off #}
+    <script type="module">
     import { generateLabels } from '/static/nautobot_floor_plan/js/label_utils.js';
     document.addEventListener("DOMContentLoaded", function () {
         // Function to attach event listeners and initialize checkbox state for a row
@@ -427,110 +390,121 @@
             generatePreview('y');
         });
     });
-</script>
+    </script>
+    {# fmt:on #}
 
-{% include 'inc/extras_features_edit_form_fields.html' %}
+    {% include 'inc/extras_features_edit_form_fields.html' %}
 
-<!-- X Axis Empty Form Template -->
-<template id="x-empty-form-template">
-    <tr>
-        <td>{{ form.x_ranges.empty_form.start }}</td>
-        <td>{{ form.x_ranges.empty_form.end }}</td>
-        <td>{{ form.x_ranges.empty_form.step }}</td>
-        <td>{{ form.x_ranges.empty_form.label_type }}</td>
-        <td>{{ form.x_ranges.empty_form.increment_letter }}</td>
-        <td>
-            {{ form.x_ranges.empty_form.DELETE.as_hidden }}
-            <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
-        </td>
-    </tr>
-</template>
+    <!-- X Axis Empty Form Template -->
+    <template id="x-empty-form-template">
+        <tr>
+            <td>{{ form.x_ranges.empty_form.start }}</td>
+            <td>{{ form.x_ranges.empty_form.end }}</td>
+            <td>{{ form.x_ranges.empty_form.step }}</td>
+            <td>{{ form.x_ranges.empty_form.label_type }}</td>
+            <td>{{ form.x_ranges.empty_form.increment_letter }}</td>
+            <td>
+                {{ form.x_ranges.empty_form.DELETE.as_hidden }}
+                <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+            </td>
+        </tr>
+    </template>
 
-<!-- Y Axis Empty Form Template -->
-<template id="y-empty-form-template">
-    <tr>
-        <td>{{ form.y_ranges.empty_form.start }}</td>
-        <td>{{ form.y_ranges.empty_form.end }}</td>
-        <td>{{ form.y_ranges.empty_form.step }}</td>
-        <td>{{ form.y_ranges.empty_form.label_type }}</td>
-        <td>{{ form.y_ranges.empty_form.increment_letter }}</td>
-        <td>
-            {{ form.y_ranges.empty_form.DELETE.as_hidden }}
-            <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
-        </td>
-    </tr>
-</template>
+    <!-- Y Axis Empty Form Template -->
+    <template id="y-empty-form-template">
+        <tr>
+            <td>{{ form.y_ranges.empty_form.start }}</td>
+            <td>{{ form.y_ranges.empty_form.end }}</td>
+            <td>{{ form.y_ranges.empty_form.step }}</td>
+            <td>{{ form.y_ranges.empty_form.label_type }}</td>
+            <td>{{ form.y_ranges.empty_form.increment_letter }}</td>
+            <td>
+                {{ form.y_ranges.empty_form.DELETE.as_hidden }}
+                <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+            </td>
+        </tr>
+    </template>
 
-<input type="hidden" name="x_custom_ranges" id="x_custom_ranges">
-<input type="hidden" name="y_custom_ranges" id="y_custom_ranges">
+    <input type="hidden" name="x_custom_ranges" id="x_custom_ranges">
+    <input type="hidden" name="y_custom_ranges" id="y_custom_ranges">
 
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Custom Label Ranges Examples</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Here are some examples of custom label ranges:</p>
-                <ul>
-                    <li><strong>NUMALPHA:</strong>
-                        <ul>
-                            <li><strong>With increment_letter True:</strong>
-                                <ul>
-                                    <li>02A, 02B, 02C, 02D, 02E</li>
-                                    <li>02AA, 02AB, 02AC, 02AD, 02AE</li>
-                                </ul>
-                            </li>
-                            <li><strong>With increment_letter False:</strong>
-                                <ul>
-                                    <li>02AA, 02BB, 02CC, 02DD, 02EE</li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li><strong>ALPHANUMERIC:</strong>
-                        <ul>
-                            <li><strong>With increment_letter True:</strong>
-                                <ul>
-                                    <li>A01, B01, C01, D01, E01</li>
-                                </ul>
-                            </li>
-                            <li><strong>With increment_letter False:</strong>
-                                <ul>
-                                    <li>A01, A02, A03, A04, A05</li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li><strong>ROMAN:</strong>
-                        <ul>
-                            <li>I, II, III, IV, V</li>
-                        </ul>
-                    </li>
-                    <li><strong>BINARY:</strong>
-                        <ul>
-                            <li>0b0001, 0b0010, 0b0011, 0b0100, 0b0101</li>
-                        </ul>
-                    </li>
-                    <li><strong>HEXADECIMAL:</strong>
-                        <ul>
-                            <li>0x0001, 0x0002, 0x0003, 0x0004, 0x0005</li>
-                        </ul>
-                    </li>
-                    <li><strong>GREEK:</strong>
-                        <ul>
-                            <li>α, β, γ, δ, ε</li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Custom Label Ranges Examples</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Here are some examples of custom label ranges:</p>
+                    <ul>
+                        <li>
+                            <strong>NUMALPHA:</strong>
+                            <ul>
+                                <li>
+                                    <strong>With increment_letter True:</strong>
+                                    <ul>
+                                        <li>02A, 02B, 02C, 02D, 02E</li>
+                                        <li>02AA, 02AB, 02AC, 02AD, 02AE</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <strong>With increment_letter False:</strong>
+                                    <ul>
+                                        <li>02AA, 02BB, 02CC, 02DD, 02EE</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>ALPHANUMERIC:</strong>
+                            <ul>
+                                <li>
+                                    <strong>With increment_letter True:</strong>
+                                    <ul>
+                                        <li>A01, B01, C01, D01, E01</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <strong>With increment_letter False:</strong>
+                                    <ul>
+                                        <li>A01, A02, A03, A04, A05</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>ROMAN:</strong>
+                            <ul>
+                                <li>I, II, III, IV, V</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>BINARY:</strong>
+                            <ul>
+                                <li>0b0001, 0b0010, 0b0011, 0b0100, 0b0101</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>HEXADECIMAL:</strong>
+                            <ul>
+                                <li>0x0001, 0x0002, 0x0003, 0x0004, 0x0005</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>GREEK:</strong>
+                            <ul>
+                                <li>α, β, γ, δ, ε</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
