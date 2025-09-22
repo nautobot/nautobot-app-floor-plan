@@ -8,7 +8,6 @@ import json
 import logging
 
 from django import forms
-<<<<<<< HEAD
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import formset_factory
 from nautobot.apps.config import get_app_settings_or_config
@@ -23,10 +22,6 @@ from nautobot.apps.forms import (
     add_blank_choice,
 )
 from nautobot.dcim.models import Device, Location, PowerFeed, PowerPanel, Rack, RackGroup
-=======
-from nautobot.apps.constants import CHARFIELD_MAX_LENGTH
-from nautobot.apps.forms import NautobotBulkEditForm, NautobotFilterForm, NautobotModelForm, TagsBulkEditFormMixin
->>>>>>> aaacb94 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
 
 from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.utils import general
@@ -419,16 +414,12 @@ class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pyl
     """FloorPlan bulk edit form."""
 
     pk = forms.ModelMultipleChoiceField(queryset=models.FloorPlan.objects.all(), widget=forms.MultipleHiddenInput)
-<<<<<<< HEAD
     x_size = forms.IntegerField(min_value=1, required=False)
     y_size = forms.IntegerField(min_value=1, required=False)
     tile_width = forms.IntegerField(min_value=1, required=False)
     tile_depth = forms.IntegerField(min_value=1, required=False)
     x_axis_labels = forms.ChoiceField(choices=add_blank_choice(choices.AxisLabelsChoices), required=False)
     y_axis_labels = forms.ChoiceField(choices=add_blank_choice(choices.AxisLabelsChoices), required=False)
-=======
-    description = forms.CharField(required=False, max_length=CHARFIELD_MAX_LENGTH)
->>>>>>> aaacb94 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
 
     class Meta:
         """Meta attributes."""

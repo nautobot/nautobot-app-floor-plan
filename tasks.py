@@ -52,12 +52,8 @@ namespace = Collection("nautobot_floor_plan")
 namespace.configure(
     {
         "nautobot_floor_plan": {
-<<<<<<< HEAD
-            "nautobot_ver": "2.4.3",
-=======
             "nautobot_ver": "2.4.2",
->>>>>>> aaacb94 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
-            "project_name": "nautobot-floor-plan",
+            "project_name": "nautobot_floor_plan",
             "python_ver": "3.11",
             "local": False,
             "compose_dir": os.path.join(os.path.dirname(__file__), "development"),

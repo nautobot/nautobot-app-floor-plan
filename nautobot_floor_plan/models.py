@@ -3,16 +3,10 @@
 import logging
 from dataclasses import dataclass
 
-<<<<<<< HEAD
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from nautobot.apps.models import PrimaryModel, StatusField, extras_features
-=======
-# Nautobot imports
-from nautobot.apps.constants import CHARFIELD_MAX_LENGTH
-from nautobot.apps.models import PrimaryModel, extras_features
->>>>>>> aaacb94 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
 
 from nautobot_floor_plan.choices import (
     AllocationTypeChoices,
@@ -27,7 +21,6 @@ from nautobot_floor_plan.templatetags.seed_helpers import (
 from nautobot_floor_plan.utils.custom_validators import ValidateNotZero
 from nautobot_floor_plan.utils.label_generator import FloorPlanLabelGenerator
 
-<<<<<<< HEAD
 logger = logging.getLogger(__name__)
 
 
@@ -124,11 +117,6 @@ class FloorPlan(PrimaryModel):
         help_text="Positive or negative integer that will be used to step labeling.",
     )
     is_tile_movable = models.BooleanField(default=True, help_text="Determines if Tiles can be moved once placed")
-=======
-    name = models.CharField(max_length=CHARFIELD_MAX_LENGTH, unique=True)
-    description = models.CharField(max_length=CHARFIELD_MAX_LENGTH, blank=True)
-    # additional model fields
->>>>>>> aaacb94 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
 
     class Meta:
         """Metaclass attributes."""
