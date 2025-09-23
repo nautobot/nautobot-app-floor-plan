@@ -29,7 +29,7 @@
                     <td>Origin</td>
                     <td>
                         {% with field_id="x_origin" value=object|render_origin_seed:'x' %}
-                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                         {% endwith %}
                     </td>
                 </tr>
@@ -37,7 +37,7 @@
                     <td>Step</td>
                     <td>
                         {% with field_id="x_step" value=object|render_axis_step:'x' %}
-                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                         {% endwith %}
                     </td>
                 </tr>
@@ -62,7 +62,7 @@
                     <td>Origin</td>
                     <td>
                         {% with field_id="y_origin" value=object|render_origin_seed:'y' %}
-                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                         {% endwith %}
                     </td>
                 </tr>
@@ -70,7 +70,7 @@
                     <td>Step</td>
                     <td>
                         {% with field_id="y_step" value=object|render_axis_step:'y' %}
-                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                         {% endwith %}
                     </td>
                 </tr>
