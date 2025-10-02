@@ -24,7 +24,7 @@
                     <td>Device</td>
                     <td>
                         {% with field_id="device" value=object.device|hyperlinked_object %}
-                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                         {% endwith %}
                     </td>
                 </tr>
@@ -34,7 +34,7 @@
                     <td>Rack</td>
                     <td>
                         {% with field_id="rack" value=object.rack|hyperlinked_object %}
-                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                         {% endwith %}
                     </td>
                 </tr>
@@ -43,7 +43,7 @@
                         <td>Rack Group</td>
                         <td>
                             {% with field_id="rack_group" value=object.rack_group|hyperlinked_object %}
-                                {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                                {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                             {% endwith %}
                         </td>
                     </tr>
@@ -53,7 +53,7 @@
                         <td>Tenant</td>
                         <td>
                             {% with field_id="tenant" value=object.rack.tenant|hyperlinked_object %}
-                                {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                                {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                             {% endwith %}
                         </td>
                     </tr>
@@ -62,7 +62,7 @@
                             <td>Tenant Group</td>
                             <td>
                                 {% with field_id="tenant_group" value=object.rack.tenant.tenant_group|hyperlinked_object %}
-                                    {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                                    {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                                 {% endwith %}
                             </td>
                         </tr>
@@ -74,7 +74,7 @@
                     <td>Power Panel</td>
                     <td>
                         {% with field_id="power_panel" value=object.power_panel|hyperlinked_object %}
-                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                         {% endwith %}
                     </td>
                 </tr>
@@ -84,7 +84,7 @@
                     <td>Power Feed</td>
                     <td>
                         {% with field_id="power_feed" value=object.power_feed|hyperlinked_object %}
-                            {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
                         {% endwith %}
                     </td>
                 </tr>

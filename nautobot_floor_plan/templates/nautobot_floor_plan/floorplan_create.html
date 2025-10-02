@@ -1,4 +1,4 @@
-{% extends 'generic/object_create.html' %}
+{% extends "generic/object_create.html" %}
 {% load static %}
 {% load buttons %}
 {% load form_helpers %}
@@ -393,7 +393,7 @@
     </script>
     {# fmt:on #}
 
-    {% include 'inc/extras_features_edit_form_fields.html' %}
+    {% include "inc/extras_features_edit_form_fields.html" %}
 
     <!-- X Axis Empty Form Template -->
     <template id="x-empty-form-template">
@@ -507,4 +507,4 @@
             </div>
         </div>
     </div>
-{% endblock %}
+{% endblock form %}

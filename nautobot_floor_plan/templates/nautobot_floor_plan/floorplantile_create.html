@@ -1,4 +1,4 @@
-{% extends 'generic/object_edit.html' %}
+{% extends "generic/object_edit.html" %}
 {% load static %}
 {% load buttons %}
 {% load form_helpers %}
@@ -57,10 +57,10 @@
             {% render_field form.object_orientation %}
         </div>
     </div>
-    {% include 'inc/extras_features_edit_form_fields.html' %}
-{% endblock %}
+    {% include "inc/extras_features_edit_form_fields.html" %}
+{% endblock form %}
 
 {% block javascript %}
     {{ block.super }}
     <script src="{% static 'nautobot_floor_plan/js/floorplantile.js' %}"></script>
-{% endblock %}
+{% endblock javascript %}
