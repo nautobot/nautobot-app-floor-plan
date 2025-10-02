@@ -79,9 +79,11 @@ class FloorPlanSVGTestCase(TestCase):
     def test_setup_drawing_adds_stylesheet(self):
         """Test that _setup_drawing adds the CSS stylesheet."""
         # Setup mocks
-        with patch("os.path.join") as mock_path_join, patch("builtins.open") as mock_open, patch(
-            "svgwrite.Drawing"
-        ) as mock_drawing_class:
+        with (
+            patch("os.path.join") as mock_path_join,
+            patch("builtins.open") as mock_open,
+            patch("svgwrite.Drawing") as mock_drawing_class,
+        ):
             mock_path_join.return_value = "/mock/path/to/svg.css"
             mock_file = MagicMock()
             mock_file.__enter__.return_value.read.return_value = "mock css content"
