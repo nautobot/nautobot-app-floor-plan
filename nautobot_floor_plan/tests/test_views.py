@@ -21,6 +21,9 @@ class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
         "Floor 5,2,1,1,4,1,2,100,200",
         "Floor 6,3,1,1,6,1,-2,200,100",
     )
+    allowed_number_of_tree_queries_per_view_type = {
+        "retrieve": 1,
+    }
 
     @classmethod
     def setUpTestData(cls):
