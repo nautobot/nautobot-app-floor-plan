@@ -1,6 +1,12 @@
 """Views for FloorPlan."""
 
+<<<<<<< HEAD
 from types import SimpleNamespace
+=======
+from nautobot.apps.views import NautobotUIViewSet
+from nautobot.apps.ui import ObjectDetailContent, ObjectFieldsPanel, ObjectsTablePanel, SectionChoices
+from nautobot.core.templatetags import helpers
+>>>>>>> a32be83 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
 
 from django.db.models import Case, CharField, Value, When
 from django_tables2 import RequestConfig
@@ -43,6 +49,7 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
                 section=SectionChoices.LEFT_HALF,
                 fields="__all__",
             ),
+<<<<<<< HEAD
             custom_panels.AxisConfigurationPanel(
                 weight=100,
                 section=SectionChoices.RIGHT_HALF,
@@ -56,6 +63,18 @@ class FloorPlanUIViewSet(NautobotUIViewSet):  # TODO we only need a subset of vi
                 section=SectionChoices.FULL_WIDTH,
             ),
         ]
+=======
+            # If there is a ForeignKey or M2M with this model we can use ObjectsTablePanel
+            # to display them in a table format.
+            # ObjectsTablePanel(
+                # weight=200,
+                # section=SectionChoices.RIGHT_HALF,
+                # table_class=tables.FloorPlanTable,
+                # You will want to filter the table using the related_name
+                # filter="floorplans",
+            # ),
+        ],
+>>>>>>> a32be83 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
     )
 
     def safe_get_errors(self, obj, attr):

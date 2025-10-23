@@ -24,6 +24,7 @@ class FloorPlanConfig(NautobotAppConfig):
     base_url = "floor-plan"
     custom_validators = "utils.custom_validators.custom_validators"
     required_settings = []
+<<<<<<< HEAD
     default_settings = {
         "default_x_axis_labels": AxisLabelsChoices.NUMBERS,
         "default_y_axis_labels": AxisLabelsChoices.NUMBERS,
@@ -42,6 +43,9 @@ class FloorPlanConfig(NautobotAppConfig):
         },
     }
     caching_config = {}
+=======
+    default_settings = {}
+>>>>>>> a32be83 (Cookie updated by NetworkToCode Cookie Drift Manager Tool)
     docs_view_name = "plugins:nautobot_floor_plan:docs"
     searchable_models = ["floorplan"]
 
