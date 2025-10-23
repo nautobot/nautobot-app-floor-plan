@@ -19,7 +19,6 @@ class FloorPlanConfig(NautobotAppConfig):
     base_url = "floor-plan"
     required_settings = []
     default_settings = {}
-    caching_config = {}
     docs_view_name = "plugins:nautobot_floor_plan:docs"
     searchable_models = ["floorplan"]
 
