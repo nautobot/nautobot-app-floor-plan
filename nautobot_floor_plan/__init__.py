@@ -41,7 +41,6 @@ class FloorPlanConfig(NautobotAppConfig):
             ],
         },
     }
-    caching_config = {}
     docs_view_name = "plugins:nautobot_floor_plan:docs"
     searchable_models = ["floorplan"]
 
