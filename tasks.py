@@ -74,9 +74,7 @@ def _is_compose_included(context, name):
 
 
 def _await_healthy_service(context, service):
-    container_id = docker_compose(
-        context, f"ps -q -- {service}", pty=False, echo=False, hide=True
-    ).stdout.strip()
+    container_id = docker_compose(context, f"ps -q -- {service}", pty=False, echo=False, hide=True).stdout.strip()
     _await_healthy_container(context, container_id)
 
 
@@ -137,9 +135,7 @@ def docker_compose(context, command, **kwargs):
     ]
 
     for compose_file in context.nautobot_floor_plan.compose_files:
-        compose_file_path = os.path.join(
-            context.nautobot_floor_plan.compose_dir, compose_file
-        )
+        compose_file_path = os.path.join(context.nautobot_floor_plan.compose_dir, compose_file)
         compose_command_tokens.append(f' -f "{compose_file_path}"')
 
     compose_command_tokens.append(command)
@@ -178,9 +174,7 @@ def run_command(context, command, service="nautobot", **kwargs):
         if service in results.stdout:
             compose_command = f"exec{command_env_args} {service} {command}"
         else:
-            compose_command = (
-                f"run{command_env_args} --rm --entrypoint='{command}' {service}"
-            )
+            compose_command = f"run{command_env_args} --rm --entrypoint='{command}' {service}"
 
         pty = kwargs.pop("pty", True)
 
@@ -211,13 +205,9 @@ def build(context, force_rm=False, cache=True):
 
 def _ensure_creds_env_file(context):
     """Ensure that the development/creds.env file exists."""
-    if not os.path.exists(
-        os.path.join(context.nautobot_floor_plan.compose_dir, "creds.env")
-    ):
+    if not os.path.exists(os.path.join(context.nautobot_floor_plan.compose_dir, "creds.env")):
         # Warn the user that the creds.env file does not exist and that we are copying the example file to it
-        print(
-            "⚠️⚠️ The creds.env file does not exist, using the example file to create it. ⚠️⚠️"
-        )
+        print("⚠️⚠️ The creds.env file does not exist, using the example file to create it. ⚠️⚠️")
         # Copy the creds.example.env file to creds.env
         shutil.copy(
             os.path.join(context.nautobot_floor_plan.compose_dir, "creds.example.env"),
@@ -238,23 +228,11 @@ def _get_docker_nautobot_version(context, nautobot_ver=None, python_ver=None):
         nautobot_ver = context.nautobot_floor_plan.nautobot_ver
     if python_ver is None:
         python_ver = context.nautobot_floor_plan.python_ver
-    dockerfile_path = os.path.join(
-        context.nautobot_floor_plan.compose_dir, "Dockerfile"
-    )
-    base_image = (
-        context.run(f"grep --max-count=1 '^FROM ' {dockerfile_path}", hide=True)
-        .stdout.strip()
-        .split(" ")[1]
-    )
-    base_image = base_image.replace(r"${NAUTOBOT_VER}", nautobot_ver).replace(
-        r"${PYTHON_VER}", python_ver
-    )
-    pip_nautobot_ver = context.run(
-        f"docker run --rm --entrypoint '' {base_image} pip show nautobot", hide=True
-    )
-    match_version = re.search(
-        r"^Version: (.+)$", pip_nautobot_ver.stdout.strip(), flags=re.MULTILINE
-    )
+    dockerfile_path = os.path.join(context.nautobot_floor_plan.compose_dir, "Dockerfile")
+    base_image = context.run(f"grep --max-count=1 '^FROM ' {dockerfile_path}", hide=True).stdout.strip().split(" ")[1]
+    base_image = base_image.replace(r"${NAUTOBOT_VER}", nautobot_ver).replace(r"${PYTHON_VER}", python_ver)
+    pip_nautobot_ver = context.run(f"docker run --rm --entrypoint '' {base_image} pip show nautobot", hide=True)
+    match_version = re.search(r"^Version: (.+)$", pip_nautobot_ver.stdout.strip(), flags=re.MULTILINE)
     if match_version:
         return match_version.group(1)
     else:
@@ -292,9 +270,7 @@ def lock(context, check=False, constrain_nautobot_ver=False, constrain_python_ve
             print(output.stdout, end="")
             print(output.stderr, file=sys.stderr, end="")
         except UnexpectedExit:
-            print(
-                "Unable to add Nautobot dependency with version constraint, falling back to git branch."
-            )
+            print("Unable to add Nautobot dependency with version constraint, falling back to git branch.")
             command = f"poetry add --lock git+https://github.com/nautobot/nautobot.git#{context.nautobot_floor_plan.nautobot_ver}"
             if constrain_python_ver:
                 command += f" --python {constrain_python_ver}"
@@ -332,9 +308,7 @@ def restart(context, service=""):
 def stop(context, service=""):
     """Stop specified or all services, if service is not specified, remove all containers."""
     print("Stopping Nautobot...")
-    docker_compose(
-        context, "stop" if service else "down --remove-orphans", service=service
-    )
+    docker_compose(context, "stop" if service else "down --remove-orphans", service=service)
 
 
 @task(
@@ -353,9 +327,7 @@ def destroy(context, volumes=True, import_db_file=""):
         return
 
     if not volumes:
-        raise ValueError(
-            "Cannot specify `--no-volumes` and `--import-db-file` arguments at the same time."
-        )
+        raise ValueError("Cannot specify `--no-volumes` and `--import-db-file` arguments at the same time.")
 
     print(f"Importing database file: {import_db_file}...")
 
@@ -372,16 +344,12 @@ def destroy(context, volumes=True, import_db_file=""):
         "db",
     ]
 
-    container_id = docker_compose(
-        context, " ".join(command), pty=False, echo=False, hide=True
-    ).stdout.strip()
+    container_id = docker_compose(context, " ".join(command), pty=False, echo=False, hide=True).stdout.strip()
     _await_healthy_container(context, container_id)
     print("Stopping database container...")
     context.run(f"docker stop {container_id}", pty=False, echo=False, hide=True)
 
-    print(
-        "Database import complete, you can start Nautobot with the following command:"
-    )
+    print("Database import complete, you can start Nautobot with the following command:")
     print("invoke start")
 
 
@@ -557,9 +525,7 @@ def dbshell(context, db_name="", input_file="", output_file="", query=""):
     if input_file and query:
         raise ValueError("Cannot specify both, `input_file` and `query` arguments")
     if output_file and not (input_file or query):
-        raise ValueError(
-            "`output_file` argument requires `input_file` or `query` argument"
-        )
+        raise ValueError("`output_file` argument requires `input_file` or `query` argument")
 
     env = {}
     if query:
@@ -697,9 +663,7 @@ def backup_db(context, db_name="", output_file="dump.sql", readable=True):
     docker_compose(context, " ".join(command), pty=False)
 
     print(50 * "=")
-    print(
-        "The database backup has been successfully completed and saved to the following file:"
-    )
+    print("The database backup has been successfully completed and saved to the following file:")
     print(output_file)
     print("You can import this database backup with the following command:")
     print(f"invoke import-db --input-file '{output_file}'")
@@ -733,13 +697,7 @@ def build_and_check_docs(context):
     if match:
         major = match.group(1)
         minor = match.group(2)
-        release_notes_file = (
-            Path(__file__).parent
-            / "docs"
-            / "admin"
-            / "release_notes"
-            / f"version_{major}.{minor}.md"
-        )
+        release_notes_file = Path(__file__).parent / "docs" / "admin" / "release_notes" / f"version_{major}.{minor}.md"
         if not release_notes_file.exists():
             print(f"Release notes file `version_{major}.{minor}.md` does not exist.")
             raise Exit(code=1)
@@ -775,9 +733,7 @@ def generate_release_notes(context, version="", date="", keep=False):
     command += " --keep" if keep else " --yes"
 
     version_major_minor = ".".join(version.split(".")[:2])
-    context.run(
-        f"poetry run python development/bin/ensure_release_notes.py --version {version_major_minor}"
-    )
+    context.run(f"poetry run python development/bin/ensure_release_notes.py --version {version_major_minor}")
 
     # Due to issues with git repo ownership in the containers, this must always run locally.
     context.run(command)
@@ -806,11 +762,7 @@ def pylint(context):
         exit_code = 1
 
     # run the pylint_django migrations checkers on the migrations directory, if one exists
-    migrations_dir = (
-        Path(__file__).absolute().parent
-        / Path("nautobot_floor_plan")
-        / Path("migrations")
-    )
+    migrations_dir = Path(__file__).absolute().parent / Path("nautobot_floor_plan") / Path("migrations")
     if migrations_dir.is_dir():
         migrations_pylint_command = (
             f"{base_pylint_command} --load-plugins=pylint_django.checkers.migrations"
