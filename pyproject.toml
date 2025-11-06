@@ -63,6 +63,8 @@ jsonschema = "*"
 djlint = ">=1.36.4,<2.0.0"
 selenium = "^4.28.1"
 splinter = "^0.21.0"
+pytest-playwright = "^0.4.3"
+playwright = "^1.40.0"
 
 
 [tool.poetry.extras]

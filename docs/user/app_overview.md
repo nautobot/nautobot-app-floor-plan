@@ -28,11 +28,11 @@ Included is a non-exhaustive list of capabilities beyond a standard MVC (model v
 - Provides easy navigation from floor map via grid labels to filter Rack Elevations.
 - Provides easy navigation from Objects to Floor Plan. Objects will be centered and zoomed in for 5 seconds and highlighted on Floor Plan for 20 seconds.
 - Provides the ability to assign Objects to coordinates / tiles.
-    - From the Floor Plan UI
-    - From the Object UI.
-    - From the API.
+        - From the Floor Plan UI
+        - From the Object UI.
+        - From the API.
 - Provides ability to map status to color for many use cases.
-    - Leveraging this you can depict hot / cold aisle.
+        - Leveraging this you can depict hot / cold aisle.
 - Provides the ability to set the direction of the Objects and show up.
 - Provides the ability to span multiple adjacent tiles by a single Object.
 - Provides the ability to place Objects in a group that spans multiple tiles.
@@ -44,6 +44,13 @@ Included is a non-exhaustive list of capabilities beyond a standard MVC (model v
 - Provides the ability for a user to define a specific number or letter as a starting point for grid labels.
 - Provides the ability for a user to define a positive or negative integer to allow for the skipping of letters or numbers for grid labels.
 - Provides the ability to save the generated SVG from a click of a "Save SVG" link.
+- Provides multi-select capability for bulk editing operations.
+        - Toggle between navigation and selection modes using button or keyboard shortcut (S key)
+        - Drag to select multiple objects across different types (Racks, Devices, Power Panels, Power Feeds)
+        - Adaptive bulk edit UI that adjusts based on selected object types
+        - Permission-aware bulk edit buttons that respect user permissions
+        - Keyboard shortcuts for efficient workflow (S to toggle modes, Escape to clear selection)
+        - Seamless integration with Nautobot's native bulk edit forms
 
 ## Nautobot Features Used
 
@@ -53,11 +60,11 @@ This App:
 - Adds three new database models, "Floor Plan", "Floor Plan Tile" and "Floor Plan Custom Axis Label".
 - Adds UI and REST API endpoints for performing standard create/retrieve/update/delete (CRUD) operations on these models.
 - Extends the detail view of Nautobot Devices, Power Feeds, Power Panels, and Racks.
-    - Includes a "View on Floor Plan" button if the Object is on a "Floor Plan Tile".
+        - Includes a "View on Floor Plan" button if the Object is on a "Floor Plan Tile".
 - Extends the detail view of Nautobot Locations.
-    - Includes an "Add/Remove Floor Plan" button.
-    - When a Floor Plan is defined a "Floor Plan" tab to display and interact with the rendered floor plan will be present.
-    - When a Location has children with a Floor Plan defined a "Child Floor Plan(s) tab is added to display the Child or Children locations.
+        - Includes an "Add/Remove Floor Plan" button.
+        - When a Floor Plan is defined a "Floor Plan" tab to display and interact with the rendered floor plan will be present.
+        - When a Location has children with a Floor Plan defined a "Child Floor Plan(s) tab is added to display the Child or Children locations.
 
 ### Extras
 

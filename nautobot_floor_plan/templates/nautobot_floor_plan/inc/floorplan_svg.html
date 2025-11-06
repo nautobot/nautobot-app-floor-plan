@@ -3,28 +3,22 @@
 
 {% if object %}
     <div class="pull-right noprint">
-        <a href="{% url 'plugins:nautobot_floor_plan:floorplan_edit' object.pk %}" class="btn btn-warning btn-sm" id="edit-button">
-            <span class="mdi mdi-checkerboard" aria-hidden="true"></span> Edit Floorplan
+        <a class="btn btn-warning btn-md" href="{% url 'plugins:nautobot_floor_plan:floorplan_edit' object.pk %}" class="btn btn-warning btn-sd" id="edit-button">
+            <span aria-hidden="true" class="mdi mdi-checkerboard" aria-hidden="true"></span> Edit Floorplan
         </a>
-        <a href="{% url 'plugins:nautobot_floor_plan:floorplantile_add' %}?floor_plan={{ object.pk }}" class="btn btn-primary btn-sm" id="add-floor-plan">
-            <span class="mdi mdi-plus-box" aria-hidden="true"></span> Add Tile
+        <a class="btn btn-primary btn-md" href="{% url 'plugins:nautobot_floor_plan:floorplantile_add' %}?floor_plan={{ object.pk }}" class="btn btn-primary btn-sm" id="add-floor-plan">
+            <span aria-hidden="true" class="mdi mdi-plus-box" aria-hidden="true"></span> Add Tile
         </a>
     </div>
     <h4>{{ object }}</h4>
     <div>
-        Use shift+scroll wheel to zoom in or out.
-        Click and drag to scroll.
-        <button id="toggle-zoom-mode" class="btn btn-sm btn-default">Enable Box Zoom</button>
-        <button id="reset-zoom" class="btn btn-sm btn-secondary">Reset View</button>
-        <br>
-        Add a tile by clicking the plus symbol on the grid OR by using the "Add Tile" button.
-        <br>
-        Click on a Row's Label to see the Elevation for all Racks in the row.
+        <button class="btn btn-success btn-md" id="toggle-zoom-mode">Enable Box Zoom</button>
+        <button class="btn btn-danger btn-md" id="reset-zoom">Reset View</button>
     </div>
 
-    <div class="text-center text-small">
-        <a href="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" class="rack_elevation_save_svg_link" download="floor_plan_{{ object.location.name }}.svg">
-            <i class="mdi mdi-content-save-outline"></i> Save SVG
+    <div class="text-center">
+        <a class="rack_elevation_save_svg_link" download="floor_plan_{{ object.location.name }}.svg" href="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}">
+            <span class="mdi mdi-content-save-outline"></span> Save SVG
         </a>
     </div>
 
@@ -32,14 +26,34 @@
     Add Tippy.js resources - using local files for air-gapped environments
     Add Gsap.js resources - using local files for air-gapped environments
     {% endcomment %}
-    <link rel="stylesheet" href="{% static 'nautobot_floor_plan/css/light.css' %}" />
-    <script src="{% static 'nautobot_floor_plan/tippy.js-6.3.7/popper.min.js' %}"></script>
-    <script src="{% static 'nautobot_floor_plan/tippy.js-6.3.7/tippy-bundle.umd.min.js' %}"></script>
-    <script src="{% static 'nautobot_floor_plan/js/floorplan.js' %}?v={% now 'U' %}"></script>
-    <script src="{% static 'nautobot_floor_plan/gsap.js-3.12.2/gsap.min.js' %}"></script>
+    <link href="{% static 'nautobot_floor_plan/css/light.css' %}" rel="stylesheet"/>
+    <link href="{% static 'nautobot_floor_plan/css/multiselect.css' %}" rel="stylesheet"/>
+
+<script src="{% static 'nautobot_floor_plan/tippy.js-6.3.7/popper.min.js' %}"></script>
+<script src="{% static 'nautobot_floor_plan/tippy.js-6.3.7/tippy-bundle.umd.min.js' %}"></script>
+<script src="{% static 'nautobot_floor_plan/gsap.js-3.12.2/gsap.min.js' %}"></script>
+<script src="{% static 'nautobot_floor_plan/js/floorplan-tooltips.js' %}?v={% now 'U' %}"></script>
+<script src="{% static 'nautobot_floor_plan/js/floorplan-multiselect.js' %}?v={% now 'U' %}"></script>
+<script src="{% static 'nautobot_floor_plan/js/floorplan.js' %}?v={% now 'U' %}"></script>
     <script>
-        const ZOOM_DURATION = {{ zoom_duration }};
-        const HIGHLIGHT_DURATION = {{ highlight_duration }};
+        // Set animation duration constants for floorplan.js
+        window.ZOOM_DURATION = {{ zoom_duration|default:"0.5" }};
+        window.HIGHLIGHT_DURATION = {{ highlight_duration|default:"2" }};
+
+        // Set user permissions for bulk edit operations
+        window.FLOOR_PLAN_PERMISSIONS = {
+            canEditRacks: {% if perms.dcim.change_rack %}true{% else %}false{% endif %},
+            canEditDevices: {% if perms.dcim.change_device %}true{% else %}false{% endif %},
+            canEditPowerPanels: {% if perms.dcim.change_powerpanel %}true{% else %}false{% endif %},
+            canEditPowerFeeds: {% if perms.dcim.change_powerfeed %}true{% else %}false{% endif %}
+        };
+
+        // Initialize tooltips after DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeFloorPlanTooltips);
+        } else {
+            initializeFloorPlanTooltips();
+        }
     </script>
 
     {% comment %}
@@ -48,7 +62,8 @@
     {% endcomment %}
     <div id="floor-plan-svg-container" style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ object.y_size }} * {{ object.tile_depth }}) / ({{ object.x_size }} * {{ object.tile_width }}) / 1.2);">
         <a id="zoom-anchor"></a>
-        <div id="floor-plan-svg" data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" data-floor-plan-x-size="{{ object.x_size }}" data-floor-plan-y-size="{{ object.y_size }}" style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;"></div>
+        <div data-floor-plan-x-size="{{ object.x_size }}" data-floor-plan-y-size="{{ object.y_size }}" data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" id="floor-plan-svg" style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
+        </div>
     </div>
 {% else %}
     {% comment %}

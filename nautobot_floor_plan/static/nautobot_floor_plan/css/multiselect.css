@@ -1,0 +1,168 @@
+/**
+ * Floor Plan Multi-Select Styles
+ * Visual feedback for selection mode and selected tiles
+ */
+
+/* Selection mode cursor */
+#floor-plan-svg.selection-mode {
+    cursor: crosshair !important;
+}
+
+/* Selection rectangle */
+.floor-plan-selection-rect {
+    fill: rgba(0, 123, 255, 0.15);
+    stroke: #007bff;
+    stroke-width: 2;
+    stroke-dasharray: 5, 5;
+    pointer-events: none;
+    animation: selection-dash 0.5s linear infinite;
+}
+
+@keyframes selection-dash {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+/* Selected tile highlight */
+.floor-plan-tile-selected {
+    outline: 3px solid #007bff;
+    outline-offset: 2px;
+    filter: brightness(1.1);
+}
+
+/* For SVG elements, use stroke instead of outline */
+svg .floor-plan-tile-selected {
+    stroke: #007bff !important;
+    stroke-width: 3 !important;
+    filter: brightness(1.1) drop-shadow(0 0 5px rgba(0, 123, 255, 0.5));
+}
+
+/* Mode indicator badge */
+.floor-plan-mode-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 1000;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.floor-plan-mode-indicator.navigation-mode {
+    background: rgba(40, 167, 69, 0.9);
+}
+
+.floor-plan-mode-indicator.selection-mode {
+    background: rgba(0, 123, 255, 0.9);
+}
+
+/* Context menu */
+.floor-plan-context-menu {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    min-width: 200px;
+    padding: 5px 0;
+}
+
+.floor-plan-context-menu-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.floor-plan-context-menu-item:hover {
+    background: #f0f0f0;
+}
+
+.floor-plan-context-menu-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.floor-plan-context-menu-item.disabled:hover {
+    background: transparent;
+}
+
+.floor-plan-context-menu-count {
+    background: #007bff;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.floor-plan-context-menu-separator {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 5px 0;
+}
+
+/* Selection count indicator */
+.floor-plan-selection-count {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 123, 255, 0.9);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.floor-plan-selection-count.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Button styles for mode toggle */
+#toggle-selection-mode {
+    margin-left: 5px;
+}
+
+#toggle-selection-mode.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+}
+
+#toggle-selection-mode i {
+    margin-right: 5px;
+}
+
+/* Keyboard shortcut hint */
+.keyboard-shortcut-hint {
+    font-size: 10px;
+    opacity: 0.7;
+    margin-left: 5px;
+}
+
+/* Disabled button styles in selection mode */
+#toggle-zoom-mode:disabled,
+#reset-zoom:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#toggle-zoom-mode:disabled:hover,
+#reset-zoom:disabled:hover {
+    opacity: 0.5;
+}

@@ -127,6 +127,8 @@ nav:
           - v2.8: "admin/release_notes/version_2.8.md"
   - Developer Guide:
       - Extending the App: "dev/extending.md"
+      - Multi-select API: "dev/multi-select-api.md"
+      - Tooltips: "dev/tooltips.md"
       - Contributing to the App: "dev/contributing.md"
       - Development Environment: "dev/dev_environment.md"
       - Release Checklist: "dev/release_checklist.md"
