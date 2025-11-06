@@ -52,9 +52,9 @@ namespace = Collection("nautobot_floor_plan")
 namespace.configure(
     {
         "nautobot_floor_plan": {
-            "nautobot_ver": "2.4.3",
+            "nautobot_ver": "2.4.20",
             "project_name": "nautobot-floor-plan",
-            "python_ver": "3.11",
+            "python_ver": "3.12",
             "local": False,
             "compose_dir": os.path.join(os.path.dirname(__file__), "development"),
             "compose_files": [
@@ -251,19 +251,20 @@ def _get_docker_nautobot_version(context, nautobot_ver=None, python_ver=None):
             "Generally intended to be used in CI and not for local development. (default: disabled)"
         ),
         "constrain_python_ver": (
-            "When using `constrain_nautobot_ver`, further constrain the nautobot version "
-            "to python_ver so that poetry doesn't complain about python version incompatibilities. "
+            "Target Python version to constrain resolution. Accepts X.Y or X.Y.Z. "
+            "Example: --constrain-python-ver=3.9.3 "
+            "This helps avoid poetry complaints about Python incompatibilities. "
             "Generally intended to be used in CI and not for local development. (default: disabled)"
         ),
     }
 )
-def lock(context, check=False, constrain_nautobot_ver=False, constrain_python_ver=False):
-    """Generate poetry.lock file."""
+def lock(context, check=False, constrain_nautobot_ver=False, constrain_python_ver=""):
+    """Generate poetry.lock; optionally constrain Nautobot and/or Python (with patch)."""
     if constrain_nautobot_ver:
         docker_nautobot_version = _get_docker_nautobot_version(context)
         command = f"poetry add --lock nautobot@{docker_nautobot_version}"
         if constrain_python_ver:
-            command += f" --python {context.nautobot_floor_plan.python_ver}"
+            command += f" --python {constrain_python_ver}"
         try:
             output = run_command(context, command, hide=True)
             print(output.stdout, end="")
@@ -272,10 +273,10 @@ def lock(context, check=False, constrain_nautobot_ver=False, constrain_python_ve
             print("Unable to add Nautobot dependency with version constraint, falling back to git branch.")
             command = f"poetry add --lock git+https://github.com/nautobot/nautobot.git#{context.nautobot_floor_plan.nautobot_ver}"
             if constrain_python_ver:
-                command += f" --python {context.nautobot_floor_plan.python_ver}"
+                command += f" --python {constrain_python_ver}"
             run_command(context, command)
     else:
-        command = f"poetry {'check' if check else 'lock --no-update'}"
+        command = f"poetry {'check' if check else 'lock'}"
         run_command(context, command)
 
 
@@ -716,16 +717,24 @@ def help_task(context):
 
 @task(
     help={
-        "version": "Version of Nautobot Floor Plan to generate the release notes for.",
+        "version": "Version of Nautobot Dev Example App to generate the release notes for.",
+        "date": "Date of the release (default: today).",
+        "keep": "Keep existing release notes files. Useful for testing. (default: False).",
     }
 )
-def generate_release_notes(context, version=""):
+def generate_release_notes(context, version="", date="", keep=False):
     """Generate Release Notes using Towncrier."""
     command = "poetry run towncrier build"
-    if version:
-        command += f" --version {version}"
-    else:
-        command += " --version `poetry version -s`"
+    if not version:
+        version = context.run("poetry version --short", hide=True).stdout.strip()
+    command += f" --version {version}"
+    if date:
+        command += f" --date {date}"
+    command += " --keep" if keep else " --yes"
+
+    version_major_minor = ".".join(version.split(".")[:2])
+    context.run(f"poetry run python development/bin/ensure_release_notes.py --version {version_major_minor}")
+
     # Due to issues with git repo ownership in the containers, this must always run locally.
     context.run(command)
 
@@ -773,7 +782,7 @@ def pylint(context):
 def autoformat(context):
     """Run code autoformatting."""
     ruff(context, action=["format"], fix=True)
-    djlint(context, action=["format"], fix=True)
+    djhtml(context)
 
 
 @task(
@@ -817,31 +826,34 @@ def ruff(context, action=None, target=None, fix=False, output_format="concise"):
 
 @task(
     help={
-        "action": "Available values are `['lint', 'format']`. Can be used multiple times. (default: `--action format`)",
         "target": "File or directory to inspect, repeatable (default: all files in the project will be inspected)",
-        "fix": "Automatically fix the formatting. (default: False)",
-        "quiet": "Suppress output when formatting or checking (default: False)",
     },
-    iterable=["target", "action"],
+    iterable=["target"],
 )
-def djlint(context, action=None, target=None, fix=False, quiet=False):
-    """Run djlint to validate Django template formatting."""
-    if not action:
-        action = ["format"]  # TODO: Add 'lint' when we are ready to enforce linting
+def djlint(context, target=None):
+    """Run djlint to lint Django templates."""
     if not target:
         target = ["."]
 
-    command = "djlint "
-
-    if "format" in action:
-        command += "--reformat --warn " if fix else "--check "
-        if quiet:
-            command += "--quiet "
-
-    if "lint" in action:
-        command += "--lint "
-
+    command = "djlint --lint "
     command += " ".join(target)
+
+    exit_code = 0 if run_command(context, command, warn=True) else 1
+    if exit_code != 0:
+        raise Exit(code=exit_code)
+
+
+@task(
+    help={
+        "check": "Run djhtml in check mode.",
+    },
+)
+def djhtml(context, check=False):
+    """Run djhtml to format Django HTML templates."""
+    command = "djhtml -t 4 nautobot_floor_plan/templates/"
+
+    if check:
+        command += " --check"
 
     exit_code = 0 if run_command(context, command, warn=True) else 1
     if exit_code != 0:
@@ -978,6 +990,8 @@ def tests(context, failfast=False, keepdb=False, lint_only=False):
     # Sorted loosely from fastest to slowest
     print("Running ruff...")
     ruff(context)
+    print("Running djlint...")
+    djlint(context)
     print("Running yamllint...")
     yamllint(context)
     print("Running markdownlint...")
