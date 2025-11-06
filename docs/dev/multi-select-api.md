@@ -57,18 +57,18 @@ The `FloorPlanModeManager` class manages switching between navigation and select
 ### Constructor
 
 ```javascript
-new FloorPlanModeManager(svgElement, navigationHandlers, options)
+new FloorPlanModeManager(svgElement, navigationHandlers)
 ```
 
 **Parameters:**
 
 - `svgElement` (SVGElement): The SVG element representing the floor plan
 - `navigationHandlers` (Object): Object containing navigation event handlers
-        - `onmousedown` (Function): Mouse down handler for pan/zoom
-        - `onwheel` (Function): Mouse wheel handler for zoom
-        - `onclick` (Function): Click handler for navigation
-- `options` (Object, optional): Configuration options
-        - `debug` (Boolean): Enable debug logging (default: false)
+    - `mousedown` (Function): Mouse down handler for pan/zoom
+    - `mousemove` (Function): Mouse move handler for panning
+    - `mouseup` (Function): Mouse up handler to end panning
+    - `mouseleave` (Function): Mouse leave handler
+    - `wheel` (Function): Mouse wheel handler for zoom
 
 **Example:**
 
@@ -76,11 +76,12 @@ new FloorPlanModeManager(svgElement, navigationHandlers, options)
 const modeManager = new FloorPlanModeManager(
     document.querySelector('svg'),
     {
-        onmousedown: handlePanStart,
-        onwheel: handleZoom,
-        onclick: handleClick
-    },
-    { debug: false }
+        mousedown: handlePanStart,
+        mousemove: handlePanning,
+        mouseup: handlePanEnd,
+        mouseleave: handleMouseLeave,
+        wheel: handleZoom
+    }
 );
 ```
 
@@ -98,7 +99,7 @@ Toggles between navigation and selection modes.
 modeManager.toggleMode();
 ```
 
-#### `enableSelectionMode()`
+#### `switchToSelectionMode()`
 
 Switches to selection mode, disabling navigation handlers.
 
@@ -109,15 +110,16 @@ Switches to selection mode, disabling navigation handlers.
 - Removes navigation event listeners
 - Disables zoom/pan controls
 - Updates button UI
+- Changes cursor to crosshair
 - Dispatches `floorplan:modechange` event
 
 **Example:**
 
 ```javascript
-modeManager.enableSelectionMode();
+modeManager.switchToSelectionMode();
 ```
 
-#### `disableSelectionMode()`
+#### `switchToNavigationMode()`
 
 Switches to navigation mode, re-enabling navigation handlers.
 
@@ -128,25 +130,25 @@ Switches to navigation mode, re-enabling navigation handlers.
 - Restores navigation event listeners
 - Enables zoom/pan controls
 - Updates button UI
+- Restores default cursor
 - Dispatches `floorplan:modechange` event
 
 **Example:**
 
 ```javascript
-modeManager.disableSelectionMode();
+modeManager.switchToNavigationMode();
 ```
 
-#### `getCurrentMode()`
+#### `isSelectionMode()`
 
-Gets the current mode.
+Checks if currently in selection mode.
 
-**Returns:** `string` - Either `'navigation'` or `'selection'`
+**Returns:** `boolean` - `true` if in selection mode, `false` if in navigation mode
 
 **Example:**
 
 ```javascript
-const currentMode = modeManager.getCurrentMode();
-if (currentMode === 'selection') {
+if (modeManager.isSelectionMode()) {
     // Do something in selection mode
 }
 ```
@@ -194,34 +196,35 @@ The `FloorPlanMultiSelect` class handles drag selection and bulk edit operations
 ### Constructor
 
 ```javascript
-new FloorPlanMultiSelect(svgElement, options)
+new FloorPlanMultiSelect(svgElement, modeManager, options)
 ```
 
 **Parameters:**
 
 - `svgElement` (SVGElement): The SVG element representing the floor plan
+- `modeManager` (FloorPlanModeManager): The mode manager instance to coordinate with
 - `options` (Object, optional): Configuration options
-        - `permissions` (Object): User permissions for bulk editing
-        - `canEditRacks` (Boolean): Permission to bulk edit racks
-        - `canEditDevices` (Boolean): Permission to bulk edit devices
-        - `canEditPowerPanels` (Boolean): Permission to bulk edit power panels
-        - `canEditPowerFeeds` (Boolean): Permission to bulk edit power feeds
-        - `returnUrl` (String): URL to return to after bulk edit
-        - `debug` (Boolean): Enable debug logging (default: false)
+    - `selectableSelector` (String): CSS selector for selectable elements (auto-generated if not provided)
+    - `debug` (Boolean): Enable debug logging (default: false)
+
+**Note:** User permissions are automatically read from `window.FLOOR_PLAN_PERMISSIONS` which should be set in the template.
 
 **Example:**
 
 ```javascript
+// Permissions should be set globally in the template
+window.FLOOR_PLAN_PERMISSIONS = {
+    canEditRacks: true,
+    canEditDevices: true,
+    canEditPowerPanels: false,
+    canEditPowerFeeds: false
+};
+
+const modeManager = new FloorPlanModeManager(svgElement, navigationHandlers);
 const multiSelect = new FloorPlanMultiSelect(
     document.querySelector('svg'),
+    modeManager,
     {
-        permissions: {
-            canEditRacks: true,
-            canEditDevices: true,
-            canEditPowerPanels: false,
-            canEditPowerFeeds: false
-        },
-        returnUrl: window.location.href,
         debug: false
     }
 );
@@ -229,26 +232,27 @@ const multiSelect = new FloorPlanMultiSelect(
 
 ### Methods
 
-#### `enable()`
+#### `enableSelectionMode()`
 
-Enables multi-select functionality.
+Enables multi-select functionality. Typically called automatically by mode change event.
 
 **Returns:** `void`
 
 **Side Effects:**
 
 - Adds mouse event listeners for drag selection
-- Changes cursor to crosshair
+- Prepares for selection rectangle creation
 
 **Example:**
 
 ```javascript
-multiSelect.enable();
+// Usually called automatically via mode change events
+multiSelect.enableSelectionMode();
 ```
 
-#### `disable()`
+#### `disableSelectionMode()`
 
-Disables multi-select functionality.
+Disables multi-select functionality. Typically called automatically by mode change event.
 
 **Returns:** `void`
 
@@ -256,12 +260,13 @@ Disables multi-select functionality.
 
 - Removes mouse event listeners
 - Clears any active selection
-- Restores default cursor
+- Removes selection rectangle
 
 **Example:**
 
 ```javascript
-multiSelect.disable();
+// Usually called automatically via mode change events
+multiSelect.disableSelectionMode();
 ```
 
 #### `clearSelection()`
@@ -367,26 +372,61 @@ Shows appropriate bulk edit UI based on selected object types.
 
 ### Global Configuration
 
-The multi-select feature can be configured via global JavaScript variables:
+The multi-select feature is configured via global JavaScript variables set in the template:
 
 ```javascript
-// Set in the template
+// Set in the template (floorplan_svg.html)
 window.FLOOR_PLAN_PERMISSIONS = {
     canEditRacks: true,
     canEditDevices: true,
     canEditPowerPanels: true,
     canEditPowerFeeds: true
 };
-
-window.FLOOR_PLAN_RETURN_URL = "{{ request.path }}";
 ```
+
+These permissions are automatically checked by the multi-select feature when displaying bulk edit buttons.
+
+### Complete Initialization Example
+
+```javascript
+// 1. Initialize mode manager with navigation handlers
+if (typeof FloorPlanModeManager !== 'undefined') {
+    viewer.modeManager = new FloorPlanModeManager(
+        svgElement,
+        navigationHandlers
+    );
+    logger.log('Floor Plan Mode Manager initialized');
+}
+
+// 2. Initialize multi-select handler (requires mode manager)
+if (typeof FloorPlanMultiSelect !== 'undefined' && viewer.modeManager) {
+    const multiSelect = new FloorPlanMultiSelect(
+        svgElement,
+        viewer.modeManager
+    );
+    logger.log('Floor Plan Multi-Select initialized');
+}
+```
+
+**Important:** The mode manager must be initialized before the multi-select handler, as multi-select depends on mode change events.
 
 ### Debug Mode
 
-Enable debug logging for troubleshooting:
+Enable debug logging for troubleshooting by setting the global debug flag:
 
 ```javascript
-const DEBUG = true; // Set at top of floorplan-multiselect.js
+// Set before loading the floor plan scripts
+window.FLOOR_PLAN_DEBUG = true;
+```
+
+Or pass debug option when creating instances:
+
+```javascript
+const multiSelect = new FloorPlanMultiSelect(
+    svgElement,
+    modeManager,
+    { debug: true }
+);
 ```
 
 Debug mode logs:
@@ -396,52 +436,53 @@ Debug mode logs:
 - Object grouping
 - Permission checks
 - Bulk edit submissions
+- Mouse event handling
 
 ## Extending the Feature
 
 ### Adding Support for New Object Types
 
-To add support for a new object type (e.g., `circuit`):
+To add support for a new object type (e.g., `circuit`), you need to update the `SELECTABLE_OBJECT_TYPES` configuration object in `floorplan-multiselect.js`:
 
-1. **Update the selector in `FloorPlanMultiSelect`:**
-
-```javascript
-// In getSelectedObjectsByType()
-const selectableElements = this.svg.querySelectorAll(
-    'a[id^="rack-"], a[id^="device-"], a[id^="power_panel-"], ' +
-    'a[id^="power_feed-"], a[id^="circuit-"]' // Add new type
-);
-```
-
-2. **Add permission check:**
+1. **Add to the configuration object**
 
 ```javascript
-// In constructor options
-this.permissions = {
-    // ... existing permissions
-    canEditCircuits: options.permissions?.canEditCircuits || false
+const SELECTABLE_OBJECT_TYPES = {
+    // ... existing types
+    circuit: {
+        idPrefix: "circuit-",
+        apiKey: "circuit",
+        bulkEditUrl: "/dcim/circuits/edit/",
+        permissionKey: "canEditCircuits",
+        displayName: "Circuits",
+        icon: "mdi-connection",
+    }
 };
 ```
 
-3. **Add bulk edit URL mapping:**
+2. **Add permission to template** (floorplan_svg.html):
 
-```javascript
-// In submitBulkEditForType()
-const bulkEditUrls = {
-    // ... existing URLs
-    circuit: '/dcim/circuits/edit/'
+```django
+window.FLOOR_PLAN_PERMISSIONS = {
+    canEditRacks: {% if perms.dcim.change_rack %}true{% else %}false{% endif %},
+    canEditDevices: {% if perms.dcim.change_device %}true{% else %}false{% endif %},
+    canEditPowerPanels: {% if perms.dcim.change_powerpanel %}true{% else %}false{% endif %},
+    canEditPowerFeeds: {% if perms.dcim.change_powerfeed %}true{% else %}false{% endif %},
+    canEditCircuits: {% if perms.circuits.change_circuit %}true{% else %}false{% endif %}
 };
 ```
 
-4. **Update button display logic:**
+3. **Ensure SVG tiles have correct IDs:**
 
-```javascript
-// In showBulkEditButtons()
-if (selectedByType.circuit && selectedByType.circuit.length > 0 &&
-    this.permissions.canEditCircuits) {
-    // Add button/dropdown option
-}
+SVG elements must have IDs matching the `idPrefix` pattern:
+
+```xml
+<a id="circuit-123" class="object-tile" data-object-type="circuit" data-pk="123">
+    <!-- circuit tile content -->
+</a>
 ```
+
+The rest is handled automatically by the configuration-driven system!
 
 ### Customizing Selection Behavior
 
@@ -540,25 +581,40 @@ describe('FloorPlanMultiSelect', () => {
 
 ## Troubleshooting
 
+### Selection Mode Button Not Appearing
+
+**Symptom:** The "Selection Mode" button doesn't appear next to the "Reset View" button.
+
+**Causes:**
+1. **SVG still loading** - The button is created after SVG initialization, which happens asynchronously
+2. **Slow network/database** - Large floor plans may take time to fetch and render
+
+**Solutions:**
+- The button appears automatically once the SVG loads (after ~200ms initialization delay)
+- Check browser console for errors in FloorPlanModeManager initialization
+- Verify the "Reset View" button exists (the selection button is inserted after it)
+
 ### Selection Not Working
 
-1. Check that selection mode is enabled
+1. Check that selection mode is enabled (button should be highlighted)
 2. Verify SVG element is correctly passed to constructor
 3. Check browser console for JavaScript errors
-4. Enable debug mode to see event flow
+4. Enable debug mode to see event flow: `window.FLOOR_PLAN_DEBUG = true`
 
 ### Bulk Edit Buttons Not Appearing
 
-1. Verify user has appropriate permissions
-2. Check that objects are actually selected
-3. Verify permission object is correctly configured
-4. Check browser console for permission-related logs
+1. Verify user has appropriate permissions in `window.FLOOR_PLAN_PERMISSIONS`
+2. Check that objects are actually selected (tiles should have highlight styling)
+3. Verify permission object is correctly configured in the template
+4. Check browser console for permission-related logs (enable debug mode)
+5. Ensure selected objects have valid `data-pk` attributes
 
 ### Selection Rectangle Not Visible
 
-1. Check CSS for `.selection-rectangle` class
-2. Verify SVG namespace is correct
-3. Check z-index/stacking order in SVG
+1. Check CSS for `.selection-rectangle` class in multiselect.css
+2. Verify SVG namespace is correct (`http://www.w3.org/2000/svg`)
+3. Check z-index/stacking order in SVG (rectangle should be above tiles)
+4. Ensure you're in selection mode (not navigation mode)
 
 ## Additional Resources
 

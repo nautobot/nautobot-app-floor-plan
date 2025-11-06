@@ -45,7 +45,6 @@ class FloorPlanConfig(NautobotAppConfig):
     middleware = ["nautobot_floor_plan.middleware.FloorPlanReturnURLMiddleware"]
     searchable_models = ["floorplan"]
 
-
     def validate_config_options(self):
         """Validates app configuration options."""
         x_axis_labels = get_app_settings_or_config("nautobot_floor_plan", "default_x_axis_labels")
