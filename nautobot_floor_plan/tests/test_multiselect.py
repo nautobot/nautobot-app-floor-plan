@@ -1,20 +1,16 @@
 """Unit tests for floor plan multi-select functionality."""
 
-import unittest
-
 from django.contrib.auth import get_user_model
-from django.test import TestCase
 from django.urls import reverse
+from nautobot.apps.testing import TestCase
 from nautobot.dcim.models import Device, PowerFeed, PowerPanel, Rack
 
 from nautobot_floor_plan.models import FloorPlanTile
 from nautobot_floor_plan.tests.fixtures import create_floor_plans, create_prerequisites
-from nautobot_floor_plan.tests.utils import is_nautobot_version_less_than
 
 User = get_user_model()
 
 
-@unittest.skipIf(is_nautobot_version_less_than("2.3.1"), "Nautobot version is less than 2.3.1")
 class FloorPlanMultiSelectViewTestCase(TestCase):
     """Test that the multi-select JavaScript and CSS are loaded in floor plan views."""
 
@@ -65,7 +61,6 @@ class FloorPlanMultiSelectViewTestCase(TestCase):
         self.assertContains(response, "canEditPowerFeeds: true")
 
 
-@unittest.skipIf(is_nautobot_version_less_than("2.3.1"), "Nautobot version is less than 2.3.1")
 class FloorPlanMultiSelectDataTestCase(TestCase):  # pylint: disable=too-many-instance-attributes
     """Test that floor plan tiles have correct data attributes for multi-select."""
 
