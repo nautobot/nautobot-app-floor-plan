@@ -66,7 +66,7 @@ class RangeTileTestCase(SeleniumTestCase):
         self.assertEqual(self.browser.find_by_css("div.modal-header h5").first.text, "")
 
         # Click examples button
-        self.browser.find_by_css("button[data-target='#exampleModal']").first.click()
+        self.browser.find_by_css("button[data-bs-target='#exampleModal']").first.click()
 
         # Check modal is populated
         WebDriverWait(self.browser, 10).until(lambda driver: driver.is_text_present("Custom Label Ranges Examples"))
@@ -337,7 +337,7 @@ class FloorPlanTileTabsTestCase(SeleniumTestCase):
         """Test switching between tabs in the floor plan tile form."""
 
         has_active_class = self.browser.execute_script(
-            "return document.querySelector('a[href=\"#rack\"]').parentElement.classList.contains('active')"
+            "return document.querySelector('a[href=\"#rack\"]').classList.contains('active')"
         )
         self.assertTrue(has_active_class, "Rack tab should be active by default")
 
@@ -348,10 +348,10 @@ class FloorPlanTileTabsTestCase(SeleniumTestCase):
 
         # Check that the device tab is now active
         device_tab_active = self.browser.execute_script(
-            "return document.querySelector('a[href=\"#device\"]').parentElement.classList.contains('active')"
+            "return document.querySelector('a[href=\"#device\"]').classList.contains('active')"
         )
         rack_tab_active = self.browser.execute_script(
-            "return document.querySelector('a[href=\"#rack\"]').parentElement.classList.contains('active')"
+            "return document.querySelector('a[href=\"#rack\"]').classList.contains('active')"
         )
         self.assertTrue(device_tab_active, "Device tab should be active after clicking")
         self.assertFalse(rack_tab_active, "Rack tab should not be active")
@@ -363,10 +363,10 @@ class FloorPlanTileTabsTestCase(SeleniumTestCase):
 
         # Check that the power panel tab is now active
         power_panel_tab_active = self.browser.execute_script(
-            "return document.querySelector('a[href=\"#power-panel\"]').parentElement.classList.contains('active')"
+            "return document.querySelector('a[href=\"#power-panel\"]').classList.contains('active')"
         )
         device_tab_active = self.browser.execute_script(
-            "return document.querySelector('a[href=\"#device\"]').parentElement.classList.contains('active')"
+            "return document.querySelector('a[href=\"#device\"]').classList.contains('active')"
         )
         self.assertTrue(power_panel_tab_active, "Power panel tab should be active after clicking")
         self.assertFalse(device_tab_active, "Device tab should not be active")
@@ -378,10 +378,10 @@ class FloorPlanTileTabsTestCase(SeleniumTestCase):
 
         # Check that the power feed tab is now active
         power_feed_tab_active = self.browser.execute_script(
-            "return document.querySelector('a[href=\"#power-feed\"]').parentElement.classList.contains('active')"
+            "return document.querySelector('a[href=\"#power-feed\"]').classList.contains('active')"
         )
         power_panel_tab_active = self.browser.execute_script(
-            "return document.querySelector('a[href=\"#power-panel\"]').parentElement.classList.contains('active')"
+            "return document.querySelector('a[href=\"#power-panel\"]').classList.contains('active')"
         )
         self.assertTrue(power_feed_tab_active, "Power feed tab should be active after clicking")
         self.assertFalse(power_panel_tab_active, "Power panel tab should not be active")
@@ -390,7 +390,7 @@ class FloorPlanTileTabsTestCase(SeleniumTestCase):
         """Test that the correct content is visible when switching tabs."""
         # Check that the rack tab content is visible by default
         rack_pane_active = self.browser.execute_script(
-            "return document.getElementById('rack').classList.contains('active')"
+            "var el = document.getElementById('rack'); return el.classList.contains('active') && el.classList.contains('show');"
         )
         self.assertTrue(rack_pane_active, "Rack pane should be active by default")
 
@@ -401,10 +401,10 @@ class FloorPlanTileTabsTestCase(SeleniumTestCase):
 
         # Check that the device tab content is now visible
         device_pane_active = self.browser.execute_script(
-            "return document.getElementById('device').classList.contains('active')"
+            "var el = document.getElementById('device'); return el.classList.contains('active') && el.classList.contains('show');"
         )
         rack_pane_active = self.browser.execute_script(
-            "return document.getElementById('rack').classList.contains('active')"
+            "var el = document.getElementById('rack'); return el.classList.contains('active') && el.classList.contains('show');"
         )
         self.assertTrue(device_pane_active, "Device pane should be active after clicking device tab")
         self.assertFalse(rack_pane_active, "Rack pane should not be active")

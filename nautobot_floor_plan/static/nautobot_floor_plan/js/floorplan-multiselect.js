@@ -172,7 +172,7 @@ class FloorPlanModeManager {
       if (resetButton) {
         this.modeToggleButton = document.createElement("button");
         this.modeToggleButton.id = "toggle-selection-mode";
-        this.modeToggleButton.className = "btn btn-sm btn-default";
+        this.modeToggleButton.className = "btn btn-md btn-primary";
         this.modeToggleButton.innerHTML =
           '<i class="mdi mdi-select-drag"></i> Selection Mode';
         // Insert right after the reset button
@@ -1099,11 +1099,13 @@ class FloorPlanMultiSelect {
     dropdown.style.marginLeft = "5px";
     dropdown.id = "bulk-edit-dropdown";
 
-    // Create dropdown button
+    // Create dropdown button (Bootstrap 5)
     const dropdownButton = document.createElement("button");
     dropdownButton.className = "btn btn-md btn-warning dropdown-toggle";
-    dropdownButton.setAttribute("data-toggle", "dropdown");
-    dropdownButton.innerHTML = `<i class="mdi mdi-pencil"></i> Bulk Edit (${totalCount} objects) <span class="caret"></span>`;
+    dropdownButton.setAttribute("type", "button");
+    dropdownButton.setAttribute("data-bs-toggle", "dropdown");
+    dropdownButton.setAttribute("aria-expanded", "false");
+    dropdownButton.innerHTML = `<i class="mdi mdi-pencil"></i> Bulk Edit (${totalCount} objects)`;
     dropdownButton.title = "Choose object type to edit";
 
     // Add Tippy tooltip if available
@@ -1124,8 +1126,22 @@ class FloorPlanMultiSelect {
       const li = document.createElement("li");
       const link = document.createElement("a");
       link.href = "#";
-      link.innerHTML = `<i class="mdi ${data.icon}"></i> Edit ${data.count} ${data.displayName}`;
+      link.className = "dropdown-item";
+      
+      // Extract color from button class (btn-warning -> warning, btn-info -> info, etc.)
+      const colorClass = data.buttonClass.replace("btn-", "");
+      
+      // Create colored badge for count
+      link.innerHTML = `
+        <i class="mdi ${data.icon}" style="margin-right: 8px;"></i>
+        <span style="font-weight: 500;">Edit ${data.displayName}</span>
+        <span class="badge bg-${colorClass}" style="margin-left: 8px;">${data.count}</span>
+      `;
       link.dataset.objectType = typeKey;
+      
+      // Add subtle left border with the object type's color
+      link.style.borderLeft = `4px solid var(--bs-${colorClass})`;
+      link.style.paddingLeft = "12px";
 
       link.addEventListener("click", (e) => {
         e.preventDefault();

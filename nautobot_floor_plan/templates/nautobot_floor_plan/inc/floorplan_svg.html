@@ -2,18 +2,22 @@
 {% load static %}
 
 {% if object %}
-    <div class="pull-right noprint">
-        <a class="btn btn-warning btn-md" href="{% url 'plugins:nautobot_floor_plan:floorplan_edit' object.pk %}" class="btn btn-warning btn-sd" id="edit-button">
-            <span aria-hidden="true" class="mdi mdi-checkerboard" aria-hidden="true"></span> Edit Floorplan
+    <div class="float-end d-print-none">
+        <a class="btn btn-warning btn-md" href="{% url 'plugins:nautobot_floor_plan:floorplan_edit' object.pk %}" id="edit-button">
+            <span aria-hidden="true" class="mdi mdi-checkerboard"></span> Edit Floorplan
         </a>
-        <a class="btn btn-primary btn-md" href="{% url 'plugins:nautobot_floor_plan:floorplantile_add' %}?floor_plan={{ object.pk }}" class="btn btn-primary btn-sm" id="add-floor-plan">
-            <span aria-hidden="true" class="mdi mdi-plus-box" aria-hidden="true"></span> Add Tile
+        <a class="btn btn-primary btn-md" href="{% url 'plugins:nautobot_floor_plan:floorplantile_add' %}?floor_plan={{ object.pk }}" id="add-floor-plan">
+            <span aria-hidden="true" class="mdi mdi-plus-box"></span> Add Tile
         </a>
     </div>
     <h4>{{ object }}</h4>
-    <div>
-        <button class="btn btn-success btn-md" id="toggle-zoom-mode">Enable Box Zoom</button>
-        <button class="btn btn-danger btn-md" id="reset-zoom">Reset View</button>
+    <div class="mb-3">
+        <button class="btn btn-success btn-md" id="toggle-zoom-mode">
+            <i class="mdi mdi-magnify-plus-outline"></i> Enable Box Zoom
+        </button>
+        <button class="btn btn-danger btn-md" id="reset-zoom">
+            <i class="mdi mdi-refresh"></i> Reset View
+        </button>
     </div>
 
     <div class="text-center">
@@ -62,8 +66,7 @@
     {% endcomment %}
     <div id="floor-plan-svg-container" style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ object.y_size }} * {{ object.tile_depth }}) / ({{ object.x_size }} * {{ object.tile_width }}) / 1.2);">
         <a id="zoom-anchor"></a>
-        <div data-floor-plan-x-size="{{ object.x_size }}" data-floor-plan-y-size="{{ object.y_size }}" data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" id="floor-plan-svg" style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;">
-        </div>
+        <div data-floor-plan-x-size="{{ object.x_size }}" data-floor-plan-y-size="{{ object.y_size }}" data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" id="floor-plan-svg" style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;"></div>
     </div>
 {% else %}
     {% comment %}

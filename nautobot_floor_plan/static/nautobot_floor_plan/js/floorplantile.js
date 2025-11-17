@@ -18,14 +18,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // If container doesn't exist, exit early
     if (!container) return;
 
-    /** @type {Record<string, HTMLElement>} Tab navigation elements */
-    const tabElements = {
-      rack: document.querySelector('a[href="#rack"]').parentElement,
-      device: document.querySelector('a[href="#device"]').parentElement,
-      "power-panel": document.querySelector('a[href="#power-panel"]')
-        .parentElement,
-      "power-feed": document.querySelector('a[href="#power-feed"]')
-        .parentElement,
+    /** @type {Record<string, HTMLElement>} Tab link elements (Bootstrap 5 needs active on the link itself) */
+    const tabLinks = {
+      rack: document.querySelector('a[href="#rack"]'),
+      device: document.querySelector('a[href="#device"]'),
+      "power-panel": document.querySelector('a[href="#power-panel"]'),
+      "power-feed": document.querySelector('a[href="#power-feed"]'),
     };
 
     /** @type {Record<string, HTMLElement>} Tab content panes */
@@ -74,21 +72,25 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    // Set the active tab
-    for (const [tab, element] of Object.entries(tabElements)) {
-      if (tab === activeTab) {
-        element.classList.add("active");
-      } else {
-        element.classList.remove("active");
+    // Set the active tab link (Bootstrap 5 - active class goes on the link itself, not parent)
+    for (const [tab, link] of Object.entries(tabLinks)) {
+      if (link) {
+        if (tab === activeTab) {
+          link.classList.add("active");
+        } else {
+          link.classList.remove("active");
+        }
       }
     }
 
-    // Set the active tab pane
-    for (const [tab, element] of Object.entries(tabPanes)) {
-      if (tab === activeTab) {
-        element.classList.add("active");
-      } else {
-        element.classList.remove("active");
+    // Set the active tab pane (Bootstrap 5 - needs both 'active' and 'show')
+    for (const [tab, pane] of Object.entries(tabPanes)) {
+      if (pane) {
+        if (tab === activeTab) {
+          pane.classList.add("active", "show");
+        } else {
+          pane.classList.remove("active", "show");
+        }
       }
     }
   }
@@ -96,24 +98,29 @@ document.addEventListener("DOMContentLoaded", function () {
   // Run the function on page load
   setActiveTab();
 
-  // Add event listeners to tab links
-  const tabLinks = document.querySelectorAll('.nav-tabs a[data-toggle="tab"]');
+  // Add event listeners to tab links (Bootstrap 5 - changed from data-toggle to data-bs-toggle)
+  const tabLinks = document.querySelectorAll('.nav-tabs a[data-bs-toggle="tab"]');
   tabLinks.forEach((link) => {
     link.addEventListener("click", function (e) {
       e.preventDefault();
 
-      // Remove active class from all tabs and panes
-      document.querySelectorAll(".nav-tabs li").forEach((tab) => {
-        tab.classList.remove("active");
-      });
+      // Remove active class from all tab links
+      tabLinks.forEach((l) => l.classList.remove("active"));
+      
+      // Remove active and show from all panes (Bootstrap 5 requires both)
       document.querySelectorAll(".tab-pane").forEach((pane) => {
-        pane.classList.remove("active");
+        pane.classList.remove("active", "show");
       });
 
-      // Add active class to clicked tab and corresponding pane
-      this.parentElement.classList.add("active");
+      // Add active class to clicked tab link
+      this.classList.add("active");
+      
+      // Add active and show to corresponding pane
       const target = this.getAttribute("href").substring(1);
-      document.getElementById(target).classList.add("active");
+      const pane = document.getElementById(target);
+      if (pane) {
+        pane.classList.add("active", "show");
+      }
     });
   });
 });

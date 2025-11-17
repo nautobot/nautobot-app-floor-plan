@@ -52,7 +52,7 @@ namespace = Collection("nautobot_floor_plan")
 namespace.configure(
     {
         "nautobot_floor_plan": {
-            "nautobot_ver": "2.4.20",
+            "nautobot_ver": "3.0.0",
             "project_name": "nautobot-floor-plan",
             "python_ver": "3.12",
             "local": False,
@@ -1010,7 +1010,13 @@ def tests(context, failfast=False, keepdb=False, lint_only=False):
         print("Running integ tests...")
         unittest(context, failfast=failfast, keepdb=keepdb, tags=["integration"])
         print("Running unit tests...")
-        unittest(context, failfast=failfast, keepdb=keepdb, coverage=True, skip_docs_build=True)
+        unittest(
+            context,
+            failfast=failfast,
+            keepdb=keepdb,
+            coverage=True,
+            skip_docs_build=True,
+        )
         unittest_coverage(context)
         coverage_lcov(context)
     print("All tests have passed!")
