@@ -1,0 +1,49 @@
+/**
+ * Floor Plan Multi-Select Styles
+ * Visual feedback for selection mode and selected tiles
+ */
+
+/* Selection rectangle */
+.floor-plan-selection-rect {
+    fill: rgba(0, 123, 255, 0.15);
+    stroke: #007bff;
+    stroke-width: 2;
+    stroke-dasharray: 5, 5;
+    pointer-events: none;
+    animation: selection-dash 0.5s linear infinite;
+}
+
+@keyframes selection-dash {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+/* Selected tile highlight */
+.floor-plan-tile-selected {
+    outline: 3px solid #007bff;
+    outline-offset: 2px;
+    filter: brightness(1.1);
+}
+
+/* For SVG elements, use stroke instead of outline */
+svg .floor-plan-tile-selected {
+    stroke: #007bff !important;
+    stroke-width: 3 !important;
+    filter: brightness(1.1) drop-shadow(0 0 5px rgba(0, 123, 255, 0.5));
+}
+
+/* Button styles for mode toggle */
+#toggle-selection-mode {
+    margin-left: 5px;
+}
+
+#toggle-selection-mode.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+}
+
+#toggle-selection-mode i {
+    margin-right: 5px;
+}

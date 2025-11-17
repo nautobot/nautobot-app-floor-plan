@@ -5,10 +5,12 @@ import unittest
 
 from django.urls import reverse
 from nautobot.core.testing.integration import SeleniumTestCase
+from nautobot.dcim.models import Device, Rack
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
+from nautobot_floor_plan.models import FloorPlanTile
 from nautobot_floor_plan.tests.fixtures import create_floor_plans, create_prerequisites
 from nautobot_floor_plan.tests.utils import is_nautobot_version_less_than
 
@@ -195,7 +197,7 @@ class FloorPlanZoomTestCase(SeleniumTestCase):
         # Check that button text and class changed
         toggled_text = toggle_button.text
         self.assertIn("Switch to Pan Mode", toggled_text, "Mode should change to zoom mode after toggle")
-        self.assertTrue(toggle_button.has_class("btn-warning"), "Button should have btn-warning class in zoom mode")
+        self.assertTrue(toggle_button.has_class("btn-info"), "Button should have btn-info class in zoom mode")
 
         # Toggle back to pan mode
         toggle_button.click()
@@ -413,3 +415,202 @@ class FloorPlanTileTabsTestCase(SeleniumTestCase):
             + "return el && (el.offsetWidth > 0 || el.offsetHeight > 0);"
         )
         self.assertTrue(device_select_visible, "Device select field should be visible when device tab is active")
+
+
+@unittest.skipIf(is_nautobot_version_less_than("2.3.1"), "Nautobot version is less than 2.3.1")
+class FloorPlanMultiSelectTestCase(SeleniumTestCase):  # pylint: disable=too-many-instance-attributes
+    """Test the multi-select functionality in the floor plan interface."""
+
+    def setUp(self):
+        """Login and navigate to a floor plan view with multiple objects."""
+        super().setUp()
+
+        self.user.is_superuser = True
+        self.user.save()
+        self.login(self.user.username, self.password)
+        # pylint: disable=duplicate-code
+        prerequisites = create_prerequisites(floor_count=1)
+        self.floors = prerequisites["floors"]
+        self.status = prerequisites["status"]
+        self.manufacturer = prerequisites["manufacturer"]
+        self.device_role = prerequisites["device_role"]
+        self.device_type = prerequisites["device_type"]
+        # pylint: enable=duplicate-code
+
+        floor_plans = create_floor_plans(self.floors)
+        self.floor_plan = floor_plans[0]
+
+        # Create multiple racks for testing
+        self.racks = []
+        for i in range(3):
+            rack = Rack.objects.create(
+                name=f"Test Rack {i + 1}",
+                location=self.floors[0],
+                status=self.status,
+            )
+            self.racks.append(rack)
+
+        # Create multiple devices for testing
+        self.devices = []
+        for i in range(2):
+            device = Device.objects.create(
+                name=f"Test Device {i + 1}",
+                device_type=self.device_type,
+                role=self.device_role,
+                location=self.floors[0],
+                status=self.status,
+            )
+            self.devices.append(device)
+
+        # Create floor plan tiles for racks
+        for i, rack in enumerate(self.racks):
+            FloorPlanTile.objects.create(
+                floor_plan=self.floor_plan,
+                x_origin=i + 1,
+                y_origin=1,
+                x_size=1,
+                y_size=1,
+                status=self.status,
+                rack=rack,
+            )
+
+        # Create floor plan tiles for devices
+        for i, device in enumerate(self.devices):
+            FloorPlanTile.objects.create(
+                floor_plan=self.floor_plan,
+                x_origin=i + 1,
+                y_origin=2,
+                x_size=1,
+                y_size=1,
+                status=self.status,
+                device=device,
+            )
+
+        # Navigate to the floor plan view
+        self.browser.visit(f"{self.live_server_url}{reverse('plugins:nautobot_floor_plan:floorplan_list')}")
+        self.browser.links.find_by_partial_text("Floor Plan for Location").first.click()
+
+        # Wait for the SVG to load
+        WebDriverWait(self.browser, 10).until(lambda driver: driver.is_element_present_by_id("floor-plan-svg"))
+        time.sleep(2)
+
+    def test_selection_mode_toggle_button_exists(self):
+        """Test that the selection mode toggle button exists."""
+        toggle_button = self.browser.find_by_id("toggle-selection-mode")
+        self.assertTrue(toggle_button, "Selection mode toggle button should exist")
+        self.assertIn("Selection Mode", toggle_button.first.text, "Button should show 'Selection Mode' initially")
+
+    def test_toggle_to_selection_mode(self):
+        """Test toggling to selection mode."""
+        toggle_button = self.browser.find_by_id("toggle-selection-mode").first
+        initial_text = toggle_button.text
+
+        # Click to toggle to selection mode
+        toggle_button.click()
+        time.sleep(0.5)
+
+        # Check that button text changed
+        new_text = toggle_button.text
+        self.assertNotEqual(initial_text, new_text, "Button text should change after toggle")
+        self.assertIn("Navigation Mode", new_text, "Button should show 'Navigation Mode' in selection mode")
+
+        # Check that button has success class
+        has_success_class = self.browser.execute_script(
+            "return document.getElementById('toggle-selection-mode').classList.contains('btn-success')"
+        )
+        self.assertTrue(has_success_class, "Button should have btn-success class in selection mode")
+
+    def test_keyboard_shortcut_s_key(self):
+        """Test that 'S' key toggles selection mode."""
+        # Get initial button text
+        toggle_button = self.browser.find_by_id("toggle-selection-mode").first
+        initial_text = toggle_button.text
+
+        # Send 'S' key
+        self.browser.execute_script(
+            """
+            const event = new KeyboardEvent('keydown', { key: 's', bubbles: true });
+            document.dispatchEvent(event);
+            """
+        )
+        time.sleep(0.5)
+
+        # Check that mode changed
+        new_text = toggle_button.text
+        self.assertNotEqual(initial_text, new_text, "Mode should change after pressing 'S' key")
+
+    def test_drag_selection_creates_rectangle(self):
+        """Test that dragging in selection mode creates a selection rectangle."""
+        # Toggle to selection mode
+        toggle_button = self.browser.find_by_id("toggle-selection-mode").first
+        toggle_button.click()
+        time.sleep(0.5)
+
+        # Simulate drag selection using JavaScript
+        self.browser.execute_script(
+            """
+            const svg = document.querySelector('#floor-plan-svg svg');
+            const rect = svg.getBoundingClientRect();
+
+            // Create mousedown event
+            const mousedownEvent = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                clientX: rect.left + 50,
+                clientY: rect.top + 50
+            });
+            svg.dispatchEvent(mousedownEvent);
+
+            // Create mousemove event
+            const mousemoveEvent = new MouseEvent('mousemove', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                clientX: rect.left + 150,
+                clientY: rect.top + 150
+            });
+            svg.dispatchEvent(mousemoveEvent);
+            """
+        )
+        time.sleep(0.5)
+
+        # Check that selection rectangle exists
+        has_selection_rect = self.browser.execute_script(
+            "return document.querySelector('.floor-plan-selection-rect') !== null"
+        )
+        self.assertTrue(has_selection_rect, "Selection rectangle should be created during drag")
+
+    def test_performance_with_many_objects(self):
+        """Test that selection performs well with many objects."""
+        # Toggle to selection mode
+        toggle_button = self.browser.find_by_id("toggle-selection-mode").first
+        toggle_button.click()
+        time.sleep(0.5)
+
+        # Measure selection time
+        selection_time = self.browser.execute_script(
+            """
+            const svg = document.querySelector('#floor-plan-svg svg');
+            const rect = svg.getBoundingClientRect();
+
+            const startTime = performance.now();
+
+            ['mousedown', 'mousemove', 'mouseup'].forEach((eventType, index) => {
+                const event = new MouseEvent(eventType, {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window,
+                    clientX: rect.left + 10 + (index * 300),
+                    clientY: rect.top + 10 + (index * 200)
+                });
+                svg.dispatchEvent(event);
+            });
+
+            const endTime = performance.now();
+            return endTime - startTime;
+            """
+        )
+
+        # Selection should complete in under 200ms (requirement from task 6.3)
+        self.assertLess(selection_time, 200, "Selection should complete in under 200ms")

@@ -42,6 +42,7 @@ class FloorPlanConfig(NautobotAppConfig):
         },
     }
     docs_view_name = "plugins:nautobot_floor_plan:docs"
+    middleware = ["nautobot_floor_plan.middleware.FloorPlanReturnURLMiddleware"]
     searchable_models = ["floorplan"]
 
     def validate_config_options(self):

@@ -1,9 +1,13 @@
 """Added content to the device model view for floor plan."""
 
+import logging
+
 from django.urls import reverse
 from django.utils.http import urlencode
 from nautobot.apps.ui import Button, DistinctViewTab, TemplateExtension
 from nautobot.core.views.utils import get_obj_from_context
+
+logger = logging.getLogger(__name__)
 
 
 class DeleteFloorPlanButton(Button):  # pylint: disable=abstract-method
@@ -349,6 +353,82 @@ class PowerFeedFloorPlanExtension(TemplateExtension):  # pylint: disable=abstrac
     object_detail_buttons = [PowerFeedFloorPlanButton()]
 
 
+class ReturnToFloorPlanButton(Button):  # pylint: disable=abstract-method
+    """Button for returning to floor plan after bulk edit job."""
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the return to floor plan button."""
+        super().__init__(
+            label="Return to Floor Plan",
+            icon="mdi-floor-plan",
+            color="success",
+            weight=50,
+            *args,
+            **kwargs,
+        )
+
+    def get_link(self, context):
+        """Get the return URL from the request if it contains floor plan path."""
+        request = context.get("request")
+        if not request:
+            return None
+
+        # Try to get return_url from various sources
+        return_url = None
+
+        # 1. Check GET parameters (most common for job results)
+        return_url = request.GET.get("return_url")
+
+        # 2. Check POST data if available
+        if not return_url and hasattr(request, "POST"):
+            return_url = request.POST.get("return_url")
+
+        # 3. Check the job result object itself
+        if not return_url:
+            job_result = context.get("object")
+            if job_result and hasattr(job_result, "job_kwargs"):
+                # Check if return_url was passed in job kwargs
+                job_kwargs = job_result.job_kwargs or {}
+                return_url = job_kwargs.get("return_url")
+
+        # 4. Check session (set by middleware)
+        if not return_url:
+            return_url = request.session.get("floor_plan_return_url")
+
+        # 5. Check HTTP referer as last resort
+        if not return_url:
+            referer = request.META.get("HTTP_REFERER", "")
+            if "floor-plan" in referer or "floor_plan" in referer:
+                return_url = referer
+
+        # Only return if it's actually a floor plan URL
+        if return_url and ("floor-plan" in return_url or "floor_plan" in return_url):
+            return return_url
+
+        # Note: We also store the URL in localStorage via JavaScript
+        # The template will check localStorage if server-side methods fail
+        return None
+
+    def should_render(self, context):
+        """Only render if there's a floor plan return URL and user has permission."""
+        request = context.get("request")
+        if not request:
+            return False
+
+        link = self.get_link(context)
+        has_perm = request.user.has_perm("nautobot_floor_plan.view_floorplan")
+
+        return link is not None and has_perm
+
+
+class JobResultFloorPlanExtension(TemplateExtension):  # pylint: disable=abstract-method
+    """Extensions for the JobResult model detail view to add return to floor plan button."""
+
+    model = "extras.jobresult"
+
+    object_detail_buttons = [ReturnToFloorPlanButton()]
+
+
 # Updated template_extensions to include the new classes
 template_extensions = (
     LocationFloorPlanTab,
@@ -356,4 +436,5 @@ template_extensions = (
     DeviceFloorPlanExtension,
     PowerPanelFloorPlanExtension,
     PowerFeedFloorPlanExtension,
+    JobResultFloorPlanExtension,
 )

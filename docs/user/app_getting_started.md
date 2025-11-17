@@ -34,13 +34,13 @@ Clicking this button will open a standard Nautobot create/edit form. This form a
 
 - **Tile Width** and **Tile Depth**:
   Define the relative proportions of each tile when rendered in the Nautobot UI.
-    - You can use the default settings for a square grid.
-    - Alternatively, customize these parameters for a rectangular grid.
+        - You can use the default settings for a square grid.
+        - Alternatively, customize these parameters for a rectangular grid.
 
 - **Movable Tiles**:
   Determine if you want tiles to be movable once placed.
-    - This feature is a optional setting to assist with Custom Label creation
-    - Default: `"True"`
+        - This feature is a optional setting to assist with Custom Label creation
+        - Default: `"True"`
 
 ![Add Floor Plan form](../images/add-floor-plan-form.png)
 
@@ -53,15 +53,15 @@ Default settings allow you to configure labels, seeds, and steps for each axis o
 
 - **X Axis Labels** and **Y Axis Labels**:
   Represent grid labels as either `"Numbers"` or `"Letters"`.
-    - Default: `"Numbers"`
+        - Default: `"Numbers"`
 
 - **X Axis Seed** and **Y Axis Seed**:
   Define the starting point for grid labels.
-    - Default: `"1"`
+        - Default: `"1"`
 
 - **X Axis Step** and **Y Axis Step**:
   Set a positive or negative integer step value to skip numbers or letters in grid labeling.
-    - Default: `"1"`
+        - Default: `"1"`
 
 ![Add Floor Plan form part 2](../images/add-tile-axis-default.png)
 
@@ -84,16 +84,16 @@ The **Custom Labels** tab provides options to configure a custom label range usi
 
 - **`increment_letter`** *(optional)*
   Applicable only for *numalpha* and *alphanumeric* label types, this parameter controls whether letter patterns increment.
-    - *Default*: `true`
-    - When set to `true`:
-    - The letter portions increment,  but the numeric portions do not creating patterns like:
+        - *Default*: `true`
+        - When set to `true`:
+        - The letter portions increment,  but the numeric portions do not creating patterns like:
         - For numalpha: `02AA, 02AB, 02AC`
         - For alphanumeric: `A01, B01, C01`
-    - When set to `false`:
-    - For numalpha:
+        - When set to `false`:
+        - For numalpha:
         - The entire letter portion increments with every step creating patterns like:
         - `02AA, 02BB, 02CC`
-    - For alphanumeric:
+        - For alphanumeric:
         - The letter prefix does not increment, but the numeric portion does creating patterns like:
         - `A01, A02, A03`
 
@@ -101,14 +101,14 @@ The **Custom Labels** tab provides options to configure a custom label range usi
 
 - **`label_type`**
   Specifies the type of label. Supported types include:
-    - `numalpha (e.g., 02A, 05ZZ, 04AZ)`
-    - `alphanumeric (e.g., A01, B02)`
-    - `roman (e.g., I, II, III)`
-    - `greek (e.g., α, β, γ)`
-    - `hex (e.g., 0x0001, 0x000A, 0x000F)`
-    - `binary (e.g., 0b0001, 0b1010, 0b0110)`
-    - `letters (e.g., A, B, C)`
-    - `numbers (e.g. 1, 2, 3)`
+        - `numalpha (e.g., 02A, 05ZZ, 04AZ)`
+        - `alphanumeric (e.g., A01, B02)`
+        - `roman (e.g., I, II, III)`
+        - `greek (e.g., α, β, γ)`
+        - `hex (e.g., 0x0001, 0x000A, 0x000F)`
+        - `binary (e.g., 0b0001, 0b1010, 0b0110)`
+        - `letters (e.g., A, B, C)`
+        - `numbers (e.g. 1, 2, 3)`
 
 There is a `Generate Preview` button that allows you to preview a range of labels that would be generated on the grid once the Floor Plan form has been saved.
 
@@ -164,7 +164,7 @@ For each tile, you can:
 - **Assign a Object or RackGroup**: Specify the object or rack group associated with the tile.
 - **Specify Rack Orientation**: Define the orientation of the object relative to the floor plan.
 - **Adjust Tile Size**: Expand a tile to cover multiple spaces.
-    - Useful for documenting larger-than-usual racks or marking sections of the floor plan as "Reserved" or "Unavailable."
+        - Useful for documenting larger-than-usual racks or marking sections of the floor plan as "Reserved" or "Unavailable."
 
 !!! note
     Once a Object (Device, Power Panel, Power Feed, or Rack) has been placed on a **Floor Plan Tile** you cannot update the **Location** of the Object until it has been removed from the Floor Plan or the Floor Plan has been deleted.
@@ -243,6 +243,79 @@ Clicking on a grid label for a given row (or column) will navigate to a Rack Ele
 
 ![Floor plan zoom box button](../images/floorplan-click-drag-zoom.png)
 ![Floor plan zoomed in](../images/floorplan-zoomed.png)
+
+### Multi-Select and Bulk Editing
+
+The floor plan supports selecting multiple objects at once for bulk editing operations, allowing you to efficiently update multiple Racks, Devices, Power Panels, or Power Feeds simultaneously.
+
+#### Enabling Selection Mode
+
+The floor plan has two modes for interacting with objects:
+
+- **Navigation Mode** (default): Click and drag to pan, use mouse wheel to zoom, and click objects to view details
+- **Selection Mode**: Click and drag to select multiple objects for bulk operations
+
+To toggle between modes, click the **"Selection Mode"** button in the floor plan controls, or press the **S** key on your keyboard for quick switching.
+
+![Selection Mode Button](../images/selection-mode-button.png)
+
+!!! note
+    When in Selection Mode, zoom and pan controls are temporarily disabled to prevent accidental navigation while selecting objects. Switch back to Navigation Mode to resume normal zoom/pan functionality.
+
+#### Selecting Objects
+
+Once in Selection Mode:
+
+1. Click and drag across the floor plan to create a selection rectangle
+2. All objects (Racks, Devices, Power Panels, Power Feeds) that intersect with the rectangle will be highlighted
+3. You can select objects of different types in a single selection
+4. Press **Escape** to clear your selection without leaving Selection Mode
+
+![Drag Selection in Action](../images/drag-selection-in-action.png)
+
+!!! tip "Selection Tips"
+        - Use the **S** key for quick mode switching while working
+        - The selection rectangle uses smooth animations for visual feedback
+        - Selected tiles are highlighted with a distinct visual indicator
+        - You can make a new selection at any time by dragging again
+
+#### Bulk Editing Selected Objects
+
+After selecting objects, bulk edit controls will automatically appear based on what you've selected. The interface adapts intelligently:
+
+- **Single object type selected**: One "Bulk Edit [Type]" button appears (e.g., "Bulk Edit Racks (5)")
+- **Two object types selected**: Separate buttons for each type with counts
+- **Three or more object types selected**: A dropdown menu with options for each type
+
+![Bulk Edit Buttons](../images/bulk-edit-buttons-1.png)
+
+![Bulk Edit Buttons](../images/bulk-edit-buttons-2.png)
+
+Clicking a bulk edit button will:
+
+1. Navigate to Nautobot's native bulk edit form for that object type
+2. Pre-populate the form with your selected objects
+3. After saving changes, automatically return you to the floor plan view
+
+!!! note "Permission-Based Access"
+    Bulk edit buttons only appear for object types you have permission to edit. If you don't see a button for a particular object type, verify your user permissions include the appropriate `dcim.change_*` permission (e.g., `dcim.change_rack`, `dcim.change_device`).
+
+#### Keyboard Shortcuts
+
+The following keyboard shortcuts are available for efficient workflow:
+
+- **S**: Toggle between Navigation Mode and Selection Mode
+- **Escape**: Clear current selection (while staying in Selection Mode)
+
+!!! tip "Workflow Efficiency"
+    For repetitive bulk editing tasks, use this workflow:
+
+    1. Press **S** to enter Selection Mode
+    2. Drag to select objects
+    3. Click the appropriate bulk edit button
+    4. Make your changes in the bulk edit form
+    5. Save and return to the floor plan
+    6. Press **S** again to return to Navigation Mode, or make another selection
 
 ### Resizing the Floor Plan
 
