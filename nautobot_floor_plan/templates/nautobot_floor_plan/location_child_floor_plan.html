@@ -3,10 +3,9 @@
 {% load static %}
 {% load seed_helpers %}
 {% block content %}
-    <div class="panel panel-default">
-        <div class="panel-heading">
+    <div class="card">
+        <div class="card-header">
             <strong>Child Floor Plans</strong>
-            <div class="pull-right noprint">{% table_config_button_small children_table %}</div>
         </div>
         {% include "inc/table.html" with table=children_table %}
     </div>

@@ -9,53 +9,52 @@
     <!-- Place this BEFORE your script tag -->
     {{ label_type_choices|json_script:"label-type-choices" }}
 
-    <div class="panel panel-default">
-        <div class="panel-heading">
+    <div class="card">
+        <div class="card-header">
             <strong>Floor Plan</strong>
         </div>
-        <div class="panel-body">
+        <div class="card-body">
             {% for field_name in form.fieldsets.0.1 %}
                 {% render_field form|get_fieldset_field:field_name %}
             {% endfor %}
         </div>
     </div>
-
     <!-- X Axis Settings -->
-    <div class="panel panel-default">
-        <div class="panel-heading">
+    <div class="card">
+        <div class="card-header">
             <strong>X Axis Settings</strong>
         </div>
-        <div class="panel-body">
+        <div class="card-body">
             {% if form.x_origin_seed.errors or form.x_axis_step.errors or form.x_axis_labels.errors %}
                 <div class="alert alert-danger">
-                    <i class="mdi mdi-alert"></i> There are validation errors in the Default Labels tab
+                    <span class="mdi mdi-alert"></span> There are validation errors in the Default Labels tab
                 </div>
             {% endif %}
             {% for range_form in form.x_ranges.forms %}
                 {% if range_form.start.value or range_form.end.value %}
                     {% if range_form.errors %}
                         <div class="alert alert-danger">
-                            <i class="mdi mdi-alert"></i> There are validation errors in the Custom Labels tab
+                            <span class="mdi mdi-alert"></span> There are validation errors in the Custom Labels tab
                         </div>
                     {% endif %}
                 {% endif %}
             {% endfor %}
             <div class="nav-tabs-custom">
                 <ul class="nav nav-tabs" role="tablist">
-                    <li role="presentation" {% if x_activate_default_tab %}class="active"{% endif %}>
-                        <a href="#x-default" aria-controls="x-default" role="tab" data-toggle="tab">Default Labels</a>
+                    <li class="nav-item" role="presentation">
+                        <a aria-controls="x-default" class="nav-link {% if x_activate_default_tab %}active{% endif %}" data-bs-toggle="tab" href="#x-default" role="tab">Default Labels</a>
                     </li>
-                    <li role="presentation" {% if x_activate_custom_tab %}class="active"{% endif %}>
-                        <a href="#x-custom" aria-controls="x-custom" role="tab" data-toggle="tab">Custom Labels</a>
+                    <li class="nav-item" role="presentation">
+                        <a aria-controls="x-custom" class="nav-link {% if x_activate_custom_tab %}active{% endif %}" data-bs-toggle="tab" href="#x-custom" role="tab">Custom Labels</a>
                     </li>
                 </ul>
                 <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane {% if x_activate_default_tab %}active{% endif %}" id="x-default">
+                    <div class="tab-pane {% if x_activate_default_tab %}active{% endif %}" id="x-default" role="tabpanel">
                         {% for field in form.fieldsets.1.1.tabs.0.1 %}
                             {% render_field form|get_fieldset_field:field %}
                         {% endfor %}
                     </div>
-                    <div role="tabpanel" class="tab-pane {% if x_activate_custom_tab %}active{% endif %}" id="x-custom">
+                    <div class="tab-pane {% if x_activate_custom_tab %}active{% endif %}" id="x-custom" role="tabpanel">
                         {{ form.x_ranges.management_form }}
                         <div class="table-responsive">
                             <table class="table table-bordered table-sm">
@@ -94,67 +93,66 @@
                                             </td>
                                             <td>
                                                 {{ range_form.DELETE.as_hidden }}
-                                                <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+                                                <button class="btn btn-danger btn-md remove-range" type="button">Remove</button>
                                             </td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                        <br>
-                        <button type="button" id="add-x-range" class="btn btn-primary btn-sm mt-2">
-                            <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Add Range
+                        <br/>
+                        <button class="btn btn-primary btn-md mt-2" id="add-x-range" type="button">
+                            <span aria-hidden="true" class="mdi mdi-plus-thick"></span> Add Range
                         </button>
-                        <button type="button" class="btn btn-info btn-sm mt-2" data-toggle="modal" data-target="#exampleModal">
-                            <span class="mdi mdi-lightbulb" aria-hidden="true"></span> Examples
+                        <button class="btn btn-info btn-md mt-2" data-bs-target="#exampleModal" data-bs-toggle="modal" type="button">
+                            <span aria-hidden="true" class="mdi mdi-lightbulb"></span> Examples
                         </button>
-                        <div id="x-preview-section" class="mt-3">
+                        <div class="mt-3" id="x-preview-section">
                             <h5>Preview</h5>
                             <div id="x-preview"></div>
-                            <button type="button" id="generate-x-preview" class="btn btn-default btn-sm">Generate Preview</button>
+                            <button class="btn btn-secondary btn-md" id="generate-x-preview" type="button">Generate Preview</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Y Axis Settings -->
-    <div class="panel panel-default">
-        <div class="panel-heading">
+    <div class="card">
+        <div class="card-header">
             <strong>Y Axis Settings</strong>
         </div>
-        <div class="panel-body">
+        <div class="card-body">
             {% if form.y_origin_seed.errors or form.y_axis_step.errors or form.y_axis_labels.errors %}
                 <div class="alert alert-danger">
-                    <i class="mdi mdi-alert"></i> There are validation errors in the Default Labels tab
+                    <span class="mdi mdi-alert"></span> There are validation errors in the Default Labels tab
                 </div>
             {% endif %}
             {% for range_form in form.y_ranges.forms %}
                 {% if range_form.start.value or range_form.end.value %}
                     {% if range_form.errors %}
                         <div class="alert alert-danger">
-                            <i class="mdi mdi-alert"></i> There are validation errors in the Custom Labels tab
+                            <span class="mdi mdi-alert"></span> There are validation errors in the Custom Labels tab
                         </div>
                     {% endif %}
                 {% endif %}
             {% endfor %}
             <div class="nav-tabs-custom">
                 <ul class="nav nav-tabs" role="tablist">
-                    <li role="presentation" {% if y_activate_default_tab %}class="active"{% endif %}>
-                        <a href="#y-default" aria-controls="y-default" role="tab" data-toggle="tab">Default Labels</a>
+                    <li class="nav-item" role="presentation">
+                        <a aria-controls="y-default" class="nav-link {% if y_activate_default_tab %}active{% endif %}" data-bs-toggle="tab" href="#y-default" role="tab">Default Labels</a>
                     </li>
-                    <li role="presentation" {% if y_activate_custom_tab %}class="active"{% endif %}>
-                        <a href="#y-custom" aria-controls="y-custom" role="tab" data-toggle="tab">Custom Labels</a>
+                    <li class="nav-item" role="presentation">
+                        <a aria-controls="y-custom" class="nav-link {% if y_activate_custom_tab %}active{% endif %}" data-bs-toggle="tab" href="#y-custom" role="tab">Custom Labels</a>
                     </li>
                 </ul>
                 <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane {% if y_activate_default_tab %}active{% endif %}" id="y-default">
+                    <div class="tab-pane {% if y_activate_default_tab %}active{% endif %}" id="y-default" role="tabpanel">
                         {% for field in form.fieldsets.2.1.tabs.0.1 %}
                             {% render_field form|get_fieldset_field:field %}
                         {% endfor %}
                     </div>
-                    <div role="tabpanel" class="tab-pane {% if y_activate_custom_tab %}active{% endif %}" id="y-custom">
+                    <div class="tab-pane {% if y_activate_custom_tab %}active{% endif %}" id="y-custom" role="tabpanel">
                         {{ form.y_ranges.management_form }}
                         <div class="table-responsive">
                             <table class="table table-bordered table-sm">
@@ -193,24 +191,24 @@
                                             </td>
                                             <td>
                                                 {{ range_form.DELETE.as_hidden }}
-                                                <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+                                                <button class="btn btn-danger btn-md remove-range" type="button">Remove</button>
                                             </td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                        <br>
-                        <button type="button" id="add-y-range" class="btn btn-primary btn-sm mt-2">
-                            <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Add Range
+                        <br/>
+                        <button class="btn btn-primary btn-md mt-2" id="add-y-range" type="button">
+                            <span aria-hidden="true" class="mdi mdi-plus-thick"></span> Add Range
                         </button>
-                        <button type="button" class="btn btn-info btn-sm mt-2" data-toggle="modal" data-target="#exampleModal">
-                            <span class="mdi mdi-lightbulb" aria-hidden="true"></span> Examples
+                        <button class="btn btn-info btn-md mt-2" data-bs-target="#exampleModal" data-bs-toggle="modal" type="button">
+                            <span aria-hidden="true" class="mdi mdi-lightbulb"></span> Examples
                         </button>
-                        <div id="y-preview-section" class="mt-3">
+                        <div class="mt-3" id="y-preview-section">
                             <h5>Preview</h5>
                             <div id="y-preview"></div>
-                            <button type="button" id="generate-y-preview" class="btn btn-default btn-sm">Generate Preview</button>
+                            <button class="btn btn-secondary btn-md" id="generate-y-preview" type="button">Generate Preview</button>
                         </div>
                     </div>
                 </div>
@@ -405,11 +403,10 @@
             <td>{{ form.x_ranges.empty_form.increment_letter }}</td>
             <td>
                 {{ form.x_ranges.empty_form.DELETE.as_hidden }}
-                <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+                <button class="btn btn-danger btn-md remove-range" type="button">Remove</button>
             </td>
         </tr>
     </template>
-
     <!-- Y Axis Empty Form Template -->
     <template id="y-empty-form-template">
         <tr>
@@ -420,20 +417,18 @@
             <td>{{ form.y_ranges.empty_form.increment_letter }}</td>
             <td>
                 {{ form.y_ranges.empty_form.DELETE.as_hidden }}
-                <button type="button" class="btn btn-danger btn-sm remove-range">Remove</button>
+                <button class="btn btn-danger btn-md remove-range" type="button">Remove</button>
             </td>
         </tr>
     </template>
-
-    <input type="hidden" name="x_custom_ranges" id="x_custom_ranges">
-    <input type="hidden" name="y_custom_ranges" id="y_custom_ranges">
-
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <input id="x_custom_ranges" name="x_custom_ranges" type="hidden"/>
+    <input id="y_custom_ranges" name="y_custom_ranges" type="hidden"/>
+    <div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="exampleModal" role="dialog" tabindex="-1">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Custom Label Ranges Examples</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -502,7 +497,7 @@
                     </ul>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
                 </div>
             </div>
         </div>
