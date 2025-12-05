@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nautobot-floor-plan"
-version = "2.9.0a0"
+version = "2.9.0"
 description = "Nautobot Floor Plan"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 license = "Apache-2.0"
@@ -165,7 +165,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.towncrier]
 package = "nautobot_floor_plan"
 directory = "changes"
-filename = "docs/admin/release_notes/version_2.8.md"
+filename = "docs/admin/release_notes/version_2.9.md"
 template = "development/towncrier_template.j2"
 start_string = "<!-- towncrier release notes start -->"
 issue_format = "[#{issue}](https://github.com/nautobot/nautobot-app-floor-plan/issues/{issue})"
