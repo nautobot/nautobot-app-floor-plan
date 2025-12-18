@@ -15,7 +15,8 @@ The first step is to define which Status(es) can be applied to individual tiles 
 The app installs with the following statuses by default:
 `"Active", "Reserved", "Decommissioning", "Unavailable", "Planned"`
 
-![Status definition](../images/status-definition.png)
+![Status definition](../images/status-definition-light.png#only-light) {.on-glb}
+![Status definition](../images/status-definition-dark.png#only-dark) {.on-glb}
 
 ## Next Steps
 
@@ -23,7 +24,8 @@ The app installs with the following statuses by default:
 
 For any [Location](https://docs.nautobot.com/projects/core/en/stable/core-functionality/sites-and-racks/#locations) defined in your Nautobot instance, navigate to the **"detail"** view for that Location. A new **"Add Floor Plan"** button will be present.
 
-![Add Floor Plan button](../images/add-floor-plan-button.png)
+![Add Floor Plan button](../images/add-floor-plan-button-light.png#only-light) {.on-glb}
+![Add Floor Plan button](../images/add-floor-plan-button-dark.png#only-dark) {.on-glb}
 
 Clicking this button will open a standard Nautobot create/edit form. This form allows you to define the parameters of the floor plan for the selected Location.
 
@@ -42,7 +44,8 @@ Clicking this button will open a standard Nautobot create/edit form. This form a
     - This feature is a optional setting to assist with Custom Label creation
     - Default: `"True"`
 
-![Add Floor Plan form](../images/add-floor-plan-form.png)
+![Add Floor Plan form](../images/add-floor-plan-form-light.png#only-light) {.on-glb}
+![Add Floor Plan form](../images/add-floor-plan-form-dark.png#only-dark) {.on-glb}
 
 #### Axis Labeling and Configuration
 
@@ -63,12 +66,14 @@ Default settings allow you to configure labels, seeds, and steps for each axis o
   Set a positive or negative integer step value to skip numbers or letters in grid labeling.
     - Default: `"1"`
 
-![Add Floor Plan form part 2](../images/add-tile-axis-default.png)
+![Add Floor Plan form part 2](../images/add-tile-axis-default-light.png#only-light) {.on-glb}
+![Add Floor Plan form part 2](../images/add-tile-axis-default-dark.png#only-dark) {.on-glb}
 
 The **Custom Labels** tab provides options to configure a custom label range using the following parameters: `start`, `end`, `step`, `increment_letter`, and `label_type`.
 
 ![Custom Label Examples](../images/custom-label-examples.png)
-![Add Floor Plan form part 3](../images/add_custom_axis_labels.png)
+![Add Floor Plan form part 3](../images/add_custom_axis_labels_light.png#only-light) {.on-glb}
+![Add Floor Plan form part 3](../images/add_custom_axis_labels_dark.png#only-dark) {.on-glb}
 
 ## Parameters
 
@@ -112,7 +117,8 @@ The **Custom Labels** tab provides options to configure a custom label range usi
 
 There is a `Generate Preview` button that allows you to preview a range of labels that would be generated on the grid once the Floor Plan form has been saved.
 
-![Add Floor Plan form part 4](../images/custom_axis_label_preview.png)
+![Add Floor Plan form part 4](../images/custom_axis_label_preview_light.png#only-light) {.on-glb}
+![Add Floor Plan form part 4](../images/custom_axis_label_preview_dark.png#only-dark) {.on-glb}
 
 !!! note
     The total range of configured labels must not exceed the configured *X Size* or *Y Size* of the floor plan for their respective axis.
@@ -123,23 +129,28 @@ There is a `Generate Preview` button that allows you to preview a range of label
 
 With an X Size of 10:
 
-![Example: Numalpha Single Range, X Size of 10](../images/numalpha_x_10.png)
+![Example: Numalpha Single Range, X Size of 10](../images/numalpha_x_10_light.png#only-light) {.on-glb}
+![Example: Numalpha Single Range, X Size of 10](../images/numalpha_x_10_dark.png#only-dark) {.on-glb}
 
-![Example: Roman Numeral Single Range, X Size of 10](../images/roman_x_10.png)
+![Example: Roman Numeral Single Range, X Size of 10](../images/roman_x_10_light.png#only-light) {.on-glb}
+![Example: Roman Numeral Single Range, X Size of 10](../images/roman_x_10_dark.png#only-dark) {.on-glb}
 
 ### Multiple Range Example
 
 With an X Size of 10:
 
-![Example: Numalpha Multi Range, X Size of 10](../images/numalpha_multi_range.png)
+![Example: Numalpha Multi Range, X Size of 10](../images/numalpha_multi_range_light.png#only-light) {.on-glb}
+![Example: Numalpha Multi Range, X Size of 10](../images/numalpha_multi_range_dark.png#only-dark) {.on-glb}
 
-![Example: Binary Multi Range, X Size of 10](../images/numalpha_multi_range.png)
+![Example: Binary Multi Range, X Size of 10](../images/binary_multi_range_light.png#only-light) {.on-glb}
+![Example: Binary Multi Range, X Size of 10](../images/binary_multi_range_dark.png#only-dark) {.on-glb}
 
 ## Creating and Managing the Floor Plan
 
 After clicking **Create**, you will be presented with a newly rendered floor plan:
 
-![Empty floor plan](../images/floor-plan-empty.png)
+![Empty floor plan](../images/floor-plan-empty-light.png#only-light) {.on-glb}
+![Empty floor plan](../images/floor-plan-empty-dark.png#only-dark) {.on-glb}
 
 !!! note
     This view will be accessible again in the future by navigating to the Location's **detail** view and clicking the **Floor Plan** tab.
@@ -169,7 +180,8 @@ For each tile, you can:
 !!! note
     Once a Object (Device, Power Panel, Power Feed, or Rack) has been placed on a **Floor Plan Tile** you cannot update the **Location** of the Object until it has been removed from the Floor Plan or the Floor Plan has been deleted.
 
-![Add Tile form part 1](../images/add-tile-form.png)
+![Add Tile form part 1](../images/add-tile-form-light.png#only-light) {.on-glb}
+![Add Tile form part 1](../images/add-tile-form-dark.png#only-dark) {.on-glb}
 
 ### Working with RackGroup and Status Tiles
 
@@ -181,17 +193,22 @@ When tiles cover multiple spaces:
 - For RackGroup tiles, objects must be added to the appropriate RackGroup before they can be placed on a tile.
 - Tile size can be increased or decreased, as long as they do not overlap with other tiles.
 
-![Add device to tile](../images/floorplan-tile-device.png)
+![Add device to tile](../images/floorplan-tile-device-light.png#only-light) {.on-glb}
+![Add device to tile](../images/floorplan-tile-device-dark.png#only-dark) {.on-glb}
 
-![Add power panel to tile](../images/floorplan-tile-powerpanel.png)
+![Add power panel to tile](../images/floorplan-tile-powerpanel-light.png#only-light) {.on-glb}
+![Add power panel to tile](../images/floorplan-tile-powerpanel-dark.png#only-dark) {.on-glb}
 
-![Add power feed to tile](../images/floorplan-tile-powerfeed.png)
+![Add power feed to tile](../images/floorplan-tile-powerfeed-light.png#only-light) {.on-glb}
+![Add power feed to tile](../images/floorplan-tile-powerfeed-dark.png#only-dark) {.on-glb}
 
-![Add rack to tile](../images/floorplan-tile-rack.png)
+![Add rack to tile](../images/floorplan-tile-rack-light.png#only-light) {.on-glb}
+![Add rack to tile](../images/floorplan-tile-rack-dark.png#only-dark) {.on-glb}
 
 ### Additional Tile Information
 
-![Addtional Tile information and Tool tip](../images/floorplan-tile-tooltip.png)
+![Addtional Tile information and Tool tip](../images/floorplan-tile-tooltip-light.png#only-light) {.on-glb}
+![Addtional Tile information and Tool tip](../images/floorplan-tile-tooltip-dark.png#only-dark) {.on-glb}
 
 When a object is assigned to a tile, the display of the tile includes:
 
