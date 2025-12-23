@@ -248,7 +248,8 @@ Common Data:
 - **Tenant**: Assigned tenant for the object if one is assigned.
 - **TenantGroup**: The TenantGroup of the assigned Tenant if one is assigned.
 
-![Populated floor plan](../images/floor-plan-populated.png)
+![Populated floor plan](../images/floor-plan-populated-light.png#only-light) {.on-glb}
+![Populated floor plan](../images/floor-plan-populated-dark.png#only-dark) {.on-glb}
 
 ### Floorplan Navigation
 
@@ -258,8 +259,11 @@ Additionally you can use the Enable Box Zoom/Switch to Pan Mode button to left c
 
 Clicking on a grid label for a given row (or column) will navigate to a Rack Elevation view of racks filtered by the Floor Plan and the Racks in the chosen row (or column).
 
-![Floor plan zoom box button](../images/floorplan-click-drag-zoom.png)
-![Floor plan zoomed in](../images/floorplan-zoomed.png)
+![Floor plan zoom box button](../images/floorplan-click-drag-zoom-light.png#only-light) {.on-glb}
+![Floor plan zoom box button](../images/floorplan-click-drag-zoom-dark.png#only-dark) {.on-glb}
+
+![Floor plan zoomed in](../images/floorplan-zoomed-light.png#only-light) {.on-glb}
+![Floor plan zoomed in](../images/floorplan-zoomed-dark.png#only-dark) {.on-glb}
 
 ### Resizing the Floor Plan
 
