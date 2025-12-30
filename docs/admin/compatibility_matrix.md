@@ -5,6 +5,7 @@ Because this App depends on Nautobot's `Location` data model, which was introduc
 Because this App adopted the Nautobot UI Component Framework, any version beyond 2.8.X will require Nautobot 2.4.0 or higher.
 
 | Nautobot Floor Plan Version | Nautobot First Support Version | Nautobot Last Support Version |
+<<<<<<< HEAD
 |-----------------------------|--------------------------------| ----------------------------- |
 | 1.0.X                       | 1.4.0                          | 1.99.99                       |
 | 2.0.X                       | 2.0.0                          | 2.2.99                        |
@@ -18,3 +19,7 @@ Because this App adopted the Nautobot UI Component Framework, any version beyond
 | 2.8.X                       | 2.4.0                          | 2.99.99                       |
 | 2.9.X                       | 2.4.20                         | 2.99.99                       |
 | 3.0.X                       | 3.0.0                          | 3.99.99                       |
+=======
+| ------------- | -------------------- | ------------- |
+| 1.0.X         | 3.0.0                | 2.99.99        |
+>>>>>>> a1e6ab2 (Cookie updated targeting develop by NetworkToCode Cookie Drift Manager Tool)
