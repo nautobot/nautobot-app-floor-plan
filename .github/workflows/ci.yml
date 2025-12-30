@@ -146,11 +146,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-<<<<<<< HEAD
-        python-version: ["3.13"]
-=======
         python-version: ["3.10"]
->>>>>>> a1e6ab2 (Cookie updated targeting develop by NetworkToCode Cookie Drift Manager Tool)
         nautobot-version: ["3.0.0"]
     env:
       INVOKE_NAUTOBOT_FLOOR_PLAN_PYTHON_VER: "${{ matrix.python-version }}"
