@@ -1,80 +1,93 @@
 {% load helpers %}
 {% load seed_helpers %}
-<div class="panel panel-default">
-
-    <div class="panel-heading">
-            <strong>Tile Object Information</strong>
+<div class="card">
+    <div class="card-header">
+        <strong>Tile Object Information</strong>
     </div>
-<table class="table table-hover panel-body attr-table">
-    <tr>
-        <td>Origin</td>
-        <td>
-            <span class="hover_copy">
-                <span id="tile-detail_value_origin">({% render_axis_origin_tag object "X" %},{% render_axis_origin_tag object "Y" %})</span>
-                <button class="btn btn-inline btn-default hover_copy_button" data-clipboard-target="#tile-detail_value_origin">
-                    <span class="mdi mdi-content-copy"></span>
-                </button>
-            </span>
-        </td>
-    </tr>
+    <table class="table table-hover attr-table card-body">
+        <tr>
+            <td>Origin</td>
+            <td>
+                <span>
+                    <span id="tile-detail_value_origin">({% render_axis_origin_tag object "X" %},{% render_axis_origin_tag object "Y" %})</span>
+                    <button class="btn btn-secondary nb-btn-inline-hover" data-clipboard-target="#tile-detail_value_origin">
+                        <span class="mdi mdi-content-copy"></span>
+                    </button>
+                </span>
+            </td>
+        </tr>
 
-    {% if object.allocation_type == 'object' %}
-        {% if object.device %}
-        <tr>
-            <td>Device</td>
-            <td>{% with field_id="device" value=object.device|hyperlinked_object %}
-                {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
-            {% endwith %}</td>
-        </tr>
-        {% endif %}
-        {% if object.rack %}
-        <tr>
-            <td>Rack</td>
-            <td>{% with field_id="rack" value=object.rack|hyperlinked_object %}
-                {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
-            {% endwith %}</td>
-        </tr>
-            {% if object.rack_group %}
-            <tr>
-                <td>Rack Group</td>
-                <td>{% with field_id="rack_group" value=object.rack_group|hyperlinked_object %}
-                    {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
-                {% endwith %}</td>
-            </tr>
-            {% endif %}
-            {% if object.rack.tenant %}
-            <tr>
-                <td>Tenant</td>
-                <td>{% with field_id="tenant" value=object.rack.tenant|hyperlinked_object %}
-                    {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
-                {% endwith %}</td>
-            </tr>
-                {% if object.rack.tenant.tenant_group %}
+        {% if object.allocation_type == 'object' %}
+            {% if object.device %}
                 <tr>
-                    <td>Tenant Group</td>
-                    <td>{% with field_id="tenant_group" value=object.rack.tenant.tenant_group|hyperlinked_object %}
-                        {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
-                    {% endwith %}</td>
+                    <td>Device</td>
+                    <td>
+                        {% with field_id="device" value=object.device|hyperlinked_object %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
+                        {% endwith %}
+                    </td>
                 </tr>
+            {% endif %}
+            {% if object.rack %}
+                <tr>
+                    <td>Rack</td>
+                    <td>
+                        {% with field_id="rack" value=object.rack|hyperlinked_object %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
+                        {% endwith %}
+                    </td>
+                </tr>
+                {% if object.rack_group %}
+                    <tr>
+                        <td>Rack Group</td>
+                        <td>
+                            {% with field_id="rack_group" value=object.rack_group|hyperlinked_object %}
+                                {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
+                            {% endwith %}
+                        </td>
+                    </tr>
+                {% endif %}
+                {% if object.rack.tenant %}
+                    <tr>
+                        <td>Tenant</td>
+                        <td>
+                            {% with field_id="tenant" value=object.rack.tenant|hyperlinked_object %}
+                                {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
+                            {% endwith %}
+                        </td>
+                    </tr>
+                    {% if object.rack.tenant.tenant_group %}
+                        <tr>
+                            <td>Tenant Group</td>
+                            <td>
+                                {% with field_id="tenant_group" value=object.rack.tenant.tenant_group|hyperlinked_object %}
+                                    {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
+                                {% endwith %}
+                            </td>
+                        </tr>
+                    {% endif %}
                 {% endif %}
             {% endif %}
+            {% if object.power_panel %}
+                <tr>
+                    <td>Power Panel</td>
+                    <td>
+                        {% with field_id="power_panel" value=object.power_panel|hyperlinked_object %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
+                        {% endwith %}
+                    </td>
+                </tr>
+            {% endif %}
+            {% if object.power_feed %}
+                <tr>
+                    <td>Power Feed</td>
+                    <td>
+                        {% with field_id="power_feed" value=object.power_feed|hyperlinked_object %}
+                            {% include "nautobot_floor_plan/inc/hover_copy_value.html" %}
+                        {% endwith %}
+                    </td>
+                </tr>
+            {% endif %}
         {% endif %}
-        {% if object.power_panel %}
-        <tr>
-            <td>Power Panel</td>
-            <td>{% with field_id="power_panel" value=object.power_panel|hyperlinked_object %}
-                {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
-            {% endwith %}</td>
-        </tr>
-        {% endif %}
-        {% if object.power_feed %}
-        <tr>
-            <td>Power Feed</td>
-            <td>{% with field_id="power_feed" value=object.power_feed|hyperlinked_object %}
-                {% include 'nautobot_floor_plan/inc/hover_copy_value.html' %}
-            {% endwith %}</td>
-        </tr>
-        {% endif %}
-    {% endif %}
-</table>
+    </table>
 </div>

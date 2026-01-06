@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleButton.addEventListener('click', function() {
             zoomMode = !zoomMode;
             this.textContent = zoomMode ? 'Switch to Pan Mode' : 'Enable Box Zoom';
-            this.classList.toggle('btn-info');
+            this.classList.toggle('btn-warning');
         });
     }
 
