@@ -427,7 +427,7 @@ class FloorPlanBulkEditForm(TagsBulkEditFormMixin, NautobotBulkEditForm):  # pyl
         fields = ["pk", "x_size", "y_size", "tile_width", "tile_depth", "tags"]
 
 
-class FloorPlanFilterForm(NautobotFilterForm):
+class FloorPlanFilterForm(NautobotFilterForm):  # pylint: disable=too-many-ancestors
     """Filter form to filter searches."""
 
     model = models.FloorPlan
