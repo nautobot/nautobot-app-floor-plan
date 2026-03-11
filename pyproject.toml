@@ -1,10 +1,6 @@
 [tool.poetry]
 name = "nautobot-floor-plan"
-<<<<<<< HEAD
 version = "3.0.1a0"
-=======
-version = "0.1.0a0"
->>>>>>> 0fff869 (Cookie updated targeting develop by NetworkToCode Cookie Drift Manager Tool)
 description = "Nautobot Floor Plan"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 license = "Apache-2.0"

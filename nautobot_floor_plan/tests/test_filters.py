@@ -11,11 +11,7 @@ from nautobot_floor_plan.choices import CustomAxisLabelsChoices
 from nautobot_floor_plan.tests import fixtures, utils
 
 
-<<<<<<< HEAD
 class TestFloorPlanFilterSet(TestCase):
-=======
-class FloorPlanFilterTestCase(FilterTestCases.FilterTestCase):  # pylint: disable=too-many-ancestors
->>>>>>> 0fff869 (Cookie updated targeting develop by NetworkToCode Cookie Drift Manager Tool)
     """FloorPlan Filter Test Case."""
 
     queryset = models.FloorPlan.objects.all()

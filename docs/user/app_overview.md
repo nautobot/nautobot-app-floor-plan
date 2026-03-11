@@ -7,12 +7,7 @@ This document provides an overview of the App including critical information and
 
 ## Description
 
-<<<<<<< HEAD
 This App is designed to extend Nautobot's built-in Location data model to allow you to define a Floor Plan for each relevant Location, consisting of a grid of Tiles, each of which has coordinates, an optional Status, and an optional association to an Object belonging to that Location in order to show the Object's position within the Floor Plan. The Floor Plan will be displayed in the Nautobot UI as a rendered SVG with built-in pan/zoom capabilities using your mouse either using the shift mouse wheel or a click and left click drag box.
-=======
-![Main Page](../media/ss_main_page_light.png#only-light)
-![Main Page](../media/ss_main_page_dark.png#only-dark)
->>>>>>> 0fff869 (Cookie updated targeting develop by NetworkToCode Cookie Drift Manager Tool)
 
 ## Audience (User Personas) - Who should use this App?
 
