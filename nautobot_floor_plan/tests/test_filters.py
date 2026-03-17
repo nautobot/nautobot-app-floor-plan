@@ -346,3 +346,251 @@ class TestFloorPlanCoordinateFilter(TestCase):
 
         # Original value should be returned
         self.assertEqual(result, "1")
+
+
+class TestFloorPlanCoordinateFilterDefaultLabels(TestCase):
+    """Test FloorPlanCoordinateFilter with default (non-custom) letter and number labels.
+
+    Regression test for the bug where clicking an X-axis letter label (e.g. "A") on
+    the SVG floor plan returned ALL racks instead of only the racks in that column.
+    The filter was passing the raw letter string directly to the DB IntegerField query.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        """Set up a 5x5 floor plan with letter X-axis and numeric Y-axis, and 25 rack tiles."""
+        data = fixtures.create_prerequisites()
+        cls.active_status = data["status"]
+
+        # Floor plan with X=letters (A-E), Y=numbers (1-5)
+        cls.floor_plan = models.FloorPlan(
+            location=data["floors"][0],
+            x_size=5,
+            y_size=5,
+            x_axis_labels=choices.AxisLabelsChoices.LETTERS,
+            y_axis_labels=choices.AxisLabelsChoices.NUMBERS,
+            x_origin_seed=1,
+            y_origin_seed=1,
+        )
+        cls.floor_plan.validated_save()
+
+        # Create 25 tiles: x_origin 1-5 maps to labels A-E, y_origin 1-5 maps to labels 1-5
+        for y in range(1, 6):
+            for x in range(1, 6):
+                models.FloorPlanTile.objects.create(
+                    floor_plan=cls.floor_plan,
+                    x_origin=x,
+                    y_origin=y,
+                    status=cls.active_status,
+                )
+
+    def _make_filter(self, axis, field_name):
+        """Return a FloorPlanCoordinateFilter with its parent wired to cls.floor_plan."""
+        f = filter_extensions.FloorPlanCoordinateFilter(axis=axis, field_name=field_name)
+        f.parent = MagicMock()
+        f.parent.data = {"nautobot_floor_plan_floor_plan": self.floor_plan.pk}
+        return f
+
+    # ------------------------------------------------------------------
+    # X-axis (letter labels) – this was broken, reports in issue #211
+    # ------------------------------------------------------------------
+
+    def test_x_letter_label_returns_only_matching_column(self):
+        """Clicking column 'A' (x_origin=1) must return exactly 5 tiles, not all 25."""
+        f = self._make_filter("X", "x_origin")
+        qs = models.FloorPlanTile.objects.filter(floor_plan=self.floor_plan)
+        result = f.filter(qs, "A")
+        self.assertEqual(result.count(), 5)
+        self.assertEqual(set(result.values_list("x_origin", flat=True)), {1})
+
+    def test_x_letter_label_mid_column(self):
+        """Clicking column 'C' (x_origin=3) must return exactly the 5 tiles in that column."""
+        f = self._make_filter("X", "x_origin")
+        qs = models.FloorPlanTile.objects.filter(floor_plan=self.floor_plan)
+        result = f.filter(qs, "C")
+        self.assertEqual(result.count(), 5)
+        self.assertEqual(set(result.values_list("x_origin", flat=True)), {3})
+
+    def test_x_letter_label_last_column(self):
+        """Clicking column 'E' (x_origin=5) must return exactly 5 tiles."""
+        f = self._make_filter("X", "x_origin")
+        qs = models.FloorPlanTile.objects.filter(floor_plan=self.floor_plan)
+        result = f.filter(qs, "E")
+        self.assertEqual(result.count(), 5)
+        self.assertEqual(set(result.values_list("x_origin", flat=True)), {5})
+
+    # ------------------------------------------------------------------
+    # Y-axis (numeric labels) – was already working; verify the fix didn't break it
+    # ------------------------------------------------------------------
+
+    def test_y_numeric_label_returns_only_matching_row(self):
+        """Clicking row '1' (y_origin=1) must return exactly 5 tiles."""
+        f = self._make_filter("Y", "y_origin")
+        qs = models.FloorPlanTile.objects.filter(floor_plan=self.floor_plan)
+        result = f.filter(qs, "1")
+        self.assertEqual(result.count(), 5)
+        self.assertEqual(set(result.values_list("y_origin", flat=True)), {1})
+
+    def test_y_numeric_label_mid_row(self):
+        """Clicking row '3' (y_origin=3) must return exactly 5 tiles."""
+        f = self._make_filter("Y", "y_origin")
+        qs = models.FloorPlanTile.objects.filter(floor_plan=self.floor_plan)
+        result = f.filter(qs, "3")
+        self.assertEqual(result.count(), 5)
+        self.assertEqual(set(result.values_list("y_origin", flat=True)), {3})
+
+
+class TestFloorPlanCoordinateFilterSeedAndStep(TestCase):
+    """Test FloorPlanCoordinateFilter with non-default seed and step values.
+
+    The label generation formula is: label = seed + (position - seed) * step
+    The inverse is handled by axis_clean_label_conversion() in utils/general.py.
+
+    Each test method covers one configuration so data stays isolated.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        """Shared prerequisites for all seed/step tests."""
+        cls.data = fixtures.create_prerequisites()
+        cls.active_status = cls.data["status"]
+
+    def _make_floor_plan(self, floor_idx, x_size, y_size, **kwargs):
+        """Create and return a validated FloorPlan on the given floor index."""
+        fp = models.FloorPlan(
+            location=self.data["floors"][floor_idx],
+            x_size=x_size,
+            y_size=y_size,
+            **kwargs,
+        )
+        fp.validated_save()
+        return fp
+
+    def _make_tiles(self, floor_plan):
+        """Create one tile per grid cell for the given floor plan."""
+        for y in range(floor_plan.y_origin_seed, floor_plan.y_origin_seed + floor_plan.y_size):
+            for x in range(floor_plan.x_origin_seed, floor_plan.x_origin_seed + floor_plan.x_size):
+                models.FloorPlanTile.objects.create(
+                    floor_plan=floor_plan, x_origin=x, y_origin=y, status=self.active_status
+                )
+
+    def _make_filter(self, floor_plan, axis, field_name):
+        """Return a wired FloorPlanCoordinateFilter for the given floor plan."""
+        f = filter_extensions.FloorPlanCoordinateFilter(axis=axis, field_name=field_name)
+        f.parent = MagicMock()
+        f.parent.data = {"nautobot_floor_plan_floor_plan": floor_plan.pk}
+        return f
+
+    # ------------------------------------------------------------------
+    # Non-default seed, letter X-axis
+    # label = seed + (position - seed) * 1  →  C(3),D(4),E(5),F(6),G(7)
+    # ------------------------------------------------------------------
+
+    def test_letter_axis_non_default_seed(self):
+        """seed=3 (C), step=1: label 'E' must resolve to x_origin=5."""
+        fp = self._make_floor_plan(
+            0,
+            x_size=5,
+            y_size=3,
+            x_axis_labels=choices.AxisLabelsChoices.LETTERS,
+            y_axis_labels=choices.AxisLabelsChoices.NUMBERS,
+            x_origin_seed=3,
+            y_origin_seed=1,
+        )
+        self._make_tiles(fp)
+        f = self._make_filter(fp, "X", "x_origin")
+        qs = models.FloorPlanTile.objects.filter(floor_plan=fp)
+
+        result = f.filter(qs, "C")  # first column, x_origin=3
+        self.assertEqual(result.count(), 3)
+        self.assertEqual(set(result.values_list("x_origin", flat=True)), {3})
+
+        result = f.filter(qs, "E")  # third column, x_origin=5
+        self.assertEqual(result.count(), 3)
+        self.assertEqual(set(result.values_list("x_origin", flat=True)), {5})
+
+    # ------------------------------------------------------------------
+    # Non-default step=2, letter X-axis
+    # position 1→A(1), 2→C(3), 3→E(5), 4→G(7), 5→I(9)
+    # ------------------------------------------------------------------
+
+    def test_letter_axis_step_2(self):
+        """seed=1, step=2: label 'C' must resolve to x_origin=2, 'E' to x_origin=3."""
+        fp = self._make_floor_plan(
+            1,
+            x_size=5,
+            y_size=3,
+            x_axis_labels=choices.AxisLabelsChoices.LETTERS,
+            y_axis_labels=choices.AxisLabelsChoices.NUMBERS,
+            x_origin_seed=1,
+            y_origin_seed=1,
+            x_axis_step=2,
+        )
+        self._make_tiles(fp)
+        f = self._make_filter(fp, "X", "x_origin")
+        qs = models.FloorPlanTile.objects.filter(floor_plan=fp)
+
+        result = f.filter(qs, "C")  # step=2: C(3) → x_origin=2
+        self.assertEqual(result.count(), 3)
+        self.assertEqual(set(result.values_list("x_origin", flat=True)), {2})
+
+        result = f.filter(qs, "E")  # step=2: E(5) → x_origin=3
+        self.assertEqual(result.count(), 3)
+        self.assertEqual(set(result.values_list("x_origin", flat=True)), {3})
+
+    # ------------------------------------------------------------------
+    # Non-default seed, numeric Y-axis
+    # seed=5, step=1: positions 5,6,7,8,9 → labels 5,6,7,8,9
+    # ------------------------------------------------------------------
+
+    def test_numeric_axis_non_default_seed(self):
+        """seed=5, step=1: label '7' must resolve to y_origin=7."""
+        fp = self._make_floor_plan(
+            2,
+            x_size=3,
+            y_size=5,
+            x_axis_labels=choices.AxisLabelsChoices.NUMBERS,
+            y_axis_labels=choices.AxisLabelsChoices.NUMBERS,
+            x_origin_seed=1,
+            y_origin_seed=5,
+        )
+        self._make_tiles(fp)
+        f = self._make_filter(fp, "Y", "y_origin")
+        qs = models.FloorPlanTile.objects.filter(floor_plan=fp)
+
+        result = f.filter(qs, "5")  # first row, y_origin=5
+        self.assertEqual(result.count(), 3)
+        self.assertEqual(set(result.values_list("y_origin", flat=True)), {5})
+
+        result = f.filter(qs, "7")  # third row, y_origin=7
+        self.assertEqual(result.count(), 3)
+        self.assertEqual(set(result.values_list("y_origin", flat=True)), {7})
+
+    # ------------------------------------------------------------------
+    # Non-default step=2, numeric Y-axis
+    # position 1→1, 2→3, 3→5, 4→7, 5→9
+    # ------------------------------------------------------------------
+
+    def test_numeric_axis_step_2(self):
+        """seed=1, step=2: label '5' must resolve to y_origin=3, label '9' to y_origin=5."""
+        fp = self._make_floor_plan(
+            3,
+            x_size=3,
+            y_size=5,
+            x_axis_labels=choices.AxisLabelsChoices.NUMBERS,
+            y_axis_labels=choices.AxisLabelsChoices.NUMBERS,
+            x_origin_seed=1,
+            y_origin_seed=1,
+            y_axis_step=2,
+        )
+        self._make_tiles(fp)
+        f = self._make_filter(fp, "Y", "y_origin")
+        qs = models.FloorPlanTile.objects.filter(floor_plan=fp)
+
+        result = f.filter(qs, "5")  # step=2: label 5 → y_origin=3
+        self.assertEqual(result.count(), 3)
+        self.assertEqual(set(result.values_list("y_origin", flat=True)), {3})
+
+        result = f.filter(qs, "9")  # step=2: label 9 → y_origin=5
+        self.assertEqual(result.count(), 3)
+        self.assertEqual(set(result.values_list("y_origin", flat=True)), {5})

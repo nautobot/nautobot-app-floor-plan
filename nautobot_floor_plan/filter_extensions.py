@@ -5,7 +5,8 @@ import logging
 import django_filters
 from nautobot.apps.filters import FilterExtension, RelatedMembershipBooleanFilter
 
-from nautobot_floor_plan import models
+from nautobot_floor_plan import choices, models
+from nautobot_floor_plan.utils.general import axis_clean_label_conversion
 from nautobot_floor_plan.utils.label_converters import LabelToPositionConverter, PositionToLabelConverter
 
 logger = logging.getLogger(__name__)
@@ -39,8 +40,13 @@ class FloorPlanCoordinateFilter(django_filters.CharFilter):
                 converter = LabelToPositionConverter(value, self.axis, floor_plan)
                 position, _ = converter.convert()
             else:
-                # For default labels, use the value directly
-                position = value
+                # For default labels use the existing utility which handles the inverse
+                # of the label generation formula, including negative steps and wrap-around.
+                axis_labels = getattr(floor_plan, f"{self.axis.lower()}_axis_labels")
+                seed = getattr(floor_plan, f"{self.axis.lower()}_origin_seed")
+                step = getattr(floor_plan, f"{self.axis.lower()}_axis_step")
+                is_letters = axis_labels == choices.AxisLabelsChoices.LETTERS
+                position = axis_clean_label_conversion(seed, value, step, is_letters)
 
             return super().filter(qs, position)
 

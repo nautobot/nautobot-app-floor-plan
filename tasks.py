@@ -968,7 +968,7 @@ def unittest(  # noqa: PLR0913
         command += f" --tag={t}"
 
     if "integration" in tags:
-        start(context, service="nautobot")
+        start(context, service=["nautobot"])
     run_command(context, command)
 
 
