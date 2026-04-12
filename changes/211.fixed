@@ -1,0 +1,1 @@
+Fixed rack elevation filter incorrectly returning all racks when clicking letter-based column labels on the floor plan SVG.
