@@ -872,15 +872,6 @@ def pylint(context, target=None, recursive=False):
                 break
 
     if migrations_dir.is_dir():
-<<<<<<< HEAD
-        migrations_pylint_command = (
-            f"{base_pylint_command} --load-plugins=pylint_django.checkers.migrations"
-            " --disable=all --enable=fatal,missing-backwards-migration-callable"
-            " nautobot_floor_plan.migrations"
-        )
-        if not run_command(context, migrations_pylint_command, warn=True):
-            exit_code = 1
-=======
         if run_migrations_check:
             migrations_pylint_command = (
                 f"{base_pylint_command} --load-plugins=pylint_django.checkers.migrations"
@@ -889,7 +880,6 @@ def pylint(context, target=None, recursive=False):
             )
             if not run_command(context, migrations_pylint_command, warn=True):
                 exit_code = 1
->>>>>>> c205978 (Cookie updated targeting develop by NetworkToCode Cookie Drift Manager Tool)
     else:
         print("No migrations directory found, skipping migrations checks.")
 
@@ -1080,13 +1070,10 @@ def unittest(  # noqa: PLR0913
         command += f" -k='{pattern}'"
     if verbose:
         command += " --verbosity 2"
-<<<<<<< HEAD
     for t in tags:
         command += f" --tag={t}"
-=======
     if no_input:
         command += " --no-input"
->>>>>>> c205978 (Cookie updated targeting develop by NetworkToCode Cookie Drift Manager Tool)
 
     if "integration" in tags:
         start(context, service="nautobot")
@@ -1167,17 +1154,7 @@ def tests(context, failfast=False, keepdb=False, no_input=False, lint_only=False
         print("Running integ tests...")
         unittest(context, failfast=failfast, keepdb=keepdb, tags=["integration"])
         print("Running unit tests...")
-<<<<<<< HEAD
-        unittest(
-            context,
-            failfast=failfast,
-            keepdb=keepdb,
-            coverage=True,
-            skip_docs_build=True,
-        )
-=======
         unittest(context, failfast=failfast, keepdb=keepdb, no_input=no_input, coverage=True, skip_docs_build=True)
->>>>>>> c205978 (Cookie updated targeting develop by NetworkToCode Cookie Drift Manager Tool)
         unittest_coverage(context)
         coverage_lcov(context)
     print("All tests have passed!")
