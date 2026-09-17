@@ -1,1 +1,0 @@
-Fixed a JavaScript syntax error that prevented floor plan zoom, pan, and highlight behavior from initializing on the Location Floor Plan tab.

@@ -14,6 +14,17 @@ We will continue to support the previous major release for users of Nautobot LTM
 
 <!-- towncrier release notes start -->
 
+## [v3.0.2 (2026-09-17)](https://github.com/nautobot/nautobot-app-floor-plan/releases/tag/v3.0.2)
+
+### Fixed
+
+- [#218](https://github.com/nautobot/nautobot-app-floor-plan/issues/218) - Fixed a JavaScript syntax error that prevented floor plan zoom, pan, and highlight behavior from initializing on the Location Floor Plan tab.
+
+### Housekeeping
+
+- [#219](https://github.com/nautobot/nautobot-app-floor-plan/issues/219) - Fixed running `invoke tests`.
+- Rebaked from the cookie `nautobot-app-v3.1.4`.
+
 ## [v3.0.1 (2026-04-12)](https://github.com/nautobot/nautobot-app-floor-plan/releases/tag/v3.0.1)
 
 ### Documentation
