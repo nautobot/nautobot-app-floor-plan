@@ -1,6 +1,6 @@
 {% load buttons %}
+{% load helpers %}
 {% load static %}
-{% load seed_helpers %}
 
 {% if object %}
     <div class="float-end d-print-none">
@@ -44,9 +44,7 @@
     {% endcomment %}
     <div id="floor-plan-svg-container" style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ object.y_size }} * {{ object.tile_depth }}) / ({{ object.x_size }} * {{ object.tile_width }}) / 1.2);">
         <a id="zoom-anchor"></a>
-        {% floor_plan_setting "zoom_duration" as zoom_duration %}
-        {% floor_plan_setting "highlight_duration" as highlight_duration %}
-        <div data-floor-plan-x-size="{{ object.x_size }}" data-floor-plan-y-size="{{ object.y_size }}" data-highlight-duration="{{ highlight_duration }}" data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" data-zoom-duration="{{ zoom_duration }}" id="floor-plan-svg" style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;"></div>
+        <div data-floor-plan-x-size="{{ object.x_size }}" data-floor-plan-y-size="{{ object.y_size }}" data-highlight-duration="{{ 'highlight_duration'|settings_or_config:'nautobot_floor_plan' }}" data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" data-zoom-duration="{{ 'zoom_duration'|settings_or_config:'nautobot_floor_plan' }}" id="floor-plan-svg" style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;"></div>
     </div>
 {% else %}
     {% comment %}

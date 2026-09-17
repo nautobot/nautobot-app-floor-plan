@@ -1,18 +1,11 @@
 """Helper for seed conversion to letters."""
 
 from django import template
-from nautobot.apps.config import get_app_settings_or_config
 
 from nautobot_floor_plan import choices
 from nautobot_floor_plan.utils import general, label_converters
 
 register = template.Library()
-
-
-@register.simple_tag()
-def floor_plan_setting(key):
-    """Return the named `nautobot_floor_plan` app setting, or its default if unconfigured."""
-    return get_app_settings_or_config("nautobot_floor_plan", key)
 
 
 @register.filter()

@@ -28,8 +28,10 @@ def durations_plugins_config():
 class DurationSettingsAssertionMixin:
     """Assert that the floor plan SVG partial exposes the configured zoom/highlight durations."""
 
-    def assertDurationSettingsRendered(self, response):  # pylint: disable=invalid-name
-        """Assert the configured durations reach the browser on the page rendered by `response`."""
+    def assertDurationSettingsRendered(self, url):  # pylint: disable=invalid-name
+        """Assert the configured durations reach the browser on the page at `url`."""
+        with override_settings(PLUGINS_CONFIG=durations_plugins_config()):
+            response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, f'data-zoom-duration="{TEST_ZOOM_DURATION}"')
         self.assertContains(response, f'data-highlight-duration="{TEST_HIGHLIGHT_DURATION}"')
@@ -88,11 +90,11 @@ class LocationFloorPlanTabTest(DurationSettingsAssertionMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "nautobot_floor_plan/location_floor_plan.html")
 
-    @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"], PLUGINS_CONFIG=durations_plugins_config())
+    @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"])
     def test_floor_plan_tab_renders_duration_settings(self):
         """Test that the floor plan tab exposes the configured zoom and highlight durations."""
         url = reverse("plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": self.location.pk})
-        self.assertDurationSettingsRendered(self.client.get(url))
+        self.assertDurationSettingsRendered(url)
 
     @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"])
     def test_child_floor_plan_tab(self):
@@ -111,11 +113,11 @@ class FloorPlanVisualizationTest(DurationSettingsAssertionMixin, TestCase):
         data = fixtures.create_prerequisites()
         self.floor_plan = fixtures.create_floor_plans([data["floors"][0]])[0]
 
-    @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"], PLUGINS_CONFIG=durations_plugins_config())
+    @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"])
     def test_floor_plan_detail_renders_duration_settings(self):
         """Test that the FloorPlan detail view exposes the configured zoom and highlight durations."""
         url = reverse("plugins:nautobot_floor_plan:floorplan", kwargs={"pk": self.floor_plan.pk})
-        self.assertDurationSettingsRendered(self.client.get(url))
+        self.assertDurationSettingsRendered(url)
 
 
 class FloorPlanTabActivationTest(TestCase):
