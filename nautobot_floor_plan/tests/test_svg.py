@@ -5,6 +5,7 @@ from unittest.mock import ANY, MagicMock, patch
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from nautobot.core.templatetags.helpers import fgcolor
 from nautobot.dcim.models import Device, PowerFeed, PowerPanel, Rack, RackGroup
 from nautobot.users.models import Token
 from rest_framework import status
@@ -442,7 +443,7 @@ class FloorPlanSVGTestCase(TestCase):
         self.assertEqual(text_call_args[0], "Test Text")
         self.assertEqual(text_call_kwargs["class_"], "test-class")
         self.assertIn("style", text_call_kwargs)
-        self.assertIn("fill: #ffffff", text_call_kwargs["style"])
+        self.assertIn(f"fill: {fgcolor('ff0000')}", text_call_kwargs["style"])
 
     def test_draw_object_text(self):
         """Test the _draw_object_text method."""

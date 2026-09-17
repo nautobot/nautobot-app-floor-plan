@@ -1,6 +1,5 @@
 """Panel for Floor Plan visualization."""
 
-from nautobot.apps.config import get_app_settings_or_config
 from nautobot.apps.ui import Panel
 
 
@@ -31,13 +30,6 @@ class FloorPlanVisualizationPanel(Panel):
         """Initialize the panel, setting the template path."""
         kwargs.setdefault("template_path", "nautobot_floor_plan/inc/floorplan_svg.html")
         super().__init__(**kwargs)
-
-    def get_extra_context(self, context):
-        """Add custom context for the visualization."""
-        return {
-            "zoom_duration": get_app_settings_or_config("nautobot_floor_plan", "zoom_duration"),
-            "highlight_duration": get_app_settings_or_config("nautobot_floor_plan", "highlight_duration"),
-        }
 
 
 class TileObjectDetailsPanel(Panel):
