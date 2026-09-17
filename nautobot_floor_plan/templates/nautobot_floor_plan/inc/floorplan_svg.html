@@ -1,4 +1,5 @@
 {% load buttons %}
+{% load helpers %}
 {% load static %}
 
 {% if object %}
@@ -14,8 +15,8 @@
     <div>
         Use shift+scroll wheel to zoom in or out.
         Click and drag to scroll.
-        <button id="toggle-zoom-mode" class="btn btn-sm btn-default">Enable Box Zoom</button>
-        <button id="reset-zoom" class="btn btn-sm btn-secondary">Reset View</button>
+        <button id="toggle-zoom-mode" class="btn btn-sm btn-default" type="button">Enable Box Zoom</button>
+        <button id="reset-zoom" class="btn btn-sm btn-secondary" type="button">Reset View</button>
         <br>
         Add a tile by clicking the plus symbol on the grid OR by using the "Add Tile" button.
         <br>
@@ -37,10 +38,6 @@
     <script src="{% static 'nautobot_floor_plan/tippy.js-6.3.7/tippy-bundle.umd.min.js' %}"></script>
     <script src="{% static 'nautobot_floor_plan/js/floorplan.js' %}?v={% now 'U' %}"></script>
     <script src="{% static 'nautobot_floor_plan/gsap.js-3.12.2/gsap.min.js' %}"></script>
-    <script>
-        const ZOOM_DURATION = {{ zoom_duration }};
-        const HIGHLIGHT_DURATION = {{ highlight_duration }};
-    </script>
 
     {% comment %}
     Scale the SVG by default to match the page width, preserving its aspect-ratio.
@@ -48,7 +45,7 @@
     {% endcomment %}
     <div id="floor-plan-svg-container" style="position: relative; height: 0; width: 100%; padding: 0; padding-bottom: calc(100% * ({{ object.y_size }} * {{ object.tile_depth }}) / ({{ object.x_size }} * {{ object.tile_width }}) / 1.2);">
         <a id="zoom-anchor"></a>
-        <div id="floor-plan-svg" data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" data-floor-plan-x-size="{{ object.x_size }}" data-floor-plan-y-size="{{ object.y_size }}" style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;"></div>
+        <div id="floor-plan-svg" data-svg-url="{% url 'plugins-api:nautobot_floor_plan-api:floorplan-svg' pk=object.pk %}" data-floor-plan-x-size="{{ object.x_size }}" data-floor-plan-y-size="{{ object.y_size }}" data-zoom-duration="{{ 'zoom_duration'|settings_or_config:'nautobot_floor_plan' }}" data-highlight-duration="{{ 'highlight_duration'|settings_or_config:'nautobot_floor_plan' }}" style="position: absolute; height: 100%; width: 100%; left: 0; top: 0;"></div>
     </div>
 {% else %}
     {% comment %}
