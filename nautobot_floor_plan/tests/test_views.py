@@ -1,6 +1,9 @@
 """Unit tests for views."""
 # pylint: disable=duplicate-code
 
+import copy
+
+from django.conf import settings
 from django.test import override_settings
 from django.urls import reverse
 from nautobot.apps.testing import TestCase, ViewTestCases
@@ -8,6 +11,28 @@ from nautobot.users.models import User
 
 from nautobot_floor_plan import choices, models
 from nautobot_floor_plan.tests import fixtures
+
+TEST_ZOOM_DURATION = 1234
+TEST_HIGHLIGHT_DURATION = 5678
+
+
+def durations_plugins_config():
+    """Return a copy of `PLUGINS_CONFIG` with non-default zoom/highlight durations for this app."""
+    plugins_config = copy.deepcopy(settings.PLUGINS_CONFIG)
+    plugins_config.setdefault("nautobot_floor_plan", {}).update(
+        {"zoom_duration": TEST_ZOOM_DURATION, "highlight_duration": TEST_HIGHLIGHT_DURATION}
+    )
+    return plugins_config
+
+
+class DurationSettingsAssertionMixin:
+    """Assert that the floor plan SVG partial exposes the configured zoom/highlight durations."""
+
+    def assertDurationSettingsRendered(self, response):  # pylint: disable=invalid-name
+        """Assert the configured durations reach the browser on the page rendered by `response`."""
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-zoom-duration="{TEST_ZOOM_DURATION}"')
+        self.assertContains(response, f'data-highlight-duration="{TEST_HIGHLIGHT_DURATION}"')
 
 
 class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
@@ -46,7 +71,7 @@ class FloorPlanViewTest(ViewTestCases.PrimaryObjectViewTestCase):
         }
 
 
-class LocationFloorPlanTabTest(TestCase):
+class LocationFloorPlanTabTest(DurationSettingsAssertionMixin, TestCase):
     """Test the Location Floor Plan tab views."""
 
     def setUp(self):
@@ -63,6 +88,12 @@ class LocationFloorPlanTabTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "nautobot_floor_plan/location_floor_plan.html")
 
+    @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"], PLUGINS_CONFIG=durations_plugins_config())
+    def test_floor_plan_tab_renders_duration_settings(self):
+        """Test that the floor plan tab exposes the configured zoom and highlight durations."""
+        url = reverse("plugins:nautobot_floor_plan:location_floor_plan_tab", kwargs={"pk": self.location.pk})
+        self.assertDurationSettingsRendered(self.client.get(url))
+
     @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"])
     def test_child_floor_plan_tab(self):
         """Test that the child floor plan tab renders correctly."""
@@ -70,6 +101,21 @@ class LocationFloorPlanTabTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "nautobot_floor_plan/location_child_floor_plan.html")
+
+
+class FloorPlanVisualizationTest(DurationSettingsAssertionMixin, TestCase):
+    """Test the floor plan visualization panel on the FloorPlan detail view."""
+
+    def setUp(self):
+        super().setUp()
+        data = fixtures.create_prerequisites()
+        self.floor_plan = fixtures.create_floor_plans([data["floors"][0]])[0]
+
+    @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"], PLUGINS_CONFIG=durations_plugins_config())
+    def test_floor_plan_detail_renders_duration_settings(self):
+        """Test that the FloorPlan detail view exposes the configured zoom and highlight durations."""
+        url = reverse("plugins:nautobot_floor_plan:floorplan", kwargs={"pk": self.floor_plan.pk})
+        self.assertDurationSettingsRendered(self.client.get(url))
 
 
 class FloorPlanTabActivationTest(TestCase):
