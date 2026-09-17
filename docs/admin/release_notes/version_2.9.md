@@ -8,6 +8,18 @@ This document describes all new features and changes in the release. The format 
 - Dropped support for Python 3.9.
 
 <!-- towncrier release notes start -->
+
+
+## [v2.9.1 (2026-09-17)](https://github.com/nautobot/nautobot-app-floor-plan/releases/tag/v2.9.1)
+
+### Fixed
+
+- [#218](https://github.com/nautobot/nautobot-app-floor-plan/issues/218) - Fixed a JavaScript syntax error that prevented floor plan zoom, pan, and highlight behavior from initializing on the Location Floor Plan tab.
+
+### Housekeeping
+
+- Rebaked from the cookie `nautobot-app-v2.7.3`.
+
 ## [v2.9.0 (2025-12-09)](https://github.com/nautobot/nautobot-app-floor-plan/releases/tag/v2.9.0)
 
 ### Dependencies
