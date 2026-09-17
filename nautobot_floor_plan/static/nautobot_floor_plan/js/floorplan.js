@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const svgUrl = svgContainer.getAttribute('data-svg-url');
     if (!svgUrl) return;
+    // Fall back to the app's configured defaults if the attributes are absent or unparsable.
+    const ZOOM_DURATION = Number(svgContainer.dataset.zoomDuration) || 5000;
+    const HIGHLIGHT_DURATION = Number(svgContainer.dataset.highlightDuration) || 20000;
     var isPanning = true;
     var startPoint = {x: 0, y: 0};
     var endPoint = {x: 0, y: 0};
